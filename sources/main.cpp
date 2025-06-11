@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#include "../includes/Server.hpp"
 
 int main(int argc, char **argv)
 {
@@ -10,30 +11,31 @@ int main(int argc, char **argv)
         std::cerr << "Expected: ./ircserv <port> <password>" << std::endl;
         return (1);
     }
+    Server  ircserv(argv);
     //check port and password are valid
     //save port (argv[1]) and password (argv[2]) info somewhere
-    (void) argv;
+    // (void) argv;
 
     //create socket with socket()
-    int serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    // int serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     //bind socket to the port with bind()
-    struct sockaddr *addr;      //this might need more initializing (or not)
+    // struct sockaddr *addr;      //this might need more initializing (or not)
             // struct sockaddr {
             //        sa_family_t     sa_family;      /* Address family */
             //        char            sa_data[];      /* Socket address */
             //    };
-    socklen_t addrlen = 125;    //no idea what this should be
-    bind(serverSocket, addr, addrlen);
+    // socklen_t addrlen = 125;    //no idea what this should be
+    // bind(serverSocket, addr, addrlen);
 
     //start listening (use the socket fd created previously)
-    listen(serverSocket, 100);      //no idea what backlog here should be
+    // listen(serverSocket, 100);      //no idea what backlog here should be
 
     //create epoll() instance
 
     //start main monitoring loop
 
-    close(serverSocket);
+    // close(serverSocket);
 
     return (0);
 }

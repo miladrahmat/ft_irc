@@ -3,6 +3,7 @@ CC := c++
 FLAGS := -Wall -Wextra -Werror -g #REMOVE g
 
 CFILES := main.cpp \
+			Server.cpp
 
 INC := includes/ircserv
 SRC_PATH := sources/
