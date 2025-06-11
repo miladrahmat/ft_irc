@@ -32,11 +32,23 @@ Server::Server(char** argv) {
 			freeaddrinfo(res);
 			exit(1);
 		}
+		int flags = fcntl(_server_socket, F_GETFL, 0);
+    	if (flags < 0)
+    	{
+        	std::cerr << "Error with fnctl (F_GETFL)" << std::endl;
+        	exit (1);
+    	}
+    	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) < 0)
+    	{
+        	std::cerr << "Error with fcntl (F_SETFL)" << std::endl;
+        	exit (1);
+    	}
 		int	opt = 1;
 		setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 		if (bind(_server_socket, res->ai_addr, res->ai_addrlen) < 0) {
 			std::cerr << "Error: Cannot bind socket" << std::endl;
 			freeaddrinfo(res);
+			close(_server_socket);
 			exit(1);
 		}
 		freeaddrinfo(res);
@@ -52,7 +64,7 @@ Server::Server(char** argv) {
 }
 
 Server::~Server() {
-	
+	close(_server_socket);
 }
 
 void	Server::start() {

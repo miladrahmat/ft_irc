@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 class Server {
 	private:
