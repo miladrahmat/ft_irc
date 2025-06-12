@@ -1,4 +1,4 @@
-#include "../includes/Server.hpp"
+#include "Server.hpp"
 
 Server::Server(char** argv) {
 	struct addrinfo	hints, *res;
@@ -33,13 +33,11 @@ Server::Server(char** argv) {
 			exit(1);
 		}
 		int flags = fcntl(_server_socket, F_GETFL, 0);
-    	if (flags < 0)
-    	{
+    	if (flags < 0) {
         	std::cerr << "Error with fnctl (F_GETFL)" << std::endl;
         	exit (1);
     	}
-    	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) < 0)
-    	{
+    	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) < 0) {
         	std::cerr << "Error with fcntl (F_SETFL)" << std::endl;
         	exit (1);
     	}
@@ -67,18 +65,68 @@ Server::~Server() {
 	close(_server_socket);
 }
 
-void	Server::start() {
-	std::cout << "start() called" << std::endl;
-}
-
-std::string	Server::getPort() {
+std::string	Server::getPort() const {
 	return (_port);
 }
 
-std::string	Server::getPassword() {
-	return (_password);
+std::string	Server::getPassword() const {
+	return (_password); }
+
+int	Server::getServerSocket() const {
+	return (_server_socket);
 }
 
-int	Server::getServerSocket() {
-	return (_server_socket);
+void	Server::start() {
+	int epollFd = epoll_create(1);
+    if (epollFd < 0) {
+        std::cerr << "Error with epoll" << std::endl;
+        return ;
+    }
+    struct epoll_event ev[64];
+    ev->events = EPOLLIN;
+    ev->data.fd = _server_socket;
+    if (epoll_ctl(epollFd, EPOLL_CTL_ADD, ev->data.fd, ev) < 0) {
+        std::cerr << "Error with epoll_ctl" << std::endl;
+        return ;
+    }
+    while (true) {
+        int eventsCount = epoll_wait(epollFd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
+        if (eventsCount < 0) {
+            std::cerr << "Error with epoll_wait" << std::endl;
+            break ;
+        }
+        if (eventsCount > 0) {
+            for (int i = 0; i < eventsCount; i++) {
+                if (ev[i].data.fd == _server_socket) {
+                    handleNewClient(epollFd);
+                } else {
+                    //identify correct fd and recv()
+                }
+            }
+            
+        }
+    }
+    close(epollFd);
+}
+
+void Server::handleNewClient(int epoll_fd) {
+    struct sockaddr_in client_addr;
+    socklen_t   client_len = sizeof(client_addr);
+	int client = accept(_server_socket, (struct sockaddr *)&client_addr, &client_len);
+    if (client < 0) {
+        std::cerr << "Error with accept" << std::endl;
+    } else {
+        if (fcntl(client, F_SETFL, O_NONBLOCK) < 0) {
+            std::cerr << "Error with fcntl (client)" << std::endl;
+            return ;
+        }
+        struct epoll_event ev2;
+        ev2.events = EPOLLIN;
+        ev2.data.fd = client;
+        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
+            std::cerr << "Error with epoll_ctl (client)" << std::endl;
+        }
+		_client_vec.push_back(client);
+    }
+    std::cout << "new client connected!" << std::endl;
 }
