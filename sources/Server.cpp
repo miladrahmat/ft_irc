@@ -126,7 +126,8 @@ void Server::handleNewClient(int epoll_fd) {
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		_client_vec.push_back(client);
+		Client	new_client(client);
+		_client_vec.push_back(std::move(new_client));
 		std::cout << "new client connected!" << std::endl;
 		std::string welcome = "Welcome to IRC!\r\n";
 		send(client, welcome.c_str(), welcome.size(), 0);
