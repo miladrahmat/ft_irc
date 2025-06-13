@@ -3,9 +3,10 @@ CC := c++
 FLAGS := -Wall -Wextra -Werror -g #REMOVE g
 
 CFILES := main.cpp \
-			Server.cpp
+			Server.cpp \
+			Client.cpp
 
-INC := includes/ircserv
+INC := includes/
 SRC_PATH := sources/
 OBJ_PATH := objects/
 
@@ -19,10 +20,10 @@ $(OBJ_PATH):
 #	$(OBJ_PATH)/name_of_folder
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.c $(INC)
-	$(CC) $(FLAGS) -c $< -o $@
+	$(CC) $(FLAGS) -I $(INC) -c $< -o $@
 
 $(NAME): $(OBJS)
-	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
+	$(CC) $(FLAGS) $(OBJS) -I $(INC) -o $(NAME)
 
 clean:
 	rm -rf $(OBJ_PATH)
