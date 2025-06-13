@@ -88,14 +88,15 @@ int main(int argc, char **argv)
         std::cerr << "Error with epoll" << std::endl;
         return (1);
     }
-    struct epoll_event ev[64];
-    ev->events = EPOLLIN;
-    ev->data.fd = ircserv.getServerSocket();
-    if (epoll_ctl(epollFd, EPOLL_CTL_ADD, ircserv.getServerSocket(), ev) < 0)
+    struct epoll_event ev_server;
+    ev_server.events = EPOLLIN;
+    ev_server.data.fd = ircserv.getServerSocket();
+    if (epoll_ctl(epollFd, EPOLL_CTL_ADD, ircserv.getServerSocket(), &ev_server) < 0)
     {
         std::cerr << "Error with epoll_ctl" << std::endl;
         return (1);
     }
+    struct epoll_event ev[64];
     while (true)
     {
         //std::cout << "Server running" << std::endl;
@@ -118,7 +119,7 @@ int main(int argc, char **argv)
                 else
                 {
                     //identify correct fd and recv()
-                    recieveData(fd);
+                    recieveData(ev[i].data.fd);
                 }
             }
         }
