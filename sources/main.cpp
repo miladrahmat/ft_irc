@@ -30,6 +30,40 @@ void handleNewClient(int serverSocket, int epollFd)
     std::cout << "new client connected!" << std::endl;
 }
 
+
+void    sendData(int fd, char *buf)
+{
+    std::string message(buf);
+    int sent_bytes = send(fd, message.c_str(), message.length(), MSG_DONTWAIT);
+    if (sent_bytes < 0)
+    {
+        std::cerr << "Error: failed to sen data to user" << std::endl;
+    }
+    else
+    {
+        std::cout << "Data succesfully sent to client" << std::endl;
+    }
+}
+
+void    recieveData(int fd)
+{
+    char    buf[1024];
+    int recievedBytes = recv(fd, buf, sizeof(buf), MSG_DONTWAIT);
+
+    if (recievedBytes == 0)
+    {
+        std::cout << "Client " << fd << " disconnected" << std::endl;
+        close(fd);
+    }
+    else if (recievedBytes < 0) {
+        std::cerr << "Error: failed to recieve data from client" << std::endl;
+    }
+    else {
+        std::cout << "Client " << fd << ": " << buf << std::endl;
+    }
+    sendData(fd, buf);
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 3)
@@ -84,9 +118,9 @@ int main(int argc, char **argv)
                 else
                 {
                     //identify correct fd and recv()
+                    recieveData(fd);
                 }
             }
-            
         }
     }
     close(epollFd);
