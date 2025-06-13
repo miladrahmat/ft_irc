@@ -10,7 +10,8 @@ class Client {
 
 	public:
 		Client(int socket);
-		Client(Client&& old_client);
+		Client (const Client & old_client);
+		Client(Client&& old_client) noexcept;
 		~Client();
 		int			getClientSocket() const;
 		std::string	getName() const;
