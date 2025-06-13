@@ -77,20 +77,21 @@ int	Server::getServerSocket() const {
 }
 
 void	Server::start() {
-	int epollFd = epoll_create(1);
-    if (epollFd < 0) {
+	int epoll_fd = epoll_create(1);
+    if (epoll_fd < 0) {
         std::cerr << "Error with epoll" << std::endl;
         return ;
     }
-    struct epoll_event ev[64];
-    ev->events = EPOLLIN;
-    ev->data.fd = _server_socket;
-    if (epoll_ctl(epollFd, EPOLL_CTL_ADD, ev->data.fd, ev) < 0) {
+    struct epoll_event ev_server;
+    ev_server.events = EPOLLIN;
+    ev_server.data.fd = _server_socket;
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
         std::cerr << "Error with epoll_ctl" << std::endl;
         return ;
     }
+	struct epoll_event ev[64];
     while (true) {
-        int eventsCount = epoll_wait(epollFd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
+        int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
         if (eventsCount < 0) {
             std::cerr << "Error with epoll_wait" << std::endl;
             break ;
@@ -98,15 +99,14 @@ void	Server::start() {
         if (eventsCount > 0) {
             for (int i = 0; i < eventsCount; i++) {
                 if (ev[i].data.fd == _server_socket) {
-                    handleNewClient(epollFd);
+                    handleNewClient(epoll_fd);
                 } else {
-                    //identify correct fd and recv()
+					receiveData(ev[i].data.fd, epoll_fd);
                 }
             }
-            
         }
     }
-    close(epollFd);
+    close(epoll_fd);
 }
 
 void Server::handleNewClient(int epoll_fd) {
@@ -127,6 +127,45 @@ void Server::handleNewClient(int epoll_fd) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
 		_client_vec.push_back(client);
+		std::cout << "new client connected!" << std::endl;
+		std::string welcome = "Welcome to IRC!\r\n";
+		send(client, welcome.c_str(), welcome.size(), 0);
     }
-    std::cout << "new client connected!" << std::endl;
+}
+
+void    Server::receiveData(int fd, int epoll_fd)
+{
+    char    buf[1024];
+    int received_bytes = recv(fd, buf, sizeof(buf) - 1, MSG_DONTWAIT);
+
+    if (received_bytes == 0)
+    {
+        std::cout << "Client " << fd << " disconnected" << std::endl;
+		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
+        close(fd);
+    }
+    else if (received_bytes < 0) {
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return ;
+        std::cerr << "Error: failed to recieve data from client" << std::endl;
+    }
+    else {
+        //std::cout << "Client " << fd << ": " << buf << std::endl;
+		buf[received_bytes] = '\0';
+		sendData(fd, buf);
+    }
+}
+
+void    Server::sendData(int fd, char *buf)
+{
+    std::string message(buf);
+    int sent_bytes = send(fd, message.c_str(), message.length(), MSG_DONTWAIT);
+    if (sent_bytes < 0)
+    {
+        std::cerr << "Error: failed to sen data to user" << std::endl;
+    }
+    else
+    {
+        std::cout << "Data succesfully sent to client" << std::endl;
+    }
 }

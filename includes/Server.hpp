@@ -7,6 +7,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sstream>
 #include "Client.hpp"
 
 class Server {
@@ -24,4 +25,6 @@ class Server {
 		std::string	getPassword() const;
 		int			getServerSocket() const;
 		void		handleNewClient(int epoll_fd);
+		void    	receiveData(int fd, int epoll_fd);
+		void		sendData(int fd, char *buf);
 };
