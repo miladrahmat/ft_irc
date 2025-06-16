@@ -97,12 +97,20 @@ void	Server::start() {
             break ;
         }
         if (eventsCount > 0) {
-            for (int i = 0; i < eventsCount; i++) {
+            for (int i = 0; i < eventsCount; ++i) {
+				int fd = ev[i].data.fd;
                 if (ev[i].data.fd == _server_socket) {
                     handleNewClient(epoll_fd);
                 } else {
-					receiveData(ev[i].data.fd, epoll_fd);
-                }
+					receiveData(_client_vec[fd]);
+				}
+				//if (ev[i].events & EPOLLIN) {
+					//receiveData(_client_vec[fd]);
+					//}
+				//if (ev[i].events & EPOLLOUT) { 
+				//	_client_vec[fd].sendData();
+                //}
+			
             }
         }
     }
@@ -126,46 +134,44 @@ void Server::handleNewClient(int epoll_fd) {
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		_client_vec.push_back(client);
+		Client	new_client(client);
+		_client_vec.push_back(std::move(new_client));
 		std::cout << "new client connected!" << std::endl;
-		std::string welcome = "Welcome to IRC!\r\n";
-		send(client, welcome.c_str(), welcome.size(), 0);
+		receiveData(new_client);
+		//std::string welcome = "Welcome to IRC!\r\n";
+		//send(client, welcome.c_str(), welcome.size(), 0);
     }
 }
 
-void    Server::receiveData(int fd, int epoll_fd)
+void    Server::receiveData(Client& client)
 {
-    char    buf[1024];
-    int received_bytes = recv(fd, buf, sizeof(buf) - 1, MSG_DONTWAIT);
-
-    if (received_bytes == 0)
-    {
-        std::cout << "Client " << fd << " disconnected" << std::endl;
-		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
-        close(fd);
-    }
-    else if (received_bytes < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ;
-        std::cerr << "Error: failed to recieve data from client" << std::endl;
-    }
-    else {
-        //std::cout << "Client " << fd << ": " << buf << std::endl;
-		buf[received_bytes] = '\0';
-		sendData(fd, buf);
-    }
+	if (!client.receiveData()) {
+		std::cout << "HELLO RECEIVING HERE" << std::endl;
+		//client disconnected, handle it
+		return ;
+	}
+	std::string msg;
+	while (client.getNextMessage(msg)) {
+		client.handleMessage(msg);
+		//message ready, handle command
+	} 
 }
 
-void    Server::sendData(int fd, char *buf)
-{
-    std::string message(buf);
-    int sent_bytes = send(fd, message.c_str(), message.length(), MSG_DONTWAIT);
-    if (sent_bytes < 0)
-    {
-        std::cerr << "Error: failed to sen data to user" << std::endl;
-    }
-    else
-    {
-        std::cout << "Data succesfully sent to client" << std::endl;
-    }
-}
+//message format: :ircserv NUMERIC_RESPONSE client_nick :message \r\n
+//":ircserv " + NUMERIC_RESPONSE + client._nickname + ":" + msg;
+
+//void    Server::sendData(int fd, char *buf)
+//{
+    //std::string message(buf);
+	//fd = clients socket
+	
+    //int sent_bytes = send(fd, message.c_str(), message.length(), MSG_DONTWAIT);
+    //if (sent_bytes < 0)
+    //{
+    //    std::cerr << "Error: failed to sen data to user" << std::endl;
+    //}
+    //else
+    //{
+    //    std::cout << "Data succesfully sent to client" << std::endl;
+    //}
+//}
