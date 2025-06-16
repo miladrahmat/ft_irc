@@ -10,10 +10,10 @@
 #include <sstream>
 #include "Client.hpp"
 
-#define RPL_WELCOME 001
-#define RPL_YOURHOST 002
-#define RPL_CREATED 003
-#define RPL_MYINFO 004
+#define RPL_WELCOME "001" //Welcome to IRC
+#define RPL_YOURHOST "002" //Your host is ircserv
+#define RPL_CREATED "003" //This server was created today
+#define RPL_MYINFO "004" //ircserv 1.0
 
 class Server {
 	private:
@@ -30,6 +30,6 @@ class Server {
 		std::string	getPassword() const;
 		int			getServerSocket() const;
 		void		handleNewClient(int epoll_fd);
-		void    	receiveData(int fd, int epoll_fd);
-		void		sendData(int fd, char *buf);
+		void    	receiveData(Client& client); 
+		//void		sendData(int fd, char *buf); 
 };
