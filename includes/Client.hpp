@@ -9,8 +9,8 @@ class Client {
 		int			_client_socket;
 		std::string	_real_name;
 		std::string	_nickname;
-		std::string	_username;
 		bool		_authenticated;
+		std::string	_username;
 		std::string	_host_name;
 		std::string	_buffer;
 
