@@ -31,7 +31,4 @@ class Server {
 		std::string	getPassword() const;
 		int			getServerSocket() const;
 		void		handleNewClient(int epoll_fd);
-		void    	receiveData(Client& client, int epoll_fd);
-		void		parseMessage(std::string msg, Client& client);
-		void		handleMessage(std::string msg, int epoll_fd, Client& client); 
 };
