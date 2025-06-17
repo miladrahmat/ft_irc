@@ -76,6 +76,18 @@ int	Server::getServerSocket() const {
 	return (_server_socket);
 }
 
+int	findIndex(std::vector<Client>& clients, int fd)
+{
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i].getClientSocket() == fd)
+		{
+			return (i);
+		}
+	}
+	return (-1);
+}
+
 void	Server::start() {
 	int epoll_fd = epoll_create(1);
     if (epoll_fd < 0) {
@@ -97,12 +109,24 @@ void	Server::start() {
             break ;
         }
         if (eventsCount > 0) {
-            for (int i = 0; i < eventsCount; i++) {
+            for (int i = 0; i < eventsCount; ++i) {
+				int index = findIndex(_client_vec, ev[i].data.fd);
                 if (ev[i].data.fd == _server_socket) {
                     handleNewClient(epoll_fd);
-                } else {
-					receiveData(ev[i].data.fd, epoll_fd);
                 }
+				if (ev[i].events & EPOLLIN) {
+					receiveData(_client_vec[index], epoll_fd);
+				}
+				if (ev[i].events & EPOLLOUT) { 
+					_client_vec[index].sendData();
+					if (_client_vec[index].getBuffer().empty()) {
+						struct epoll_event ev;
+						ev.events = EPOLLIN;
+						ev.data.fd = _client_vec[index].getClientSocket();
+						epoll_ctl(epoll_fd, EPOLL_CTL_MOD, _client_vec[index].getClientSocket(), &ev);
+					}
+                }
+			
             }
         }
     }
@@ -129,44 +153,126 @@ void Server::handleNewClient(int epoll_fd) {
 		Client	new_client(client);
 		_client_vec.push_back(std::move(new_client));
 		std::cout << "new client connected!" << std::endl;
-		std::string welcome = "Welcome to IRC!\r\n";
-		send(client, welcome.c_str(), welcome.size(), 0);
     }
 }
 
-void    Server::receiveData(int fd, int epoll_fd)
+void    Server::receiveData(Client& client, int epoll_fd)
 {
-    char    buf[1024];
-    int received_bytes = recv(fd, buf, sizeof(buf) - 1, MSG_DONTWAIT);
-
-    if (received_bytes == 0)
-    {
-        std::cout << "Client " << fd << " disconnected" << std::endl;
-		epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
-        close(fd);
-    }
-    else if (received_bytes < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ;
-        std::cerr << "Error: failed to recieve data from client" << std::endl;
-    }
-    else {
-        //std::cout << "Client " << fd << ": " << buf << std::endl;
-		buf[received_bytes] = '\0';
-		sendData(fd, buf);
-    }
+	if (!client.receiveData()) {
+		//client disconnected, handle it
+		return ;
+	}
+	std::string msg;
+	while (client.getNextMessage(msg)) {
+		handleMessage(msg, epoll_fd, client);
+	} 
 }
 
-void    Server::sendData(int fd, char *buf)
+bool	validateNick(std::string nickname)
 {
-    std::string message(buf);
-    int sent_bytes = send(fd, message.c_str(), message.length(), MSG_DONTWAIT);
-    if (sent_bytes < 0)
-    {
-        std::cerr << "Error: failed to sen data to user" << std::endl;
-    }
-    else
-    {
-        std::cout << "Data succesfully sent to client" << std::endl;
-    }
+	std::string invalid_start = "$:#&~@+%";
+	if (invalid_start.find(nickname[0]) != std::string::npos) {
+		std::cout << "here" << std::endl;
+		return (false);
+	}
+	std::string	invalid = " ,*?!@.";
+	for (size_t i = 0; i < nickname.size(); i++) {
+		for (int j = 0; j < 7; j++) {
+			if (nickname[i] == invalid[j]) {
+				std::cout << "here2" << std::endl;
+				return (false);
+			}
+		}
+	}
+	return (true);
+}
+
+void	Server::parseMessage(std::string msg, Client& client)
+{
+	std::cout << msg << std::endl;
+	if (msg.substr(0, 4) == "PASS") {
+		//check password
+	}
+	else if (msg.substr(0, 4) == "NICK"){
+		//get nickname
+		if (!validateNick(msg.substr(5, msg.size()))) { //this is not working
+			//error invalid nickname, disconnect client
+			std::cout  << "Invalid nickname" << std::endl;
+			//should quit and disconnect here
+		}
+		std::string	nickname = msg.substr(5, msg.size() - 1);
+		client.setNickname(nickname);
+		//std::cout << "nick: " << _nickname << std::endl;
+		//check if valid
+		//invalid: ' ', ',', '*', '?', '!', '@',  '.'
+		//invalid starting: '$', ':', '#', '&', '~', '+q' '+a' '@' '+o' '%' '+h' '+' '+v'
+
+	}
+	else if (msg.substr(0,4) == "USER") {
+		//get username
+		int index = 0;
+		for (size_t i = 5; i < msg.size(); i++)
+		{
+			if (msg[i] == ' ')
+			{
+				index = i;
+				break ;
+			}
+		}
+		std::string	username = msg.substr(5, index - 5);
+		client.setUsername(username);
+		//std::cout << "username: " <<_username << std::endl;
+		for (size_t i = 5; i < msg.size(); i++)
+		{
+			if (msg[i] == ':')
+			{
+				index = i + 1;
+				break ;
+			}
+		}
+		std::string	real_name = msg.substr(index, msg.size() - 1);
+		client.setRealName(real_name);
+	}
+}
+
+void	Server::handleMessage(std::string msg, int epoll_fd, Client& client)
+{
+	if (msg.substr(0,6) == "CAP LS") {
+		//-> send CAP * LS :
+		std::string text = "CAP * LS :\r\n";
+		client.appendBuffer(text);
+		struct epoll_event ev;
+		ev.events = EPOLLIN | EPOLLOUT;
+		ev.data.fd = client.getClientSocket();
+		epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
+	}
+	if (msg.substr(0, 7) == "CAP REQ") {
+		//-> send CAP * ACK:multi-prefix
+		std::string text = "CAP * ACK:multi-prefix :\r\n";
+		client.appendBuffer(text);
+		struct epoll_event ev;
+		ev.events = EPOLLIN | EPOLLOUT;
+		ev.data.fd = client.getClientSocket();
+		epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
+	}
+	if (msg.substr(0, 7) == "CAP END") {
+		std::string text1 = ":ircserv 001 " + client.getNickname() + " :Welcome to IRC\r\n"; //code should be changed to RPL_WELCOME
+		client.appendBuffer(text1);
+		std::string text2 = ":ircserv 002 " + client.getNickname() + " :Your host is ircserv\r\n"; //code should be changed to RPL_YOURHOST
+		client.appendBuffer(text2);
+		std::string text3 = ":ircserv 003 " + client.getNickname() + " :This server was created today\r\n"; //code should be changed to RPL_CREATED
+		client.appendBuffer(text3);
+		std::string	text4 = ":ircserv 004 " + client.getNickname() + " ircserv 1.0 o o\r\n"; //code should be changed to RPL_MYINFO
+		client.appendBuffer(text4);
+		std::string text5 = ":ircserv 005 " + client.getNickname() + " CHANTYPES=# NICKLEN=9 PREFIX=(ov)@+ CHANMODES=itkol :are supported by this server\r\n";
+		client.appendBuffer(text5);
+		struct epoll_event ev;
+		ev.events = EPOLLIN | EPOLLOUT;
+		ev.data.fd = client.getClientSocket();
+		epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
+	}
+	else {
+		//parse and send message or do actions based on it
+		parseMessage(msg, client);
+	}
 }
