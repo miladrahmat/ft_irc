@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sstream>
 #include "Client.hpp"
+#include "Channel.hpp"
 
 #define RPL_WELCOME "001" //Welcome to IRC
 #define RPL_YOURHOST "002" //Your host is ircserv
@@ -17,10 +18,12 @@
 
 class Server {
 	private:
-		std::string			_port;
-		std::string			_password;
-		int					_server_socket;
-		std::vector<Client>	_client_vec;
+		std::string				_port;
+		std::string				_password;
+		int						_server_socket;
+		std::vector<Client>		_client_vec;
+		std::vector<Channel>	_channels;
+		bool isExistingChannel(const std::stirng channel_name);
 
 	public:
 		Server(char** argv);
@@ -31,5 +34,7 @@ class Server {
 		int			getServerSocket() const;
 		void		handleNewClient(int epoll_fd);
 		void    	receiveData(Client& client); 
-		//void		sendData(int fd, char *buf); 
+		//void		sendData(int fd, char *buf);
+		void		joinCommand(const Client& client, std::vector<std::string> channel_names,
+						std::vector<std::string> passwords);
 };

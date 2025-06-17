@@ -143,7 +143,7 @@ void Server::handleNewClient(int epoll_fd) {
     }
 }
 
-void    Server::receiveData(Client& client)
+void Server::receiveData(Client& client)
 {
 	if (!client.receiveData()) {
 		std::cout << "HELLO RECEIVING HERE" << std::endl;
@@ -155,6 +155,28 @@ void    Server::receiveData(Client& client)
 		client.handleMessage(msg);
 		//message ready, handle command
 	} 
+}
+
+void Server::joinCommand(const Client& client, std::vector<std::string> channel_names,
+	std::vector<std::string> passwords) {
+	for (std::string channel_name : channel_names) {
+		if (isExistingChannel(channel_name)) {
+			//channel classes join function
+		}
+		else {
+			Channel channel();
+			_channels.push_back(channel);
+		}
+	}
+}
+
+bool Server::isExistingChannel(const std::stirng channel_name) {
+	for (Channel channel : _channels) {
+		if (channel._name = channel_name) {
+			return (true);
+		}
+	}
+	return (false);
 }
 
 //message format: :ircserv NUMERIC_RESPONSE client_nick :message \r\n
