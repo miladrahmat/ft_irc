@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sstream>
+#include <bits/stdc++.h>
 #include "Client.hpp"
 
 #define RPL_WELCOME "001" //Welcome to IRC
@@ -30,6 +31,7 @@ class Server {
 		std::string	getPassword() const;
 		int			getServerSocket() const;
 		void		handleNewClient(int epoll_fd);
-		void    	receiveData(Client& client); 
-		//void		sendData(int fd, char *buf); 
+		void    	receiveData(Client& client, int epoll_fd);
+		void		parseMessage(std::string msg, Client& client);
+		void		handleMessage(std::string msg, int epoll_fd, Client& client); 
 };

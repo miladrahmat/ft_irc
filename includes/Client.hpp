@@ -2,12 +2,14 @@
 #include <string>
 #include <unistd.h>
 #include <sys/socket.h>
+#include <sys/epoll.h>
 
 class Client {
 	private:
 		int			_client_socket;
 		std::string	_name;
 		std::string	_nickname;
+		std::string _username;
 		std::string	_buffer;
 		std::string _send_buffer;
 
@@ -18,10 +20,14 @@ class Client {
 		int			getClientSocket() const;
 		std::string	getName() const;
 		std::string	getNickname() const;
+		void 		setNickname(std::string nickname);
+		void		setUsername(std::string username);
+		void		setName(std::string name);
 		void		setClientSocket(int socket);
 		void		appendBuffer(std::string& msg);
-		bool		receiveData(); //(from client)
-		bool		sendData(); //(to server)
+		void		appendSendBuffer(std::string& msg);
+		bool		receiveData();
+		bool		sendData(); 
 		bool		getNextMessage(std::string& msg);
-		void		handleMessage(std::string msg);
+		std::string	getSendBuffer();
 };

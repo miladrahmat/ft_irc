@@ -2,7 +2,6 @@
 #include <iostream>
 
 Client::Client(int socket) : _client_socket(socket) {
-	_nickname = "hpirkola";
 }
 
 Client::Client(Client&& old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname) {
@@ -25,6 +24,18 @@ std::string	Client::getNickname() const {
 	return (_nickname);
 }
 
+void	Client::setNickname(std::string nickname) {
+	_nickname = nickname;
+}
+
+void	Client::setUsername(std::string username) {
+	_username = username;
+}
+
+void	Client::setName(std::string name) {
+	_name = name;
+}
+
 void	Client::setClientSocket(int socket) {
 	_client_socket = socket;
 }
@@ -33,11 +44,15 @@ void	Client::appendBuffer(std::string& msg) {
 	_buffer.append(msg);
 }
 
+void	Client::appendSendBuffer(std::string& msg) {
+	_send_buffer.append(msg);
+}
+
 bool	Client::receiveData() {
 	char	buf[1024];
 	int		received_bytes = recv(this->_client_socket, buf, sizeof(buf), MSG_DONTWAIT);
 	if (received_bytes > 0) {
-		std::string msg(buf);
+		std::string msg(buf, received_bytes);
 		appendBuffer(msg);
 		return (true);
 	} else if (received_bytes == 0 || (received_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN)) {
@@ -65,29 +80,6 @@ bool	Client::getNextMessage(std::string &msg)
 	return (false);
 }
 
-void	Client::handleMessage(std::string msg)
-{
-	if (msg.substr(0,6) == "CAP LS") {
-		//-> send CAP * LS :
-		_send_buffer.append("CAP * LS :\r\n");
-		sendData();
-	}
-	if (msg.substr(0, 7) == "CAP REQ") {
-		//-> send CAP * ACK:multi-prefix
-		_send_buffer.append("CAP * ACK:multi-prefix :\r\n");
-	}
-	if (msg.substr(0, 7) == "CAP END") {
-		std::cout << "Hello! Sending welcomes" << std::endl;
-		_send_buffer.append(":ircserv 001" + _nickname + " :Welcome to IRC\r\n");
-		sendData();
-		_send_buffer.append(":ircserv 002" + _nickname + " :Your host is ircserv\r\n");
-		sendData();
-		_send_buffer.append(":ircserv 003" + _nickname + " :This server was created today\r\n");
-		sendData();
-		_send_buffer.append(":ircserv 004" + _nickname + " :ircserv 1.0\r\n");
-		sendData();
-	}
-	else {
-		//parse and send message or do actions based on it
-	}
+std::string	Client::getSendBuffer() {
+	return (_send_buffer);
 }
