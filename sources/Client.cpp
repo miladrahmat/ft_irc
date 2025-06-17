@@ -34,6 +34,10 @@ std::string	Client::getNickname() const {
 	return (_nickname);
 }
 
+std::string	Client::getUsername() const {
+	return (_username);
+}
+
 std::string	Client::getHostName() const {
 	return (_host_name);
 }
@@ -70,6 +74,10 @@ void	Client::appendBuffer(std::string& msg) {
 	_buffer.append(msg);
 }
 
+void	Client::appendSendBuffer(std::string& msg) {
+	_send_buffer.append(msg);
+}
+
 bool	Client::receiveData() {
 	char	buf[1024];
 	int		received_bytes = recv(this->_client_socket, buf, sizeof(buf), MSG_DONTWAIT);
@@ -84,10 +92,10 @@ bool	Client::receiveData() {
 }
 
 bool	Client::sendData() {
-	if (this->_buffer.empty()) { return (true); }
-	int	sent_bytes = send(this->_client_socket, this->_buffer.c_str(), this->_buffer.size(), MSG_DONTWAIT);
+	if (this->_send_buffer.empty()) { return (true); }
+	int	sent_bytes = send(this->_client_socket, this->_send_buffer.c_str(), this->_send_buffer.size(), MSG_DONTWAIT);
 	if (sent_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN) { return (false); }
-	this->_buffer.erase(0, sent_bytes);
+	this->_send_buffer.erase(0, sent_bytes);
 	return (true);
 }
 
@@ -100,4 +108,8 @@ bool	Client::getNextMessage(std::string &msg)
 		return (true);
 	}
 	return (false);
+}
+
+std::string	Client::getSendBuffer() const {
+	return (_send_buffer);
 }

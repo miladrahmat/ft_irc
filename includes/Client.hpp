@@ -10,9 +10,10 @@ class Client {
 		std::string	_real_name;
 		std::string	_nickname;
 		bool		_authenticated;
+		std::string _username;
 		std::string	_host_name;
 		std::string	_buffer;
-		std::string _username;
+		std::string	_send_buffer;
 
 	public:
 		Client(int socket);
@@ -26,6 +27,7 @@ class Client {
 		std::string	getUsername() const;
 		std::string	getHostName() const;
 		std::string	getBuffer() const;
+		std::string	getSendBuffer() const;
 		void		setClientSocket(int socket);
 		void		setRealName(std::string& real_name);
 		void		setUsername(std::string& user_name);
@@ -33,6 +35,7 @@ class Client {
 		void		setHostName(std::string& host_name);
 		void		authenticate();
 		void		appendBuffer(std::string& msg);
+		void		appendSendBuffer(std::string& msg);
 
 		bool		receiveData();
 		bool		sendData(); 
