@@ -213,7 +213,6 @@ bool	Server::validateNick(std::string nickname)
 
 void	Server::parseInput(std::string msg, Client& client)
 {
-	//std::cout << msg << std::endl;
 	if (msg.substr(0, 4) == "PASS") {
 		//check password
 	}
@@ -225,14 +224,12 @@ void	Server::parseInput(std::string msg, Client& client)
 			//should quit and disconnect here
 		}
 		client.setNickname(msg.substr(5, msg.size() - 1));
-		//std::cout << "nick: " << _nickname << std::endl;
 		//check if valid
 		//invalid: ' ', ',', '*', '?', '!', '@',  '.'
 		//invalid starting: '$', ':', '#', '&', '~', '+q' '+a' '@' '+o' '%' '+h' '+' '+v'
 
 	}
 	else if (msg.substr(0,4) == "USER") {
-		//get username
 		int index = 0;
 		for (size_t i = 5; i < msg.size(); i++)
 		{
@@ -243,7 +240,6 @@ void	Server::parseInput(std::string msg, Client& client)
 			}
 		}
 		client.setUsername(msg.substr(5, index - 5));
-		//std::cout << "username: " <<_username << std::endl;
 		for (size_t i = 5; i < msg.size(); i++)
 		{
 			if (msg[i] == ':')
