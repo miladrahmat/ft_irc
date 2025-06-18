@@ -10,11 +10,8 @@
 #include <sstream>
 #include <bits/stdc++.h>
 #include "Client.hpp"
-
-#define RPL_WELCOME "001" //Welcome to IRC
-#define RPL_YOURHOST "002" //Your host is ircserv
-#define RPL_CREATED "003" //This server was created today
-#define RPL_MYINFO "004" //ircserv 1.0
+#include "Message.hpp"
+#include "reply.hpp"
 
 class Server {
 	private:
@@ -22,16 +19,20 @@ class Server {
 		std::string			_password;
 		int					_server_socket;
 		std::vector<Client>	_client_vec;
+		int					_epoll_fd;
 
 	public:
 		Server(char** argv);
 		~Server();
-		void	start();
+		void		start();
 		std::string	getPort() const;
 		std::string	getPassword() const;
 		int			getServerSocket() const;
-		void		handleNewClient(int epoll_fd);
-		void    	receiveData(Client& client, int epoll_fd);
-		void		parseMessage(std::string msg, Client& client);
-		void		handleMessage(std::string msg, int epoll_fd, Client& client); 
+		int			getEpollFd() const;
+		void		handleNewClient();
+		void		removeClient(Client& client);
+		void    	receiveData(Client& client);
+		void		changePut(Client& client, uint32_t put, int epoll_fd);
+		void		parseInput(std::string msg, Client& client);
+		bool		validateNick(std::string nickname);
 };

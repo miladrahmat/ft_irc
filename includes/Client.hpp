@@ -28,6 +28,7 @@ class Client {
 		void		appendSendBuffer(std::string& msg);
 		bool		receiveData();
 		bool		sendData(); 
-		bool		getNextMessage(std::string& msg);
 		std::string	getSendBuffer();
+		std::string	getBuffer();
+		void		emptyBuffer(int begin, int end);
 };

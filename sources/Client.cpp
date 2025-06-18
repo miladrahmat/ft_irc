@@ -69,17 +69,14 @@ bool	Client::sendData() {
 	return (true);
 }
 
-bool	Client::getNextMessage(std::string &msg)
-{
-	size_t pos = this->_buffer.find("\r\n");
-	if (pos != std::string::npos) {
-		msg = this->_buffer.substr(0, pos);
-		this->_buffer.erase(0, pos + 2);
-		return (true);
-	}
-	return (false);
-}
-
 std::string	Client::getSendBuffer() {
 	return (_send_buffer);
+}
+
+std::string	Client::getBuffer() {
+	return (_buffer);
+}
+
+void	Client::emptyBuffer(int begin, int end) {
+	_buffer.erase(begin, end);
 }
