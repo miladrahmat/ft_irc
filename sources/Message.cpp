@@ -34,7 +34,6 @@ bool	Message::handleCap(Client& client) {
 		return (true);
 	}
 	else {
-		//parse and send message or do actions based on it
 		return (false);
 	}
 }
