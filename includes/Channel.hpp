@@ -17,6 +17,7 @@ class Channel {
         bool _invite_only;
         bool _topic_command_access;
         int _user_limit;
+
     public:
         Channel(std::string name, Client client, std::string password = "");
         ~Channel();
@@ -27,7 +28,7 @@ class Channel {
         std::string showTopic() const;
         void setTopic(const Client & client, std::string new_topic);
         void kickClient(const Client & client, const Client & client_to_kick);
-        void inviteClient(const Client & client, const Client & new_client);
+        bool inviteClient(const Client & client, Client & new_client);
         void setInviteMode(const Client & client, bool set);
         void setTopicMode(const Client & client, bool set);
         void setChannelPassword(const Client & client, std::string password);

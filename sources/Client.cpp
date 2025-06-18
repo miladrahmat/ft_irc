@@ -95,3 +95,11 @@ void	Client::handleMessage(std::string msg)
 		//parse and send message or do actions based on it
 	}
 }
+
+std::string Client::getChannelInvitedTo() const {
+	return (_invited_to);
+}
+
+void Client::setInvitedTo(std::string channel_name) {
+	_invited_to = channel_name;
+}

@@ -57,14 +57,22 @@ void Channel::kickClient(const Client & client, const Client & client_to_kick) {
     //TODO how to handle if client is not operator 
 }
 
-void Channel::inviteClient(const Client & client, const Client & new_client) {
-    if (isOperator(client)) {
-        if (channelFull() == false) {
-            _clients.push_back(new_client);
-        }
-        //TODO channel full error message
+bool Channel::inviteClient(const Client & client, Client & new_client) {
+    if (!isClient(client)) {
+        //ERR_NOTONCHANNEL (442);
+        return (false);
     }
-    //TODO how to handle if client is not operator
+    if (isClient(new_client)) {
+        //ERR_USERONCHANNEL (443)
+        return  (false);
+    }
+    if (_invite_only && !isOperator(client)) {
+        //ERR_CHANOPRIVSNEEDED (482)
+        return (false);
+    }
+    new_client.setInvitedTo(this->_name);
+    //RPL_INVITING (341)
+    return (true);
 }
 
 //set = true -> _invite_only = true, else set = false -> _invite_only = false
@@ -116,8 +124,12 @@ void Channel::setUserLimit(const Client & client, unsigned int limit) {
 }
 
 bool Channel::join(const Client & client, std::string password) {
+    if (_invite_only && this->_name != client.getChannelInvitedTo()) {
+        //ERR_INVITEONLYCHAN (473)
+        return (false);
+    }
     if (channelFull()) {
-        //ERR_CHANNELISFULL (471)
+        //ERR_CHANNELISFULL (471)    //TODO but not when invited????
         return (false);
     }
     if (isClient(client)) {
@@ -132,5 +144,3 @@ bool Channel::join(const Client & client, std::string password) {
     //successfull join (see JOIN)
     return (true);
 }
-
-//invite only chan

@@ -10,6 +10,7 @@ class Client {
 		std::string	_nickname;
 		std::string	_buffer;
 		std::string _send_buffer;
+		std::string	_invited_to;
 
 	public:
 		Client(int socket);
@@ -25,4 +26,6 @@ class Client {
 		bool		sendData(); //(to server)
 		bool		getNextMessage(std::string& msg);
 		void		handleMessage(std::string msg);
+		void		setInvitedTo(std::string channel_name);
+		std::string	getChannelInvitedTo() const;
 };
