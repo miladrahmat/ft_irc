@@ -8,6 +8,10 @@ Channel::Channel(std::string name, Client client, std::string password) :
 
 Channel::~Channel() {};
 
+const std::string Channel::getName() const {
+    return (_name);
+}
+
 bool Channel::isClient(const Client & client) const {
     if (std::find(_clients.begin(), _clients.end(), client) == _clients.end()) {
         return (false);
@@ -111,12 +115,22 @@ void Channel::setUserLimit(const Client & client, unsigned int limit) {
     }
 }
 
-void Channel::join(const Client & client, std::string password) {
-    if (channelFull() == false) {
-        if (isClient(client) == false) {
-            if (password == _password) {
-                _clients.push_back(client);
-            }
-        }
+bool Channel::join(const Client & client, std::string password) {
+    if (channelFull()) {
+        //ERR_CHANNELISFULL (471)
+        return (false);
     }
+    if (isClient(client)) {
+        //already on channel, how to handle?
+        return (false);
+    }
+    if (_password != "" && password != _password) {
+        //ERR_BADCHANNELKEY (475)
+        return (false);
+    }
+    _clients.push_back(client);
+    //successfull join (see JOIN)
+    return (true);
 }
+
+//invite only chan

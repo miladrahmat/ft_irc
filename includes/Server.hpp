@@ -23,7 +23,8 @@ class Server {
 		int						_server_socket;
 		std::vector<Client>		_client_vec;
 		std::vector<Channel>	_channels;
-		bool isExistingChannel(const std::stirng channel_name);
+		std::vector<Channel>::iterator Server::getChannel(const std::string channel_name);
+		
 
 	public:
 		Server(char** argv);

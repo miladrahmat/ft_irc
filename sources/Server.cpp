@@ -143,8 +143,7 @@ void Server::handleNewClient(int epoll_fd) {
     }
 }
 
-void Server::receiveData(Client& client)
-{
+void Server::receiveData(Client& client) {
 	if (!client.receiveData()) {
 		std::cout << "HELLO RECEIVING HERE" << std::endl;
 		//client disconnected, handle it
@@ -159,24 +158,34 @@ void Server::receiveData(Client& client)
 
 void Server::joinCommand(const Client& client, std::vector<std::string> channel_names,
 	std::vector<std::string> passwords) {
-	for (std::string channel_name : channel_names) {
-		if (isExistingChannel(channel_name)) {
-			//channel classes join function
-		}
-		else {
-			Channel channel();
-			_channels.push_back(channel);
+	
+	std::vector<std::string>::iterator name_it = channel_names.begin();
+	std::vector<std::string>::iterator key_it = passwords.begin();
+
+	for ( ; name_it != channel_names.end(); name_it++) {
+		std::vector<Channel>::iterator channel_it = getChannel(*name_it);
+		std::string key = (key_it != passwords.end()) ? *key_it : "";
+        auto channel_it = getChannel(*name_it);
+        if (channel_it != _channels.end()) {
+            channel_it->join(client, key);
+        } else {
+            Channel channel(*name_it, client, key);
+            _channels.push_back(channel);
+        }
+		if (key_it != passwords.end()) {
+			key_it++;
 		}
 	}
 }
 
-bool Server::isExistingChannel(const std::stirng channel_name) {
-	for (Channel channel : _channels) {
-		if (channel._name = channel_name) {
-			return (true);
+std::vector<Channel>::iterator Server::getChannel(const std::string channel_name) {
+	std::vector<Channel>::iterator it = _channels.begin();
+	for (std::vector<Channel>::iterator it; it != _channels.end(); it++) {
+		if (it->getName() == channel_name) {
+			return (it);
 		}
 	}
-	return (false);
+	return (it);
 }
 
 //message format: :ircserv NUMERIC_RESPONSE client_nick :message \r\n
