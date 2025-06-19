@@ -7,7 +7,11 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sstream>
+#include <bits/stdc++.h>
 #include "Client.hpp"
+#include "Message.hpp"
+#include "reply.hpp"
 
 class Server {
 	private:
@@ -15,13 +19,20 @@ class Server {
 		std::string			_password;
 		int					_server_socket;
 		std::vector<Client>	_client_vec;
+		int					_epoll_fd;
 
 	public:
 		Server(char** argv);
 		~Server();
-		void	start();
+		void		start();
 		std::string	getPort() const;
 		std::string	getPassword() const;
 		int			getServerSocket() const;
-		void		handleNewClient(int epoll_fd);
+		int			getEpollFd() const;
+		void		handleNewClient();
+		void		removeClient(Client& client);
+		void    	receiveData(Client& client);
+		void		changePut(Client& client, uint32_t put, int epoll_fd);
+		void		parseInput(std::string msg, Client& client);
+		bool		validateNick(std::string nickname);
 };

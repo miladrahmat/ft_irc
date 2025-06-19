@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "Server.hpp"
 
+
 int main(int argc, char **argv) {
     if (argc != 3) {
         std::cerr << "Expected: ./ircserv <port> <password>" << std::endl;

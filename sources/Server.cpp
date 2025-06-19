@@ -76,40 +76,65 @@ int	Server::getServerSocket() const {
 	return (_server_socket);
 }
 
+int	Server::getEpollFd() const {
+	return (_epoll_fd);
+}
+
+int	findIndex(std::vector<Client>& clients, int fd)
+{
+	for (size_t i = 0; i < clients.size(); i++)
+	{
+		if (clients[i].getClientSocket() == fd)
+		{
+			return (i);
+		}
+	}
+	return (-1);
+}
+
 void	Server::start() {
-	int epollFd = epoll_create(1);
-    if (epollFd < 0) {
+	_epoll_fd = epoll_create(1);
+    if (_epoll_fd < 0) {
         std::cerr << "Error with epoll" << std::endl;
         return ;
     }
-    struct epoll_event ev[64];
-    ev->events = EPOLLIN;
-    ev->data.fd = _server_socket;
-    if (epoll_ctl(epollFd, EPOLL_CTL_ADD, ev->data.fd, ev) < 0) {
+    struct epoll_event ev_server;
+    ev_server.events = EPOLLIN;
+    ev_server.data.fd = _server_socket;
+    if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
         std::cerr << "Error with epoll_ctl" << std::endl;
         return ;
     }
+	struct epoll_event ev[64];
     while (true) {
-        int eventsCount = epoll_wait(epollFd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
+        int eventsCount = epoll_wait(_epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
         if (eventsCount < 0) {
             std::cerr << "Error with epoll_wait" << std::endl;
             break ;
         }
         if (eventsCount > 0) {
-            for (int i = 0; i < eventsCount; i++) {
+            for (int i = 0; i < eventsCount; ++i) {
+				int index = findIndex(_client_vec, ev[i].data.fd);
                 if (ev[i].data.fd == _server_socket) {
-                    handleNewClient(epollFd);
-                } else {
-                    //identify correct fd and recv()
+                    handleNewClient(_epoll_fd);
                 }
+				if (ev[i].events & EPOLLIN) {
+					receiveData(_client_vec[index]);
+				}
+				if (ev[i].events & EPOLLOUT) { 
+					_client_vec[index].sendData();
+					if (_client_vec[index].getSendBuffer().empty()) {
+						changePut(_client_vec[index], EPOLLIN, _epoll_fd);
+					}
+                }
+			
             }
-            
         }
     }
-    close(epollFd);
+    close(_epoll_fd);
 }
 
-void Server::handleNewClient(int epoll_fd) {
+void Server::handleNewClient() {
     struct sockaddr_in client_addr;
     socklen_t   client_len = sizeof(client_addr);
 	int client = accept(_server_socket, (struct sockaddr *)&client_addr, &client_len);
@@ -123,10 +148,113 @@ void Server::handleNewClient(int epoll_fd) {
         struct epoll_event ev2;
         ev2.events = EPOLLIN;
         ev2.data.fd = client;
-        if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
+        if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		_client_vec.push_back(client);
+		Client	new_client(client);
+		_client_vec.push_back(std::move(new_client));
     }
-    std::cout << "new client connected!" << std::endl;
+}
+
+void	Server::removeClient(Client& client) {
+	struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = client.getClientSocket();
+	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev);
+	for (int i = 0; i < _client_vec.size(); i++) {
+		if (_client_vec[i].getClientSocket() == client.getClientSocket()) {
+			//remove client from vector;
+		}
+	}
+	close(client.getClientSocket());
+	//remove from epoll (epoll_ctl)
+	//close client fd (client socket)
+	//remove from client vector
+	//remove from channels, if only one in channel, remove channel? if they were operator for channel???
+	//disconnection message for others in the channel??
+
+}
+
+void    Server::receiveData(Client& client)
+{
+	if (!client.receiveData()) {
+		//client disconnected, handle it
+		return ;
+	}
+	Message	msg;
+	while (msg.getNextMessage(client)) {
+		if (msg.handleCap(client))
+		{
+			msg.emptyMsg();
+			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
+		}
+		else
+			parseInput(msg.getMsg(), client);
+
+	} 
+}
+
+bool	Server::validateNick(std::string nickname)
+{
+	std::string invalid_start = "$:#&~@+%";
+	if (invalid_start.find(nickname[0]) != std::string::npos) {
+		return (false);
+	}
+	std::string	invalid = " ,*?!@.";
+	for (size_t i = 0; i < nickname.size(); i++) {
+		for (int j = 0; j < 7; j++) {
+			if (nickname[i] == invalid[j]) {
+				return (false);
+			}
+		}
+	}
+	return (true);
+}
+
+void	Server::parseInput(std::string msg, Client& client)
+{
+	if (msg.substr(0, 4) == "PASS") {
+		//check password
+	}
+	else if (msg.substr(0, 4) == "NICK"){
+		//get nickname
+		if (!validateNick(msg.substr(5, msg.size()))) { //this is not working
+			//error invalid nickname, disconnect client
+			std::cout  << "Invalid nickname" << std::endl;
+			//should quit and disconnect here
+		}
+		client.setNickname(msg.substr(5, msg.size() - 1));
+		//check if valid
+		//invalid: ' ', ',', '*', '?', '!', '@',  '.'
+		//invalid starting: '$', ':', '#', '&', '~', '+q' '+a' '@' '+o' '%' '+h' '+' '+v'
+
+	}
+	else if (msg.substr(0,4) == "USER") {
+		int index = 0;
+		for (size_t i = 5; i < msg.size(); i++)
+		{
+			if (msg[i] == ' ')
+			{
+				index = i;
+				break ;
+			}
+		}
+		client.setUsername(msg.substr(5, index - 5));
+		for (size_t i = 5; i < msg.size(); i++)
+		{
+			if (msg[i] == ':')
+			{
+				index = i + 1;
+				break ;
+			}
+		}
+		client.setName(msg.substr(index, msg.size() - 1));
+	}
+}
+
+void	Server::changePut(Client& client, uint32_t put, int epoll_fd) {
+	struct epoll_event ev;
+	ev.events = put;
+	ev.data.fd = client.getClientSocket();
+	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
 }
