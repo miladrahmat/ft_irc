@@ -12,6 +12,7 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "reply.hpp"
+#include "Parser.hpp"
 
 class Server {
 	private:

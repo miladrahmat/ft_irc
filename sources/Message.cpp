@@ -4,7 +4,7 @@ Message::Message(){}
 
 Message::~Message(){}
 
-std::string	Message::getMsg() {
+std::string&	Message::getMsg() {
 	return (_msg);
 }
 
@@ -30,6 +30,10 @@ bool	Message::handleCap(Client& client) {
 			welcomeMessage(client, i);
 			client.appendSendBuffer(_send_msg);
 			_send_msg.erase(0, _send_msg.size());
+			client.authenticate();
+			if (!client.isAuthenticated())
+				return (false);
+			client.printClient();
 		}
 		return (true);
 	}

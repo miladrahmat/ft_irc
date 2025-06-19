@@ -10,6 +10,8 @@ class Client {
 		std::string	_name;
 		std::string	_nickname;
 		std::string _username;
+		std::string	_hostname;
+		bool		_authenticated;
 		std::string	_buffer;
 		std::string _send_buffer;
 
@@ -21,10 +23,13 @@ class Client {
 		int			getClientSocket() const;
 		std::string	getName() const;
 		std::string	getNickname() const;
+		bool		isAuthenticated() const;
 		void 		setNickname(std::string nickname);
 		void		setUsername(std::string username);
+		void		setHostname(std::string hostname);
 		void		setName(std::string name);
 		void		setClientSocket(int socket);
+		void		authenticate();
 		void		appendBuffer(std::string& msg);
 		void		appendSendBuffer(std::string& msg);
 		bool		receiveData();
@@ -32,4 +37,5 @@ class Client {
 		std::string	getSendBuffer();
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
+		void		printClient() const;
 };

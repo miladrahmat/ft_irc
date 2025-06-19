@@ -182,14 +182,24 @@ void    Server::receiveData(Client& client)
 		return ;
 	}
 	Message	msg;
+	Parser	parser;
 	while (msg.getNextMessage(client)) {
 		if (msg.handleCap(client))
 		{
 			msg.emptyMsg();
 			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
 		}
-		else
-			parseInput(msg.getMsg(), client);
+		else {
+			std::cout << msg.getMsg() << std::endl;
+			if (msg.getMsg().substr(0, 4) == "PASS") {
+				std::string	password = msg.getMsg().substr(5, msg.getMsg().length());
+				if (password == _password)
+					continue ;
+				else
+					removeClient(client);
+			}
+			parser.parseInput(client, msg.getMsg());
+		}
 
 	} 
 }

@@ -12,7 +12,7 @@ class Message {
     public:
         Message();
         ~Message();
-        std::string getMsg();
+        std::string& getMsg();
         void        emptyMsg();
 	    bool		handleCap(Client& client);
         bool		getNextMessage(Client& client);
