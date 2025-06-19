@@ -17,5 +17,5 @@ class Message {
 	    bool		handleCap(Client& client);
         bool		getNextMessage(Client& client);
 	    void		welcomeMessage(Client& client, int i);
-        void        errorMessage(Client& client, reply err);
+        void        errorMessage(Client& client, struct reply err);
 };
