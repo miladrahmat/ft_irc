@@ -2,18 +2,36 @@
 #include <iostream>
 
 Client::Client(int socket) : _client_socket(socket) {
+	// std::vector<Channel&> _channels;
 }
 
-Client::Client(const Client & old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname) {
+Client::Client(const Client & old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), _username((old_client._username)), _buffer((old_client._buffer)), _send_buffer((old_client._send_buffer)), _channels(old_client._channels){
 
 }
 
-Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname) {
+Client::Client(Client&& old_client) noexcept : _client_socket(std::move(old_client._client_socket)), _name(std::move(old_client._name)), _nickname(std::move(old_client._nickname)), _channels(std::move(old_client._channels)){
 	old_client.setClientSocket(-1);
 }
 
 Client::~Client() {
 	close(_client_socket);
+}
+
+Client		&Client::operator=(const Client& other) {
+	if (this != &other) {
+		this->_client_socket = other._client_socket;
+		this->_name = other._name;
+		this->_nickname = other._nickname;
+		this->_username = other._username;
+		this->_buffer = other._buffer;
+		this->_send_buffer = other._buffer;
+		this->_channels = other._channels;
+	}
+	return (*this);
+}
+
+bool		Client::operator==(const Client& other) const {
+	return (this->_client_socket == other._client_socket);
 }
 
 int	Client::getClientSocket() const {
@@ -26,6 +44,14 @@ std::string	Client::getName() const {
 
 std::string	Client::getNickname() const {
 	return (_nickname);
+}
+
+Channel Client::getChannel(int i) const {
+	return (_channels[i]);
+}
+
+int	Client::getChannelsSize() const {
+	return (_channels.size());
 }
 
 void	Client::setNickname(std::string nickname) {

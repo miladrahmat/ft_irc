@@ -5,7 +5,8 @@ FLAGS := -Wall -Wextra -Werror -g #REMOVE g
 CFILES := main.cpp \
 			Server.cpp \
 			Client.cpp \
-			Message.cpp
+			Message.cpp \
+			Channel.cpp
 
 INC := includes/
 SRC_PATH := sources/

@@ -80,11 +80,11 @@ int	Server::getEpollFd() const {
 	return (_epoll_fd);
 }
 
-int	findIndex(std::vector<Client>& clients, int fd)
+int	Server::findIndex(int fd)
 {
-	for (size_t i = 0; i < clients.size(); i++)
+	for (size_t i = 0; i < _client_vec.size(); i++)
 	{
-		if (clients[i].getClientSocket() == fd)
+		if (_client_vec[i].getClientSocket() == fd)
 		{
 			return (i);
 		}
@@ -114,9 +114,9 @@ void	Server::start() {
         }
         if (eventsCount > 0) {
             for (int i = 0; i < eventsCount; ++i) {
-				int index = findIndex(_client_vec, ev[i].data.fd);
+				int index = findIndex(ev[i].data.fd);
                 if (ev[i].data.fd == _server_socket) {
-                    handleNewClient(_epoll_fd);
+                    handleNewClient();
                 }
 				if (ev[i].events & EPOLLIN) {
 					receiveData(_client_vec[index]);
@@ -160,19 +160,18 @@ void	Server::removeClient(Client& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = client.getClientSocket();
-	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev);
-	for (int i = 0; i < _client_vec.size(); i++) {
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev)) {
+		std::cerr << "Error with epoll_ctl: deleting client failed" << std::endl;
+	}
+	for (int i = 0; i < client.getChannelsSize(); i++) {
+		//leave channel, client.getChannel(i)
+	}
+	for (size_t i = 0; i < _client_vec.size(); i++) {
 		if (_client_vec[i].getClientSocket() == client.getClientSocket()) {
-			//remove client from vector;
+			//_client_vec.erase(_client_vec.begin() + i);
 		}
 	}
 	close(client.getClientSocket());
-	//remove from epoll (epoll_ctl)
-	//close client fd (client socket)
-	//remove from client vector
-	//remove from channels, if only one in channel, remove channel? if they were operator for channel???
-	//disconnection message for others in the channel??
-
 }
 
 void    Server::receiveData(Client& client)

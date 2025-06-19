@@ -7,9 +7,11 @@
 #include <algorithm>
 #include "Client.hpp"
 
+class Client;
+
 class Channel {
     private:
-        const std::string _name;
+        std::string _name;
         std::vector<Client> _clients;
         std::vector<Client> _operators;
         std::string _topic;
@@ -19,7 +21,9 @@ class Channel {
         int _user_limit;
     public:
         Channel(std::string name, Client client, std::string password = "");
+        Channel(Channel const& other);
         ~Channel();
+        Channel &operator=(const Channel& other) = default;
         bool isClient(const Client & client) const;
         bool isOperator(const Client & client) const;
         bool channelFull() const;

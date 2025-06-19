@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <vector>
+#include "Channel.hpp"
+
+class Channel;
 
 class Client {
 	private:
@@ -12,15 +16,20 @@ class Client {
 		std::string _username;
 		std::string	_buffer;
 		std::string _send_buffer;
+		std::vector<Channel*> _channels;
 
 	public:
 		Client(int socket);
 		Client (const Client & old_client);
 		Client(Client&& old_client) noexcept;
 		~Client();
+		Client		&operator=(const Client& other);
+		bool		operator==(const Client& other) const;
 		int			getClientSocket() const;
 		std::string	getName() const;
 		std::string	getNickname() const;
+		Channel		getChannel(int i) const;
+		int			getChannelsSize() const;
 		void 		setNickname(std::string nickname);
 		void		setUsername(std::string username);
 		void		setName(std::string name);

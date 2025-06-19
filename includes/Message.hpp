@@ -2,6 +2,7 @@
 #include <string>
 #include "Client.hpp"
 #include "Server.hpp"
+#include "reply.hpp"
 
 class Server;
 

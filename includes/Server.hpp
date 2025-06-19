@@ -29,6 +29,7 @@ class Server {
 		std::string	getPassword() const;
 		int			getServerSocket() const;
 		int			getEpollFd() const;
+		int			findIndex(int fd);
 		void		handleNewClient();
 		void		removeClient(Client& client);
 		void    	receiveData(Client& client);

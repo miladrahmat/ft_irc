@@ -8,6 +8,18 @@ Channel::Channel(std::string name, Client client, std::string password) :
 
 Channel::~Channel() {};
 
+Channel::Channel(Channel const& other) : _name(other._name), _clients{other._clients}, _operators{other._operators}, _password(other._password),
+    _invite_only(other._invite_only), _topic_command_access(other._topic_command_access),
+    _user_limit(other._user_limit) {};
+
+/* Channel &Channel::operator=(const Channel& other) {
+    if (this != &other) {
+        this->_name = other._name;
+        this->_clients = other._clients;
+
+    }
+} */
+
 bool Channel::isClient(const Client & client) const {
     if (std::find(_clients.begin(), _clients.end(), client) == _clients.end()) {
         return (false);
@@ -23,7 +35,7 @@ bool Channel::isOperator(const Client & client) const {
 };
 
 bool Channel::channelFull() const {
-    if (_clients.size() == _user_limit) {
+    if (_clients.size() == (size_t)_user_limit) {
         return (true);
     }
     return (false);
@@ -45,7 +57,7 @@ void Channel::setTopic(const Client & client, std::string new_topic) {
 void Channel::kickClient(const Client & client, const Client & client_to_kick) {
     if (isOperator(client)) {
         if (isClient(client_to_kick)) {
-            _clients.erase(std::find(_clients.begin(), _clients.end(), client));
+            _clients.erase(std::find(_clients.begin(), _clients.end(), client_to_kick));
             //TODO some message? what happens to the kicked out client?
         }
         //TODO what happens if the client to be kicked is not on the channel?
