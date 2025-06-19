@@ -4,11 +4,13 @@
 Client::Client(int socket) : _client_socket(socket) {
 }
 
-Client::Client(const Client & old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname) {
+Client::Client(const Client & old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
+										_username(old_client._username), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
 
 }
 
-Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname) {
+Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
+											_username(old_client._username), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
 	old_client.setClientSocket(-1);
 }
 

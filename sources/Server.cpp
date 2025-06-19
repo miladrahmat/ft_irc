@@ -116,7 +116,7 @@ void	Server::start() {
             for (int i = 0; i < eventsCount; ++i) {
 				int index = findIndex(_client_vec, ev[i].data.fd);
                 if (ev[i].data.fd == _server_socket) {
-                    handleNewClient(_epoll_fd);
+                    handleNewClient();
                 }
 				if (ev[i].events & EPOLLIN) {
 					receiveData(_client_vec[index]);
@@ -161,7 +161,7 @@ void	Server::removeClient(Client& client) {
     ev.events = EPOLLIN;
     ev.data.fd = client.getClientSocket();
 	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev);
-	for (int i = 0; i < _client_vec.size(); i++) {
+	for (std::vector<Client>::size_type i = 0; i < _client_vec.size(); i++) {
 		if (_client_vec[i].getClientSocket() == client.getClientSocket()) {
 			//remove client from vector;
 		}
