@@ -203,21 +203,15 @@ void    Server::receiveData(Client& client) {
 bool	Server::validateClient(Client& client) {
 	Message	msg;
 
-	if (client.getPassword() != _password) {
-		std::cout << client.getPassword() << "vs." << _password << "Returning false 1" << std::endl;
+	if (client.getPassword() != _password)
 		return (false);
-	}
-	if (!client.validateNickname(client.getNickname())) {
-		std::cout << "Returning false 2" << std::endl;
+	if (!client.validateNickname(client.getNickname()))
 		return (false);
-	}
 	msg.welcomeMessage(client);
 	client.authenticate();
-	if (!client.isAuthenticated()) {
-		std::cout << "Returning false 3" << std::endl;
+	if (!client.isAuthenticated())
 		return (false);
-	}
-	client.printClient();
+	client.printClient(); // To check that every attribute is valid. Remove later.
 	return (true);
 }
 

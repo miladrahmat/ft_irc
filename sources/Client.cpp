@@ -78,26 +78,16 @@ void	Client::setPassword(std::string password) {
 }
 
 void	Client::authenticate() {
-	if (_name.empty()) {
-		std::cout << "No name" << std::endl;
+	if (_name.empty())
 		return ;
-	}
-	if (_nickname.empty()) {
-		std::cout << "No nickname" << std::endl;
+	if (_nickname.empty())
 		return ;
-	}
-	if (_hostname.empty()) {
-		std::cout << "No hostname" << std::endl;
+	if (_hostname.empty())
 		return ;
-	}
-	if (_username.empty()) {
-		std::cout << "No username" << std::endl;
+	if (_username.empty())
 		return ;
-	}
-	if (_password.empty()) {
-		std::cout << "No password" << std::endl;
+	if (_password.empty())
 		return ;
-	}
 	_authenticated = true;
 }
 
