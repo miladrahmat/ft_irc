@@ -6,7 +6,5 @@ class	Parser {
 	public:
 	Parser() = default;
 	~Parser() = default;
-	void	parseInput(Client& client, std::string& input);
-	void	authenticateClient(Client& client, std::string& input);
-	bool	validateNickname(std::string nickname);
+	void	parseCap(Client& client, std::string& input);
 };

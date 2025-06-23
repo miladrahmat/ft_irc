@@ -8,37 +8,33 @@ std::string&	Message::getMsg() {
 	return (_msg);
 }
 
+int	Message::getType() const {
+	return (_type);
+}
+
 void	Message::emptyMsg() {
 	_msg.erase(0, _msg.size());
 }
 
-bool	Message::handleCap(Client& client) {
+void	Message::handleCap(Client& client) {
 	if (_msg.substr(0,6) == "CAP LS") {
 		_send_msg = "CAP * LS :\r\n";
 		client.appendSendBuffer(_send_msg);
 		_send_msg.erase(0, _send_msg.size());
-		return (true);
+		_type = CAP_START;
 	}
-	if (_msg.substr(0, 7) == "CAP REQ") {
+	else if (_msg.substr(0, 7) == "CAP REQ") {
 		_send_msg = "CAP * ACK:multi-prefix :\r\n";
 		client.appendSendBuffer(_send_msg);
 		_send_msg.erase(0, _send_msg.size());
-		return (true);
+		_type = CAP_REQ;
 	}
-	if (_msg.substr(0, 7) == "CAP END") {
-		for (int i = 0; i < 5; i++) {
-			welcomeMessage(client, i);
-			client.appendSendBuffer(_send_msg);
-			_send_msg.erase(0, _send_msg.size());
-			client.authenticate();
-			if (!client.isAuthenticated())
-				return (false);
-			client.printClient();
-		}
-		return (true);
+	else if (_msg.substr(0, 7) == "CAP END") {
+		_type = CAP_END;
 	}
-	else {
-		return (false);
+	else if (_msg.compare(0, 4, "PASS") == 0 || _msg.compare(0, 4, "NICK") == 0 \
+			|| _msg.compare(0, 4, "USER") == 0) {
+		_type = CAP;
 	}
 }
 
@@ -52,7 +48,7 @@ bool	Message::getNextMessage(Client& client) {
 	return (false);
 }
 
-void	Message::welcomeMessage(Client& client, int i) {
+void	Message::welcomeMessage(Client& client) {
 	reply replies[5] = {
 		RPL_WELCOME, 
 		RPL_YOURHOST, 
@@ -60,7 +56,11 @@ void	Message::welcomeMessage(Client& client, int i) {
 		RPL_MYINFO, 
 		RPL_ISUPPORT
 	};
-	_send_msg = ":ircserv " + replies[i].code + " " + client.getNickname() + replies[i].msg;
+	for (short int i = 0; i < 5; i++) {
+		_send_msg = ":ircserv " + replies[i].code + " " + client.getNickname() + replies[i].msg;
+		client.appendSendBuffer(_send_msg);
+		_send_msg.clear();
+	}
 }
 
 void	Message::errorMessage(Client& client, reply err) {

@@ -5,12 +5,12 @@ Client::Client(int socket) : _client_socket(socket) {
 }
 
 Client::Client(const Client & old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
-										_username(old_client._username), _hostname(old_client._hostname), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
+										_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
 
 }
 
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
-											_username(old_client._username), _hostname(old_client._hostname), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
+											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
 	old_client.setClientSocket(-1);
 }
 
@@ -30,12 +30,35 @@ std::string	Client::getNickname() const {
 	return (_nickname);
 }
 
+std::string	Client::getPassword() const {
+	return (_password);
+}
+
+std::string	Client::getHostname() const {
+	return (_hostname);
+}
+
 bool	Client::isAuthenticated() const {
 	return (_authenticated);
 }
 
 void	Client::setNickname(std::string nickname) {
 	_nickname = nickname;
+}
+
+bool	Client::validateNickname(std::string nickname) {
+	std::string invalid_start = "$:#&~@+%";
+	if (invalid_start.find(nickname[0]) != std::string::npos) {
+		return (false);
+	}
+	std::string	invalid = " ,*?!@.";
+	for (size_t i = 0; i < invalid.length(); i++) {
+		if (nickname.find(invalid[i]) != std::string::npos) {
+			return (false);
+		}
+	}
+	setNickname(nickname);
+	return (true);
 }
 
 void	Client::setUsername(std::string username) {
@@ -50,15 +73,31 @@ void	Client::setName(std::string name) {
 	_name = name;
 }
 
+void	Client::setPassword(std::string password) {
+	_password = password;
+}
+
 void	Client::authenticate() {
-	if (_name.empty())
+	if (_name.empty()) {
+		std::cout << "No name" << std::endl;
 		return ;
-	if (_nickname.empty())
+	}
+	if (_nickname.empty()) {
+		std::cout << "No nickname" << std::endl;
 		return ;
-	if (_hostname.empty())
+	}
+	if (_hostname.empty()) {
+		std::cout << "No hostname" << std::endl;
 		return ;
-	if (_username.empty())
+	}
+	if (_username.empty()) {
+		std::cout << "No username" << std::endl;
 		return ;
+	}
+	if (_password.empty()) {
+		std::cout << "No password" << std::endl;
+		return ;
+	}
 	_authenticated = true;
 }
 

@@ -1,38 +1,27 @@
 #include "Parser.hpp"
 
-void	Parser::parseInput(Client& client, std::string& input) {
-	if (input.substr(0, 4) == "NICK") {
-		std::string	nickname = input.substr(5, input.length());
-		if (validateNickname(nickname)) {
+void	Parser::parseCap(Client& client, std::string& input) {
+	try {
+		if (input.compare(0, 4, "PASS") == 0) {
+			std::cout << "Setting password" << std::endl;
+			std::string	password = input.substr(5, input.length());
+			client.setPassword(password);
+		} else if (input.compare(0, 4, "NICK") == 0) {
+			std::cout << "Setting nickname" << std::endl;
+			std::string	nickname = input.substr(5, input.length());
 			client.setNickname(nickname);
-		}
-	} else if (input.substr(0, 4) == "USER") {
-		std::string	args = input.substr(5, input.length());
-		std::string	username = args.substr(0, args.find(' '));
-		args = args.substr(username.length() + 1, args.length());
-		std::string	hostname = args.substr(0, args.find(' ')); // The hostname in the old protocol. Probably need to change.
-		std::string	real_name = args.substr(args.find(':') + 1, args.length());
-		client.setUsername(username);
-		client.setHostname(hostname);
-		client.setName(real_name);
-	} else if (input.substr(0, 4) == "PASS") {
-		// TODO: How to get access to the password attribute found in Server class?
-
-		/* std::string	password = input.substr(4, input.length());
-		if (password == Server::getPassword()); */
+		} else if (input.compare(0, 4, "USER") == 0) {
+			std::cout << "Setting everything else" << std::endl;
+			std::string	args = input.substr(5, input.length());
+			std::string	username = args.substr(0, args.find(' '));
+			args = args.substr(username.length() + 1, args.length());
+			std::string	hostname = args.substr(0, args.find(' ')); // The hostname in the old protocol. Probably need to change.
+			std::string	real_name = args.substr(args.find(':') + 1, args.length());
+			client.setUsername(username);
+			client.setHostname(hostname);
+			client.setName(real_name);
+		} 
+	} catch (std::exception& e) {
+		std::cerr << e.what() << std::endl;
 	}
-}
-
-bool	Parser::validateNickname(std::string nickname) {
-	std::string invalid_start = "$:#&~@+%";
-	if (invalid_start.find(nickname[0]) != std::string::npos) {
-		return (false);
-	}
-	std::string	invalid = " ,*?!@.";
-	for (size_t i = 0; i < invalid.length(); i++) {
-		if (nickname.find(invalid[i]) != std::string::npos) {
-			return (false);
-		}
-	}
-	return (true);
 }

@@ -34,6 +34,5 @@ class Server {
 		void		removeClient(Client& client);
 		void    	receiveData(Client& client);
 		void		changePut(Client& client, uint32_t put, int epoll_fd);
-		void		parseInput(std::string msg, Client& client);
-		bool		validateNick(std::string nickname);
+		bool		validateClient(Client& client);
 };

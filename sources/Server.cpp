@@ -175,8 +175,7 @@ void	Server::removeClient(Client& client) {
 
 }
 
-void    Server::receiveData(Client& client)
-{
+void    Server::receiveData(Client& client) {
 	if (!client.receiveData()) {
 		//client disconnected, handle it
 		return ;
@@ -184,82 +183,42 @@ void    Server::receiveData(Client& client)
 	Message	msg;
 	Parser	parser;
 	while (msg.getNextMessage(client)) {
-		if (msg.handleCap(client))
-		{
+		msg.handleCap(client);
+		int	error = msg.getType();
+		if (error == CAP_START || error == CAP_REQ) {
 			msg.emptyMsg();
 			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
+		} else if (error == CAP_END) {
+			msg.emptyMsg();
+			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
+			validateClient(client);
+		} 
+		else if (error == CAP) {
+			//std::cout << msg.getMsg() << std::endl;
+			parser.parseCap(client, msg.getMsg());
 		}
-		else {
-			std::cout << msg.getMsg() << std::endl;
-			if (msg.getMsg().substr(0, 4) == "PASS") {
-				std::string	password = msg.getMsg().substr(5, msg.getMsg().length());
-				if (password == _password)
-					continue ;
-				else
-					removeClient(client);
-			}
-			parser.parseInput(client, msg.getMsg());
-		}
-
-	} 
+	}
 }
 
-bool	Server::validateNick(std::string nickname)
-{
-	std::string invalid_start = "$:#&~@+%";
-	if (invalid_start.find(nickname[0]) != std::string::npos) {
+bool	Server::validateClient(Client& client) {
+	Message	msg;
+
+	if (client.getPassword() != _password) {
+		std::cout << client.getPassword() << "vs." << _password << "Returning false 1" << std::endl;
 		return (false);
 	}
-	std::string	invalid = " ,*?!@.";
-	for (size_t i = 0; i < nickname.size(); i++) {
-		for (int j = 0; j < 7; j++) {
-			if (nickname[i] == invalid[j]) {
-				return (false);
-			}
-		}
+	if (!client.validateNickname(client.getNickname())) {
+		std::cout << "Returning false 2" << std::endl;
+		return (false);
 	}
+	msg.welcomeMessage(client);
+	client.authenticate();
+	if (!client.isAuthenticated()) {
+		std::cout << "Returning false 3" << std::endl;
+		return (false);
+	}
+	client.printClient();
 	return (true);
-}
-
-void	Server::parseInput(std::string msg, Client& client)
-{
-	if (msg.substr(0, 4) == "PASS") {
-		//check password
-	}
-	else if (msg.substr(0, 4) == "NICK"){
-		//get nickname
-		if (!validateNick(msg.substr(5, msg.size()))) { //this is not working
-			//error invalid nickname, disconnect client
-			std::cout  << "Invalid nickname" << std::endl;
-			//should quit and disconnect here
-		}
-		client.setNickname(msg.substr(5, msg.size() - 1));
-		//check if valid
-		//invalid: ' ', ',', '*', '?', '!', '@',  '.'
-		//invalid starting: '$', ':', '#', '&', '~', '+q' '+a' '@' '+o' '%' '+h' '+' '+v'
-
-	}
-	else if (msg.substr(0,4) == "USER") {
-		int index = 0;
-		for (size_t i = 5; i < msg.size(); i++)
-		{
-			if (msg[i] == ' ')
-			{
-				index = i;
-				break ;
-			}
-		}
-		client.setUsername(msg.substr(5, index - 5));
-		for (size_t i = 5; i < msg.size(); i++)
-		{
-			if (msg[i] == ':')
-			{
-				index = i + 1;
-				break ;
-			}
-		}
-		client.setName(msg.substr(index, msg.size() - 1));
-	}
 }
 
 void	Server::changePut(Client& client, uint32_t put, int epoll_fd) {
