@@ -7,6 +7,8 @@
 #include <algorithm>
 #include "Client.hpp"
 
+class Client;
+
 class Channel {
     private:
         const std::string _name;
@@ -26,12 +28,13 @@ class Channel {
         std::string showTopic() const;
         void setTopic(const Client & client, std::string new_topic);
         void kickClient(const Client & client, const Client & client_to_kick);
-        void inviteClient(const Client & client, const Client & new_client);
+        bool inviteClient(const Client & client, Client & new_client);
         void setInviteMode(const Client & client, bool set);
         void setTopicMode(const Client & client, bool set);
         void setChannelPassword(const Client & client, std::string password);
         void addOperator(const Client & client, const Client & new_operator);
         void removeOperator(const Client & client, const Client & operator_to_remove);
         void setUserLimit(const Client & client, unsigned int limit);
-        void join(const Client & client, std::string password);
+        bool join(const Client & client, std::string password);
+        std::string getName() const;
 };

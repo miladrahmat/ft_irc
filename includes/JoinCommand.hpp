@@ -11,11 +11,11 @@ class JoinCommand : public ACommand {
         std::string _server_tag; //optional     //TODO how do we handle?
         std::vector<std::string> _channels; //at least one required, otherwise comma separated
         std::vector<std::string> _keys; //optional, comma separated
-        JoinCommand(std::string command, Client & client);
+        JoinCommand(std::string command, Client & client, Server & server);
     
     public:
-        std::unique_ptr<ACommand> create(std::string command, Client& client,
-            std::vector<std::string> args) override;
+        static std::unique_ptr<ACommand> create(std::string command, Client& client, Server & server,
+            std::vector<std::string> args);
         bool execute() const override;
-        bool validChannelName(std::string channel);
+        static bool validChannelName(std::string channel);
 };

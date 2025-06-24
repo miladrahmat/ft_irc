@@ -258,3 +258,23 @@ void	Server::changePut(Client& client, uint32_t put, int epoll_fd) {
 	ev.data.fd = client.getClientSocket();
 	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
 }
+
+std::vector<Channel>::iterator	Server::getChannel(std::string channel_name) {
+	std::vector<Channel>::iterator it = _channels.begin();
+	for ( ; it != _channels.end(); it++) {
+		std::transform(channel_name.begin(), channel_name.end(), channel_name.begin(), ::tolower);
+		if (it->getName() == channel_name) {
+			return (it);
+		}
+	}
+	return (it);
+}
+
+std::vector<Channel> Server::getChannels() const {
+	return (_channels);
+}
+
+void	Server::addNewChannel(std::string name, Client & client, std::string password) {
+	_channels.push_back(Channel(name, client, password));
+	//some reply?
+}

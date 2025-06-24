@@ -18,6 +18,23 @@ Client::~Client() {
 	close(_client_socket);
 }
 
+Client		&Client::operator=(const Client& other) {
+	if (this != &other) {
+		this->_client_socket = other._client_socket;
+		this->_name = other._name;
+		this->_nickname = other._nickname;
+		this->_username = other._username;
+		this->_buffer = other._buffer;
+		this->_send_buffer = other._buffer;
+		this->_channels = other._channels;
+	}
+	return (*this);
+}
+
+bool		Client::operator==(const Client& other) const {
+	return (this->_client_socket == other._client_socket);
+}
+
 int	Client::getClientSocket() const {
 	return (_client_socket);
 }
@@ -85,4 +102,12 @@ std::string	Client::getBuffer() {
 
 void	Client::emptyBuffer(int begin, int end) {
 	_buffer.erase(begin, end);
+}
+
+std::string Client::getChannelInvitedTo() const {
+	return (_invited_to);
+}
+
+void Client::setInvitedTo(std::string channel_name) {
+	_invited_to = channel_name;
 }

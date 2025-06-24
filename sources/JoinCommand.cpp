@@ -1,16 +1,46 @@
 
 #include "JoinCommand.hpp"
 
-JoinCommand::JoinCommand(std::string command, Client & client) : ACommand(command, client) {}
+JoinCommand::JoinCommand(std::string command, Client & client, Server & server) : ACommand(command, client, server) {}
 
-bool ACommand::execute() const {
-
+bool JoinCommand::execute() const {
+    if (_invite_flag) {
+        std::vector<Channel>::iterator chan = _server.getChannel(_client.getChannelInvitedTo());
+        if (chan != _server.getChannels().end()) {
+            return (chan->join(_client, ""));
+        }
+    }
+    std::vector<std::string>::const_iterator chan_it = _channels.begin();
+    std::vector<std::string>::const_iterator key_it = _keys.begin();
+    for ( ; chan_it != _channels.end(); chan_it++) {
+        std::vector<Channel>::iterator chan = _server.getChannel(*chan_it);
+        if (chan != _server.getChannels().end()) {
+            if (key_it == _keys.end()) {
+                chan->join(_client, "");
+            }
+            else {
+                chan->join(_client, *key_it);
+            }
+        }
+        else {
+            if (key_it == _keys.end()) {
+                _server.addNewChannel(*chan_it, _client);
+            }
+            else {
+                _server.addNewChannel(*chan_it, _client, *key_it);
+            }
+        }
+        if (key_it != _keys.end()) {
+            key_it++;
+        }
+    }
+    return (true);
 }
 
-std::unique_ptr<ACommand> JoinCommand::create(std::string command, Client& client,
+std::unique_ptr<ACommand> JoinCommand::create(std::string command, Client& client, Server & server,
             std::vector<std::string> args) {
 
-    std::unique_ptr<JoinCommand> cmd = std::make_unique<JoinCommand>(command, client);
+    JoinCommand* cmd = new JoinCommand(command, client, server);
     std::vector<std::string>::iterator it = args.begin();
     for ( ; it != args.end() && (*it)[0] == '-'; it++) {
         if (*it == "-window") {
@@ -43,24 +73,24 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, Client& clien
                 ss.ignore();
         }
     }
-    if (!_invite_flag && _channels.empty()) {
+    if (!cmd->_invite_flag && cmd->_channels.empty()) {
         return (nullptr);
     }
-    return (cmd);
+    return (std::unique_ptr<JoinCommand>(cmd));
 }
 
 bool JoinCommand::validChannelName(std::string channel_name) {
-    if (channel_name[0] != '#') {
+    if (channel_name[0] != '#' || channel_name[0] != '&' ) {
         return (false);
     }
-    if (channel_name.length() <= 4 && channel_name.length() >= 50) {
+    if (channel_name.length() >= 50) {
+        //ERR_INPUTTOOLONG (417)
         return (false);
     }
     std::string name = channel_name.substr(1);
     for (char c : name) {
-        if (std::isalnum(static_cast<unsigned char>(c)) || c == '-' || c == '_') {
-            continue;
-        } else {
+        if ( c == ' ' || c == ',' || c == 0x07) {
+
             return (false);
         }
     }
