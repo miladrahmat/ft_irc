@@ -13,6 +13,7 @@
 #include "Message.hpp"
 #include "reply.hpp"
 #include "Channel.hpp"
+#include "Parser.hpp"
 
 class Server {
 	private:
@@ -40,4 +41,5 @@ class Server {
 		void		parseInput(std::string msg, Client& client);
 		bool		validateNick(std::string nickname);
 		void		addNewChannel(std::string name, Client & client, std::string password = "");
+		bool		validateClient(Client& client);
 };

@@ -8,7 +8,8 @@ CFILES := main.cpp \
 			Message.cpp \
 			Channel.cpp \
 			ACommand.cpp \
-			JoinCommand.cpp 
+			JoinCommand.cpp  \
+			Parser.cpp
 
 INC := includes/
 SRC_PATH := sources/
