@@ -16,7 +16,7 @@ std::vector<Channel> & State::getChannels() {
 	return (_channels);
 }
 
-void	State::addNewChannel(std::string name, Client & client, std::string password) {
+void	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password) {
 	_channels.push_back(Channel(name, client, password));
 	//some reply?
 }

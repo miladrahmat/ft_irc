@@ -1,11 +1,11 @@
 
 #include "JoinCommand.hpp"
 
-JoinCommand::JoinCommand(std::string command, Client & client, State & state) : ACommand(command, client, state) {}
+JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
 
 bool JoinCommand::execute() const {
     if (_invite_flag) {
-        std::vector<Channel>::iterator chan = _state.getChannel(_client.getChannelInvitedTo());
+        std::vector<Channel>::iterator chan = _state.getChannel(_client->getChannelInvitedTo());
         if (chan != _state.getChannels().end()) {
             return (chan->join(_client, ""));
         }
@@ -37,7 +37,7 @@ bool JoinCommand::execute() const {
     return (true);
 }
 
-std::unique_ptr<ACommand> JoinCommand::create(std::string command, Client& client, State & state,
+std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client, State & state,
             std::vector<std::string> args) {
 
     JoinCommand* cmd = new JoinCommand(command, client, state);

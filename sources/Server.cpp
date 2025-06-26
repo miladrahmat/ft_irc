@@ -81,11 +81,11 @@ int	Server::getEpollFd() const {
 	return (_epoll_fd);
 }
 
-int	findIndex(std::vector<Client>& clients, int fd)
+int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd)
 {
 	for (size_t i = 0; i < clients.size(); i++)
 	{
-		if (clients[i].getClientSocket() == fd)
+		if (clients[i]->getClientSocket() == fd)
 		{
 			return (i);
 		}
@@ -123,8 +123,8 @@ void	Server::start() {
 					receiveData(_state._clients[index]);
 				}
 				if (ev[i].events & EPOLLOUT) { 
-					_state._clients[index].sendData();
-					if (_state._clients[index].getSendBuffer().empty()) {
+					_state._clients[index]->sendData();
+					if (_state._clients[index]->getSendBuffer().empty()) {
 						changePut(_state._clients[index], EPOLLIN, _epoll_fd);
 					}
                 }
@@ -151,22 +151,21 @@ void Server::handleNewClient() {
         if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		Client	new_client(client);
-		_state._clients.push_back(std::move(new_client));
+		_state._clients.push_back(std::make_shared<Client>(client));
     }
 }
 
-void	Server::removeClient(Client& client) {
+void	Server::removeClient(std::shared_ptr<Client>& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
-    ev.data.fd = client.getClientSocket();
-	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev);
-	for (std::vector<Client>::size_type i = 0; i < _state._clients.size(); i++) {
-		if (_state._clients[i].getClientSocket() == client.getClientSocket()) {
+    ev.data.fd = client->getClientSocket();
+	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client->getClientSocket(), &ev);
+	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
+		if (_state._clients[i]->getClientSocket() == client->getClientSocket()) {
 			//remove client from vector;
 		}
 	}
-	close(client.getClientSocket());
+	close(client->getClientSocket());
 	//remove from epoll (epoll_ctl)
 	//close client fd (client socket)
 	//remove from client vector
@@ -175,8 +174,10 @@ void	Server::removeClient(Client& client) {
 
 }
 
-void    Server::receiveData(Client& client) {
-	if (!client.receiveData()) {
+void    Server::receiveData(std::shared_ptr<Client>& client) {
+	if (client == nullptr)
+		return ;
+	if (!client->receiveData()) {
 		//client disconnected, handle it
 		return ;
 	}
@@ -204,24 +205,24 @@ void    Server::receiveData(Client& client) {
 	}
 }
 
-bool	Server::validateClient(Client& client) {
+bool	Server::validateClient(std::shared_ptr<Client>& client) {
 	Message	msg;
 
-	if (client.getPassword() != _password)
+	if (client->getPassword() != _password)
 		return (false);
-	if (!client.validateNickname(client.getNickname()))
+	if (!client->validateNickname(client->getNickname()))
 		return (false);
 	msg.welcomeMessage(client);
-	client.authenticate();
-	if (!client.isAuthenticated())
+	client->authenticate();
+	if (!client->isAuthenticated())
 		return (false);
-	client.printClient(); // To check that every attribute is valid. Remove later.
+	client->printClient(); // To check that every attribute is valid. Remove later.
 	return (true);
 }
 
-void	Server::changePut(Client& client, uint32_t put, int epoll_fd) {
+void	Server::changePut(std::shared_ptr<Client>& client, uint32_t put, int epoll_fd) {
 	struct epoll_event ev;
 	ev.events = put;
-	ev.data.fd = client.getClientSocket();
-	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
+	ev.data.fd = client->getClientSocket();
+	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client->getClientSocket(), &ev);
 }

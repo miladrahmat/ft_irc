@@ -18,11 +18,11 @@
 class ACommand {
     protected:
         std::string _command;
-        Client & _client;
+        std::shared_ptr<Client> & _client;
         State & _state;
     
     public:
-        ACommand(std::string command, Client & client, State & state);
+        ACommand(std::string command, std::shared_ptr<Client> & client, State & state);
         virtual bool execute() const = 0;
         virtual ~ACommand() = default;
 };

@@ -16,16 +16,16 @@ void	Message::emptyMsg() {
 	_msg.erase(0, _msg.size());
 }
 
-void	Message::handleCap(Client& client) {
+void	Message::handleCap(std::shared_ptr<Client>& client) {
 	if (_msg.substr(0,6) == "CAP LS") {
 		_send_msg = "CAP * LS :\r\n";
-		client.appendSendBuffer(_send_msg);
+		client->appendSendBuffer(_send_msg);
 		_send_msg.erase(0, _send_msg.size());
 		_type = CAP_START;
 	}
 	else if (_msg.substr(0, 7) == "CAP REQ") {
 		_send_msg = "CAP * ACK:multi-prefix :\r\n";
-		client.appendSendBuffer(_send_msg);
+		client->appendSendBuffer(_send_msg);
 		_send_msg.erase(0, _send_msg.size());
 		_type = CAP_REQ;
 	}
@@ -41,17 +41,17 @@ void	Message::handleCap(Client& client) {
 	}
 }
 
-bool	Message::getNextMessage(Client& client) {
-	size_t pos = client.getBuffer().find("\r\n");
+bool	Message::getNextMessage(std::shared_ptr<Client>& client) {
+	size_t pos = client->getBuffer().find("\r\n");
 	if (pos != std::string::npos) {
-		_msg = client.getBuffer().substr(0, pos);
-		client.emptyBuffer(0, pos + 2);
+		_msg = client->getBuffer().substr(0, pos);
+		client->emptyBuffer(0, pos + 2);
 		return (true);
 	}
 	return (false);
 }
 
-void	Message::welcomeMessage(Client& client) {
+void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
 	reply replies[5] = {
 		RPL_WELCOME, 
 		RPL_YOURHOST, 
@@ -60,14 +60,14 @@ void	Message::welcomeMessage(Client& client) {
 		RPL_ISUPPORT
 	};
 	for (short int i = 0; i < 5; i++) {
-		_send_msg = ":ircserv " + replies[i].code + " " + client.getNickname() + replies[i].msg;
-		client.appendSendBuffer(_send_msg);
+		_send_msg = ":ircserv " + replies[i].code + " " + client->getNickname() + replies[i].msg;
+		client->appendSendBuffer(_send_msg);
 		_send_msg.clear();
 	}
 }
 
-void	Message::errorMessage(Client& client, reply err) {
+void	Message::errorMessage(std::shared_ptr<Client>& client, reply err) {
 	_send_msg = "ircserv " + err.code + " :" + err.msg;
-	client.appendSendBuffer(_send_msg);
+	client->appendSendBuffer(_send_msg);
 	_send_msg.erase(0, _send_msg.size());
 }

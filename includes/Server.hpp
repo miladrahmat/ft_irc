@@ -34,10 +34,10 @@ class Server {
 		int			getEpollFd() const;
 		std::vector<Channel> getChannels() const;
 		void		handleNewClient();
-		void		removeClient(Client& client);
-		void    	receiveData(Client& client);
-		void		changePut(Client& client, uint32_t put, int epoll_fd);
-		void		parseInput(std::string msg, Client& client);
+		void		removeClient(std::shared_ptr<Client>& client);
+		void    	receiveData(std::shared_ptr<Client>& client);
+		void		changePut(std::shared_ptr<Client>& client, uint32_t put, int epoll_fd);
+		void		parseInput(std::string msg, std::shared_ptr<Client>& client);
 		bool		validateNick(std::string nickname);
-		bool		validateClient(Client& client);
+		bool		validateClient(std::shared_ptr<Client>& client);
 };

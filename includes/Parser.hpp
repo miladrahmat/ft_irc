@@ -3,12 +3,13 @@
 #include "Client.hpp"
 #include "JoinCommand.hpp"
 #include <vector>
+#include <memory>
 
 class	Parser {
 	public:
 	Parser() = default;
 	~Parser() = default;
-	void	parseCap(Client& client, std::string& input);
-	void	parseCommand(Client& client, std::string& input);
-	bool	parseJoinCommand(Client& client, std::string& input);
+	void	parseCap(std::shared_ptr<Client>& client, std::string& input);
+	void	parseCommand(std::shared_ptr<Client>& client, std::string& input);
+	bool	parseJoinCommand(std::shared_ptr<Client>& client, std::string& input);
 };
