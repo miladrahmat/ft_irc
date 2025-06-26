@@ -36,6 +36,9 @@ void	Message::handleCap(Client& client) {
 			|| _msg.compare(0, 4, "USER") == 0) {
 		_type = CAP;
 	}
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 4, "join") == 0) {
+		_type = CMD;
+	}
 }
 
 bool	Message::getNextMessage(Client& client) {

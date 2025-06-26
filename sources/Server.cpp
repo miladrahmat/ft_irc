@@ -197,6 +197,10 @@ void    Server::receiveData(Client& client) {
 			//std::cout << msg.getMsg() << std::endl;
 			parser.parseCap(client, msg.getMsg());
 		}
+		else if (error == CMD) {
+			std::cout << msg.getMsg() << std::endl;
+			parser.parseCommand(client, msg.getMsg());
+		}
 	}
 }
 

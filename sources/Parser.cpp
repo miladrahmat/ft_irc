@@ -22,3 +22,30 @@ void	Parser::parseCap(Client& client, std::string& input) {
 		std::cerr << e.what() << std::endl;
 	}
 }
+
+void	Parser::parseCommand(Client& client, std::string& input) {
+	try {
+		if (input.compare(0, 4, "JOIN") == 0 || input.compare(0, 4, "join") == 0) {
+			parseJoinCommand(client, input);
+		}
+	} catch (std::exception& e) {
+		std::cerr << e.what() << std::endl;
+	}
+}
+
+bool	Parser::parseJoinCommand(Client& client, std::string& input) {
+	std::vector<std::string>	arg_vec;
+
+	std::string	command = input.substr(0, input.find_first_of(' '));
+	input.erase(0, command.length() + 1);
+	while (!input.empty()) {
+		std::string	arg = input.substr(0, input.find_first_of(' '));
+		input.erase(0, arg.length() + 1);
+		arg_vec.push_back(arg);
+	}
+	State	state;
+	std::unique_ptr<ACommand>	cmd = JoinCommand::create(command, client, state, arg_vec);
+	if (cmd == nullptr)
+		return (false);
+	return (cmd->execute());
+}
