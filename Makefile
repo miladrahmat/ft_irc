@@ -9,7 +9,8 @@ CFILES := main.cpp \
 			Channel.cpp \
 			ACommand.cpp \
 			JoinCommand.cpp  \
-			Parser.cpp
+			Parser.cpp \
+			State.cpp
 
 INC := includes/
 SRC_PATH := sources/

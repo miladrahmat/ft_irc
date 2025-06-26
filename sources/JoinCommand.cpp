@@ -1,20 +1,20 @@
 
 #include "JoinCommand.hpp"
 
-JoinCommand::JoinCommand(std::string command, Client & client, Server & server) : ACommand(command, client, server) {}
+JoinCommand::JoinCommand(std::string command, Client & client, State & state) : ACommand(command, client, state) {}
 
 bool JoinCommand::execute() const {
     if (_invite_flag) {
-        std::vector<Channel>::iterator chan = _server.getChannel(_client.getChannelInvitedTo());
-        if (chan != _server.getChannels().end()) {
+        std::vector<Channel>::iterator chan = _state.getChannel(_client.getChannelInvitedTo());
+        if (chan != _state.getChannels().end()) {
             return (chan->join(_client, ""));
         }
     }
     std::vector<std::string>::const_iterator chan_it = _channels.begin();
     std::vector<std::string>::const_iterator key_it = _keys.begin();
     for ( ; chan_it != _channels.end(); chan_it++) {
-        std::vector<Channel>::iterator chan = _server.getChannel(*chan_it);
-        if (chan != _server.getChannels().end()) {
+        std::vector<Channel>::iterator chan = _state.getChannel(*chan_it);
+        if (chan != _state.getChannels().end()) {
             if (key_it == _keys.end()) {
                 chan->join(_client, "");
             }
@@ -24,10 +24,10 @@ bool JoinCommand::execute() const {
         }
         else {
             if (key_it == _keys.end()) {
-                _server.addNewChannel(*chan_it, _client);
+                _state.addNewChannel(*chan_it, _client);
             }
             else {
-                _server.addNewChannel(*chan_it, _client, *key_it);
+                _state.addNewChannel(*chan_it, _client, *key_it);
             }
         }
         if (key_it != _keys.end()) {
@@ -37,10 +37,10 @@ bool JoinCommand::execute() const {
     return (true);
 }
 
-std::unique_ptr<ACommand> JoinCommand::create(std::string command, Client& client, Server & server,
+std::unique_ptr<ACommand> JoinCommand::create(std::string command, Client& client, State & state,
             std::vector<std::string> args) {
 
-    JoinCommand* cmd = new JoinCommand(command, client, server);
+    JoinCommand* cmd = new JoinCommand(command, client, state);
     std::vector<std::string>::iterator it = args.begin();
     for ( ; it != args.end() && (*it)[0] == '-'; it++) {
         if (*it == "-window") {

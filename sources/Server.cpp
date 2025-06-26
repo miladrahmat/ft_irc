@@ -58,6 +58,7 @@ Server::Server(char** argv) {
 		std::cout << "Server started with password " << _password << std::endl;
 	} catch (std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
+		//TODO this needs to be handeled somehow
 	}
 }
 
@@ -114,20 +115,19 @@ void	Server::start() {
         }
         if (eventsCount > 0) {
             for (int i = 0; i < eventsCount; ++i) {
-				int index = findIndex(_client_vec, ev[i].data.fd);
+				int index = findIndex(_state._clients, ev[i].data.fd);
                 if (ev[i].data.fd == _server_socket) {
                     handleNewClient();
                 }
 				if (ev[i].events & EPOLLIN) {
-					receiveData(_client_vec[index]);
+					receiveData(_state._clients[index]);
 				}
 				if (ev[i].events & EPOLLOUT) { 
-					_client_vec[index].sendData();
-					if (_client_vec[index].getSendBuffer().empty()) {
-						changePut(_client_vec[index], EPOLLIN, _epoll_fd);
+					_state._clients[index].sendData();
+					if (_state._clients[index].getSendBuffer().empty()) {
+						changePut(_state._clients[index], EPOLLIN, _epoll_fd);
 					}
                 }
-			
             }
         }
     }
@@ -152,7 +152,7 @@ void Server::handleNewClient() {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
 		Client	new_client(client);
-		_client_vec.push_back(std::move(new_client));
+		_state._clients.push_back(std::move(new_client));
     }
 }
 
@@ -161,8 +161,8 @@ void	Server::removeClient(Client& client) {
     ev.events = EPOLLIN;
     ev.data.fd = client.getClientSocket();
 	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev);
-	for (std::vector<Client>::size_type i = 0; i < _client_vec.size(); i++) {
-		if (_client_vec[i].getClientSocket() == client.getClientSocket()) {
+	for (std::vector<Client>::size_type i = 0; i < _state._clients.size(); i++) {
+		if (_state._clients[i].getClientSocket() == client.getClientSocket()) {
 			//remove client from vector;
 		}
 	}
@@ -220,24 +220,4 @@ void	Server::changePut(Client& client, uint32_t put, int epoll_fd) {
 	ev.events = put;
 	ev.data.fd = client.getClientSocket();
 	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
-}
-
-std::vector<Channel>::iterator	Server::getChannel(std::string channel_name) {
-	std::vector<Channel>::iterator it = _channels.begin();
-	for ( ; it != _channels.end(); it++) {
-		std::transform(channel_name.begin(), channel_name.end(), channel_name.begin(), ::tolower);
-		if (it->getName() == channel_name) {
-			return (it);
-		}
-	}
-	return (it);
-}
-
-std::vector<Channel> Server::getChannels() const {
-	return (_channels);
-}
-
-void	Server::addNewChannel(std::string name, Client & client, std::string password) {
-	_channels.push_back(Channel(name, client, password));
-	//some reply?
 }
