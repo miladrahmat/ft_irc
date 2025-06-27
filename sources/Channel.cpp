@@ -1,21 +1,21 @@
 
 #include "Channel.hpp"
 
-Channel::Channel(std::string name, Client client, std::string password) :
+Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
     _name(name), _clients{client}, _operators{client}, _password(password),
     _invite_only(false), _topic_command_access(true),
     _user_limit(std::numeric_limits<int>::max()) {};
 
 Channel::~Channel() {};
 
-bool Channel::isClient(const Client & client) const {
+bool Channel::isClient(const std::shared_ptr<Client> & client) const {
     if (std::find(_clients.begin(), _clients.end(), client) == _clients.end()) {
         return (false);
     }
     return (true);
 };
 
-bool Channel::isOperator(const Client & client) const {
+bool Channel::isOperator(const std::shared_ptr<Client> & client) const {
     if (std::find(_operators.begin(), _operators.end(), client) == _operators.end()) {
         return (false);
     }
@@ -23,7 +23,7 @@ bool Channel::isOperator(const Client & client) const {
 };
 
 bool Channel::channelFull() const {
-    if (_clients.size() == _user_limit) {
+    if (_clients.size() == static_cast<std::size_t>(_user_limit)) {
         return (true);
     }
     return (false);
@@ -34,7 +34,7 @@ std::string Channel::showTopic() const {
     return (_topic);
 }
 
-void Channel::setTopic(const Client & client, std::string new_topic) {
+void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_topic) {
     if (isOperator(client) && _topic_command_access) {
         _topic = new_topic;
         return ;
@@ -42,10 +42,10 @@ void Channel::setTopic(const Client & client, std::string new_topic) {
     //TODO how to handle if client is not operator or channel does not allow topic change
 }
 
-void Channel::kickClient(const Client & client, const Client & client_to_kick) {
+void Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick) {
     if (isOperator(client)) {
         if (isClient(client_to_kick)) {
-            _clients.erase(std::find(_clients.begin(), _clients.end(), client));
+            _clients.erase(std::find(_clients.begin(), _clients.end(), client_to_kick));
             //TODO some message? what happens to the kicked out client?
         }
         //TODO what happens if the client to be kicked is not on the channel?
@@ -53,39 +53,47 @@ void Channel::kickClient(const Client & client, const Client & client_to_kick) {
     //TODO how to handle if client is not operator 
 }
 
-void Channel::inviteClient(const Client & client, const Client & new_client) {
-    if (isOperator(client)) {
-        if (channelFull() == false) {
-            _clients.push_back(new_client);
-        }
-        //TODO channel full error message
+bool Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client) {
+    if (!isClient(client)) {
+        //ERR_NOTONCHANNEL (442);
+        return (false);
     }
-    //TODO how to handle if client is not operator
+    if (isClient(new_client)) {
+        //ERR_USERONCHANNEL (443)
+        return  (false);
+    }
+    if (_invite_only && !isOperator(client)) {
+        //ERR_CHANOPRIVSNEEDED (482)
+        return (false);
+    }
+    new_client->setInvitedTo(this->_name);
+    //RPL_INVITING (341)
+    return (true);
 }
 
 //set = true -> _invite_only = true, else set = false -> _invite_only = false
-void Channel::setInviteMode(const Client & client, bool set) {
+void Channel::setInviteMode(const std::shared_ptr<Client> & client, bool set) {
     if (isOperator(client)) {
         _invite_only = set;
     }
 }
 
 //set = true -> _topic_command_access = true, else set = false -> _topic_command_access = false
-void Channel::setTopicMode(const Client & client, bool set) {
+void Channel::setTopicMode(const std::shared_ptr<Client> & client, bool set) {
     if (isOperator(client)) {
         _topic_command_access = set;
     }
 }
 
 //if '/MODE -k' then set new_password to ""
-void Channel::setChannelPassword(const Client & client, std::string new_password) {
+void Channel::setChannelPassword(const std::shared_ptr<Client> & client, std::string new_password) {
     if (isOperator(client)) {
         //any rules for the password???
         _password = new_password;
     }
 }
 
-void Channel::addOperator(const Client & client, const Client & new_operator) {
+void Channel::addOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & new_operator) {
     //do we get new_operator as Client or string? Do we here have to check if
     //it is a client of the channel here?
     if (isOperator(client)) {
@@ -93,7 +101,7 @@ void Channel::addOperator(const Client & client, const Client & new_operator) {
     }
 }
 
-void Channel::removeOperator(const Client & client, const Client & operator_to_remove) {
+void Channel::removeOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & operator_to_remove) {
     //do we get operator_to_remove as Client or string?
     if (isOperator(client)) {
         if (isOperator(operator_to_remove)) {
@@ -104,19 +112,35 @@ void Channel::removeOperator(const Client & client, const Client & operator_to_r
 }
 
 //limit 0 means no limit
-void Channel::setUserLimit(const Client & client, unsigned int limit) {
+void Channel::setUserLimit(const std::shared_ptr<Client> & client, unsigned int limit) {
     if (isOperator(client)) {
         //how many users can we handle in one channel?
         _user_limit = limit;
     }
 }
 
-void Channel::join(const Client & client, std::string password) {
-    if (channelFull() == false) {
-        if (isClient(client) == false) {
-            if (password == _password) {
-                _clients.push_back(client);
-            }
-        }
+bool Channel::join(const std::shared_ptr<Client> & client, std::string password) {
+    if (_invite_only && this->_name != client->getChannelInvitedTo()) {
+        //ERR_INVITEONLYCHAN (473)
+        return (false);
     }
+    if (channelFull()) {
+        //ERR_CHANNELISFULL (471)    //TODO but not when invited????
+        return (false);
+    }
+    if (isClient(client)) {
+        //already on channel, how to handle?
+        return (false);
+    }
+    if (_password != "" && password != _password) {
+        //ERR_BADCHANNELKEY (475)
+        return (false);
+    }
+    _clients.push_back(client);
+    //successfull join (see JOIN)
+    return (true);
+}
+
+std::string Channel::getName() const {
+    return (_name);
 }

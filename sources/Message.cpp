@@ -4,51 +4,54 @@ Message::Message(){}
 
 Message::~Message(){}
 
-std::string	Message::getMsg() {
+std::string&	Message::getMsg() {
 	return (_msg);
+}
+
+int	Message::getType() const {
+	return (_type);
 }
 
 void	Message::emptyMsg() {
 	_msg.erase(0, _msg.size());
 }
 
-bool	Message::handleCap(Client& client) {
+void	Message::handleCap(std::shared_ptr<Client>& client) {
 	if (_msg.substr(0,6) == "CAP LS") {
 		_send_msg = "CAP * LS :\r\n";
-		client.appendSendBuffer(_send_msg);
+		client->appendSendBuffer(_send_msg);
 		_send_msg.erase(0, _send_msg.size());
-		return (true);
+		_type = CAP_START;
 	}
-	if (_msg.substr(0, 7) == "CAP REQ") {
+	else if (_msg.substr(0, 7) == "CAP REQ") {
 		_send_msg = "CAP * ACK:multi-prefix :\r\n";
-		client.appendSendBuffer(_send_msg);
+		client->appendSendBuffer(_send_msg);
 		_send_msg.erase(0, _send_msg.size());
-		return (true);
+		_type = CAP_REQ;
 	}
-	if (_msg.substr(0, 7) == "CAP END") {
-		for (int i = 0; i < 5; i++) {
-			welcomeMessage(client, i);
-			client.appendSendBuffer(_send_msg);
-			_send_msg.erase(0, _send_msg.size());
-		}
-		return (true);
+	else if (_msg.substr(0, 7) == "CAP END") {
+		_type = CAP_END;
 	}
-	else {
-		return (false);
+	else if (_msg.compare(0, 4, "PASS") == 0 || _msg.compare(0, 4, "NICK") == 0 \
+			|| _msg.compare(0, 4, "USER") == 0) {
+		_type = CAP;
+	}
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 4, "join") == 0) {
+		_type = CMD;
 	}
 }
 
-bool	Message::getNextMessage(Client& client) {
-	size_t pos = client.getBuffer().find("\r\n");
+bool	Message::getNextMessage(std::shared_ptr<Client>& client) {
+	size_t pos = client->getBuffer().find("\r\n");
 	if (pos != std::string::npos) {
-		_msg = client.getBuffer().substr(0, pos);
-		client.emptyBuffer(0, pos + 2);
+		_msg = client->getBuffer().substr(0, pos);
+		client->emptyBuffer(0, pos + 2);
 		return (true);
 	}
 	return (false);
 }
 
-void	Message::welcomeMessage(Client& client, int i) {
+void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
 	reply replies[5] = {
 		RPL_WELCOME, 
 		RPL_YOURHOST, 
@@ -56,11 +59,15 @@ void	Message::welcomeMessage(Client& client, int i) {
 		RPL_MYINFO, 
 		RPL_ISUPPORT
 	};
-	_send_msg = ":ircserv " + replies[i].code + " " + client.getNickname() + replies[i].msg;
+	for (short int i = 0; i < 5; i++) {
+		_send_msg = ":ircserv " + replies[i].code + " " + client->getNickname() + replies[i].msg;
+		client->appendSendBuffer(_send_msg);
+		_send_msg.clear();
+	}
 }
 
-void	Message::errorMessage(Client& client, reply err) {
+void	Message::errorMessage(std::shared_ptr<Client>& client, reply err) {
 	_send_msg = "ircserv " + err.code + " :" + err.msg;
-	client.appendSendBuffer(_send_msg);
+	client->appendSendBuffer(_send_msg);
 	_send_msg.erase(0, _send_msg.size());
 }

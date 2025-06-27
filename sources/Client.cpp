@@ -4,18 +4,35 @@
 Client::Client(int socket) : _client_socket(socket) {
 }
 
-Client::Client(const Client & old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
-										_username(old_client._username), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
+/* Client::Client(const Client & old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
+										_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
 
-}
+} */
 
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
-											_username(old_client._username), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
-	old_client.setClientSocket(-1);
+											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
+
 }
 
 Client::~Client() {
 	close(_client_socket);
+}
+
+/* Client		&Client::operator=(const Client& other) {
+	if (this != &other) {
+		this->_client_socket = other._client_socket;
+		this->_name = other._name;
+		this->_nickname = other._nickname;
+		this->_username = other._username;
+		this->_buffer = other._buffer;
+		this->_send_buffer = other._buffer;
+		this->_channels = other._channels;
+	}
+	return (*this);
+} */
+
+bool		Client::operator==(const Client& other) const {
+	return (this->_client_socket == other._client_socket);
 }
 
 int	Client::getClientSocket() const {
@@ -30,16 +47,65 @@ std::string	Client::getNickname() const {
 	return (_nickname);
 }
 
+std::string	Client::getPassword() const {
+	return (_password);
+}
+
+std::string	Client::getHostname() const {
+	return (_hostname);
+}
+
+bool	Client::isAuthenticated() const {
+	return (_authenticated);
+}
+
 void	Client::setNickname(std::string nickname) {
 	_nickname = nickname;
+}
+
+bool	Client::validateNickname(std::string nickname) {
+	std::string invalid_start = "$:#&~@+%";
+	if (invalid_start.find(nickname[0]) != std::string::npos) {
+		return (false);
+	}
+	std::string	invalid = " ,*?!@.";
+	for (size_t i = 0; i < invalid.length(); i++) {
+		if (nickname.find(invalid[i]) != std::string::npos) {
+			return (false);
+		}
+	}
+	setNickname(nickname);
+	return (true);
 }
 
 void	Client::setUsername(std::string username) {
 	_username = username;
 }
 
+void	Client::setHostname(std::string hostname) {
+	_hostname = hostname;
+}
+
 void	Client::setName(std::string name) {
 	_name = name;
+}
+
+void	Client::setPassword(std::string password) {
+	_password = password;
+}
+
+void	Client::authenticate() {
+	if (_name.empty())
+		return ;
+	if (_nickname.empty())
+		return ;
+	if (_hostname.empty())
+		return ;
+	if (_username.empty())
+		return ;
+	if (_password.empty())
+		return ;
+	_authenticated = true;
 }
 
 void	Client::setClientSocket(int socket) {
@@ -85,4 +151,19 @@ std::string	Client::getBuffer() {
 
 void	Client::emptyBuffer(int begin, int end) {
 	_buffer.erase(begin, end);
+}
+
+void	Client::printClient() const {
+	std::cout << "NAME: " << _name << std::endl;
+	std::cout << "NICKNAME: " << _nickname << std::endl;
+	std::cout << "HOSTNAME: " << _hostname << std::endl;
+	std::cout << "USERNAME: " << _username << std::endl;
+}
+
+std::string Client::getChannelInvitedTo() const {
+	return (_invited_to);
+}
+
+void Client::setInvitedTo(std::string channel_name) {
+	_invited_to = channel_name;
 }
