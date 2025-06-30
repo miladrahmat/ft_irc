@@ -60,16 +60,14 @@ void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
 		RPL_ISUPPORT
 	};
 	for (short int i = 0; i < 5; i++) {
-		_send_msg = ":ircserv " + replies[i].code + " " + client->getNickname() + replies[i].msg;
-		client->appendSendBuffer(_send_msg);
-		_send_msg.clear();
+		codedMessage(client, replies[i]);
 	}
 }
 
-void	Message::errorMessage(std::shared_ptr<Client>& client, reply err) {
-	_send_msg = "ircserv " + err.code + " :" + err.msg;
+void	Message::codedMessage(std::shared_ptr<Client>& client, reply err) {
+	_send_msg = ":ircserv " + err.code + " " + client->getNickname() + err.msg;
 	client->appendSendBuffer(_send_msg);
-	_send_msg.erase(0, _send_msg.size());
+	_send_msg.clear();
 }
 
 void	Message::message(std::shared_ptr<Client>& client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
