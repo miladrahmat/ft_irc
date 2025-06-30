@@ -2,7 +2,10 @@
 #pragma once
 
 #include "ACommand.hpp"
+#include "Message.hpp"
 #include <sstream>
+
+class ACommand;
 
 class JoinCommand : public ACommand {
     private:

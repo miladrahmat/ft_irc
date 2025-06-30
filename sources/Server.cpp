@@ -119,10 +119,10 @@ void	Server::start() {
                 if (ev[i].data.fd == _server_socket) {
                     handleNewClient();
                 }
-				if (ev[i].events & EPOLLIN) {
+				else if (ev[i].events & EPOLLIN) {
 					receiveData(_state._clients[index]);
 				}
-				if (ev[i].events & EPOLLOUT) { 
+				else if (ev[i].events & EPOLLOUT) { 
 					_state._clients[index]->sendData();
 					if (_state._clients[index]->getSendBuffer().empty()) {
 						changePut(_state._clients[index], EPOLLIN, _epoll_fd);
@@ -200,6 +200,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (error == CMD) {
 			std::cout << msg.getMsg() << std::endl;
+			changePut(client, EPOLLOUT, _epoll_fd);
 			parser.parseCommand(client, msg.getMsg());
 		}
 	}
