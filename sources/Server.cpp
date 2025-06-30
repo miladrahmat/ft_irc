@@ -58,6 +58,7 @@ Server::Server(char** argv) {
 		std::cout << "Server started with password " << _password << std::endl;
 	} catch (std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
+		//TODO this needs to be handeled somehow
 	}
 }
 
@@ -80,11 +81,11 @@ int	Server::getEpollFd() const {
 	return (_epoll_fd);
 }
 
-int	Server::findIndex(int fd)
+int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd)
 {
 	for (size_t i = 0; i < _client_vec.size(); i++)
 	{
-		if (_client_vec[i].getClientSocket() == fd)
+		if (clients[i]->getClientSocket() == fd)
 		{
 			return (i);
 		}
@@ -114,20 +115,19 @@ void	Server::start() {
         }
         if (eventsCount > 0) {
             for (int i = 0; i < eventsCount; ++i) {
-				int index = findIndex(ev[i].data.fd);
+				int index = findIndex(_state._clients, ev[i].data.fd);
                 if (ev[i].data.fd == _server_socket) {
                     handleNewClient();
                 }
 				if (ev[i].events & EPOLLIN) {
-					receiveData(_client_vec[index]);
+					receiveData(_state._clients[index]);
 				}
 				if (ev[i].events & EPOLLOUT) { 
-					_client_vec[index].sendData();
-					if (_client_vec[index].getSendBuffer().empty()) {
-						changePut(_client_vec[index], EPOLLIN, _epoll_fd);
+					_state._clients[index]->sendData();
+					if (_state._clients[index]->getSendBuffer().empty()) {
+						changePut(_state._clients[index], EPOLLIN, _epoll_fd);
 					}
                 }
-			
             }
         }
     }
@@ -151,14 +151,14 @@ void Server::handleNewClient() {
         if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		Client	new_client(client);
-		_client_vec.push_back(std::move(new_client));
+		_state._clients.push_back(std::make_shared<Client>(client));
     }
 }
 
-void	Server::removeClient(Client& client) {
+void	Server::removeClient(std::shared_ptr<Client>& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
+<<<<<<< HEAD
     ev.data.fd = client.getClientSocket();
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev)) {
 		std::cerr << "Error with epoll_ctl: deleting client failed" << std::endl;
@@ -172,88 +172,73 @@ void	Server::removeClient(Client& client) {
 		}
 	}
 	close(client.getClientSocket());
+=======
+    ev.data.fd = client->getClientSocket();
+	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client->getClientSocket(), &ev);
+	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
+		if (_state._clients[i]->getClientSocket() == client->getClientSocket()) {
+			//remove client from vector;
+		}
+	}
+	close(client->getClientSocket());
+	//remove from epoll (epoll_ctl)
+	//close client fd (client socket)
+	//remove from client vector
+	//remove from channels, if only one in channel, remove channel? if they were operator for channel???
+	//disconnection message for others in the channel??
+
+>>>>>>> 06940aac5c8c3c7c655454dbd1c6a76860ebd32d
 }
 
-void    Server::receiveData(Client& client)
-{
-	if (!client.receiveData()) {
+void    Server::receiveData(std::shared_ptr<Client>& client) {
+	if (client == nullptr)
+		return ;
+	if (!client->receiveData()) {
 		//client disconnected, handle it
 		return ;
 	}
 	Message	msg;
+	Parser	parser;
 	while (msg.getNextMessage(client)) {
-		if (msg.handleCap(client))
-		{
+		msg.handleCap(client);
+		int	error = msg.getType();
+		if (error == CAP_START || error == CAP_REQ) {
 			msg.emptyMsg();
 			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
+		} else if (error == CAP_END) {
+			msg.emptyMsg();
+			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
+			validateClient(client);
+		} 
+		else if (error == CAP) {
+			//std::cout << msg.getMsg() << std::endl;
+			parser.parseCap(client, msg.getMsg());
 		}
-		else
-			parseInput(msg.getMsg(), client);
-
-	} 
+		else if (error == CMD) {
+			std::cout << msg.getMsg() << std::endl;
+			parser.parseCommand(client, msg.getMsg());
+		}
+	}
 }
 
-bool	Server::validateNick(std::string nickname)
-{
-	std::string invalid_start = "$:#&~@+%";
-	if (invalid_start.find(nickname[0]) != std::string::npos) {
+bool	Server::validateClient(std::shared_ptr<Client>& client) {
+	Message	msg;
+
+	if (client->getPassword() != _password)
 		return (false);
-	}
-	std::string	invalid = " ,*?!@.";
-	for (size_t i = 0; i < nickname.size(); i++) {
-		for (int j = 0; j < 7; j++) {
-			if (nickname[i] == invalid[j]) {
-				return (false);
-			}
-		}
-	}
+	if (!client->validateNickname(client->getNickname()))
+		return (false);
+	msg.welcomeMessage(client);
+	client->authenticate();
+	if (!client->isAuthenticated())
+		return (false);
+	client->printClient(); // To check that every attribute is valid. Remove later.
 	return (true);
 }
 
-void	Server::parseInput(std::string msg, Client& client)
-{
-	if (msg.substr(0, 4) == "PASS") {
-		//check password
-	}
-	else if (msg.substr(0, 4) == "NICK"){
-		//get nickname
-		if (!validateNick(msg.substr(5, msg.size()))) { //this is not working
-			//error invalid nickname, disconnect client
-			std::cout  << "Invalid nickname" << std::endl;
-			//should quit and disconnect here
-		}
-		client.setNickname(msg.substr(5, msg.size() - 1));
-		//check if valid
-		//invalid: ' ', ',', '*', '?', '!', '@',  '.'
-		//invalid starting: '$', ':', '#', '&', '~', '+q' '+a' '@' '+o' '%' '+h' '+' '+v'
-
-	}
-	else if (msg.substr(0,4) == "USER") {
-		int index = 0;
-		for (size_t i = 5; i < msg.size(); i++)
-		{
-			if (msg[i] == ' ')
-			{
-				index = i;
-				break ;
-			}
-		}
-		client.setUsername(msg.substr(5, index - 5));
-		for (size_t i = 5; i < msg.size(); i++)
-		{
-			if (msg[i] == ':')
-			{
-				index = i + 1;
-				break ;
-			}
-		}
-		client.setName(msg.substr(index, msg.size() - 1));
-	}
-}
-
-void	Server::changePut(Client& client, uint32_t put, int epoll_fd) {
+void	Server::changePut(std::shared_ptr<Client>& client, uint32_t put, int epoll_fd) {
 	struct epoll_event ev;
 	ev.events = put;
-	ev.data.fd = client.getClientSocket();
-	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client.getClientSocket(), &ev);
+	ev.data.fd = client->getClientSocket();
+	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client->getClientSocket(), &ev);
 }

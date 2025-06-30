@@ -12,14 +12,17 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "reply.hpp"
+#include "Channel.hpp"
+#include "Parser.hpp"
+#include "State.hpp"
 
 class Server {
 	private:
 		std::string			_port;
 		std::string			_password;
 		int					_server_socket;
-		std::vector<Client>	_client_vec;
 		int					_epoll_fd;
+		State				_state;
 
 	public:
 		Server(char** argv);
@@ -29,11 +32,12 @@ class Server {
 		std::string	getPassword() const;
 		int			getServerSocket() const;
 		int			getEpollFd() const;
-		int			findIndex(int fd);
+		std::vector<Channel> getChannels() const;
 		void		handleNewClient();
-		void		removeClient(Client& client);
-		void    	receiveData(Client& client);
-		void		changePut(Client& client, uint32_t put, int epoll_fd);
-		void		parseInput(std::string msg, Client& client);
+		void		removeClient(std::shared_ptr<Client>& client);
+		void    	receiveData(std::shared_ptr<Client>& client);
+		void		changePut(std::shared_ptr<Client>& client, uint32_t put, int epoll_fd);
+		void		parseInput(std::string msg, std::shared_ptr<Client>& client);
 		bool		validateNick(std::string nickname);
+		bool		validateClient(std::shared_ptr<Client>& client);
 };

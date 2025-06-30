@@ -6,7 +6,15 @@ CFILES := main.cpp \
 			Server.cpp \
 			Client.cpp \
 			Message.cpp \
+<<<<<<< HEAD
 			Channel.cpp
+=======
+			Channel.cpp \
+			ACommand.cpp \
+			JoinCommand.cpp  \
+			Parser.cpp \
+			State.cpp
+>>>>>>> 06940aac5c8c3c7c655454dbd1c6a76860ebd32d
 
 INC := includes/
 SRC_PATH := sources/
