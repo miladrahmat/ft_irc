@@ -1,15 +1,11 @@
 
 #include "JoinCommand.hpp"
 
+#include <iostream>
+
 JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
 
 bool JoinCommand::execute() const {
-    if (_invite_flag) {
-        std::vector<Channel>::iterator chan = _state.getChannel(_client->getChannelInvitedTo());
-        if (chan != _state.getChannels().end()) {
-            return (chan->join(_client, ""));
-        }
-    }
     std::vector<std::string>::const_iterator chan_it = _channels.begin();
     std::vector<std::string>::const_iterator key_it = _keys.begin();
     for ( ; chan_it != _channels.end(); chan_it++) {
@@ -42,39 +38,23 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
 
     JoinCommand* cmd = new JoinCommand(command, client, state);
     std::vector<std::string>::iterator it = args.begin();
-    for ( ; it != args.end() && (*it)[0] == '-'; it++) {
-        if (*it == "-window") {
-            cmd->_window_flag = true;
-        }
-        else if (*it == "-invite") {
-            cmd->_invite_flag = true;
-        }
-        else {
-            cmd->_server_tag = *it;
-        }
-    }
-    if (it != args.end()) {
-        std::stringstream ss(*it);
-        for (std::string str; ss >> str;) {
-            if (validChannelName(str)) {
-                cmd->_channels.push_back(str);
-            }
-            if (ss.peek() == ',')
-                ss.ignore();
+    std::stringstream ss(*it);
+    while (ss.good()) {
+        std::string substr;
+        std::getline(ss, substr, ',');
+        if (validChannelName(substr)) {
+            cmd->_channels.push_back(substr);
         }
     }
     it++;
     if (it != args.end()) {
         std::stringstream ss(*it);
-        for (std::string str; ss >> str;) {
-            if (str.length() )
-            cmd->_keys.push_back(str);    
-            if (ss.peek() == ',')
-                ss.ignore();
+
+        while (ss.good()) {
+            std::string substr;
+            std::getline(ss, substr, ',');
+            cmd->_keys.push_back(substr);
         }
-    }
-    if (!cmd->_invite_flag && cmd->_channels.empty()) {
-        return (nullptr);
     }
     return (std::unique_ptr<JoinCommand>(cmd));
 }
