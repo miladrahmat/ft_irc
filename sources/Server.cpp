@@ -83,7 +83,7 @@ int	Server::getEpollFd() const {
 
 int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd)
 {
-	for (size_t i = 0; i < _client_vec.size(); i++)
+	for (size_t i = 0; i < clients.size(); i++)
 	{
 		if (clients[i]->getClientSocket() == fd)
 		{
@@ -158,21 +158,6 @@ void Server::handleNewClient() {
 void	Server::removeClient(std::shared_ptr<Client>& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
-<<<<<<< HEAD
-    ev.data.fd = client.getClientSocket();
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client.getClientSocket(), &ev)) {
-		std::cerr << "Error with epoll_ctl: deleting client failed" << std::endl;
-	}
-	for (int i = 0; i < client.getChannelsSize(); i++) {
-		//leave channel, client.getChannel(i)
-	}
-	for (size_t i = 0; i < _client_vec.size(); i++) {
-		if (_client_vec[i].getClientSocket() == client.getClientSocket()) {
-			//_client_vec.erase(_client_vec.begin() + i);
-		}
-	}
-	close(client.getClientSocket());
-=======
     ev.data.fd = client->getClientSocket();
 	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client->getClientSocket(), &ev);
 	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
@@ -187,7 +172,6 @@ void	Server::removeClient(std::shared_ptr<Client>& client) {
 	//remove from channels, if only one in channel, remove channel? if they were operator for channel???
 	//disconnection message for others in the channel??
 
->>>>>>> 06940aac5c8c3c7c655454dbd1c6a76860ebd32d
 }
 
 void    Server::receiveData(std::shared_ptr<Client>& client) {
@@ -216,6 +200,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (error == CMD) {
 			std::cout << msg.getMsg() << std::endl;
+			changePut(client, EPOLLOUT, _epoll_fd);
 			parser.parseCommand(client, msg.getMsg());
 		}
 	}

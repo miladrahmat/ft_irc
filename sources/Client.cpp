@@ -57,6 +57,10 @@ std::string	Client::getHostname() const {
 	return (_hostname);
 }
 
+std::string	Client::getUsername() const {
+	return(_username);
+}
+
 bool	Client::isAuthenticated() const {
 	return (_authenticated);
 }

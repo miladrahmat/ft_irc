@@ -9,7 +9,6 @@ Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string p
 Channel::~Channel() {};
 
 bool Channel::isClient(const std::shared_ptr<Client> & client) const {
->>>>>>> 06940aac5c8c3c7c655454dbd1c6a76860ebd32d
     if (std::find(_clients.begin(), _clients.end(), client) == _clients.end()) {
         return (false);
     }

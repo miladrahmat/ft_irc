@@ -71,3 +71,20 @@ void	Message::errorMessage(std::shared_ptr<Client>& client, reply err) {
 	client->appendSendBuffer(_send_msg);
 	_send_msg.erase(0, _send_msg.size());
 }
+
+void	Message::message(std::shared_ptr<Client>& client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
+	//:nickname!username@hostname COMMAND #channel : <message or description of event>
+	_send_msg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname();
+	if (cmd) {
+		_send_msg += " " + *cmd;
+	}
+	if (target) {
+		_send_msg += " " + *target;
+	}
+	if (msg) {
+		_send_msg += " :" + *msg;
+	}
+	_send_msg += "\r\n";
+	client->appendSendBuffer(_send_msg);
+	_send_msg.clear();
+}
