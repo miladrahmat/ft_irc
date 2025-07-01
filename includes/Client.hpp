@@ -34,6 +34,7 @@ class Client {
 		std::string	getNickname() const;
 		std::string	getPassword() const;
 		std::string	getHostname() const;
+		std::string	getUsername() const;
 		bool		isAuthenticated() const;
 		std::string getChannelInvitedTo() const;
 		void 		setNickname(std::string nickname);

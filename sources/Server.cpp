@@ -200,6 +200,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (error == CMD) {
 			std::cout << msg.getMsg() << std::endl;
+			changePut(client, EPOLLOUT, _epoll_fd);
 			parser.parseCommand(client, msg.getMsg());
 		}
 	}

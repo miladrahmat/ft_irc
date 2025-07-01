@@ -144,3 +144,11 @@ bool Channel::join(const std::shared_ptr<Client> & client, std::string password)
 std::string Channel::getName() const {
     return (_name);
 }
+
+std::string Channel::getClientsNick() const {
+    std::string clients;
+    for (auto i = _clients.begin(); i != _clients.end(); i++) {
+        clients.append((*i)->getName());
+    }
+    return (clients);
+}

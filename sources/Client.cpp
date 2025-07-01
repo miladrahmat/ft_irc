@@ -2,6 +2,7 @@
 #include <iostream>
 
 Client::Client(int socket) : _client_socket(socket) {
+
 }
 
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
@@ -35,6 +36,10 @@ std::string	Client::getPassword() const {
 
 std::string	Client::getHostname() const {
 	return (_hostname);
+}
+
+std::string	Client::getUsername() const {
+	return(_username);
 }
 
 bool	Client::isAuthenticated() const {
