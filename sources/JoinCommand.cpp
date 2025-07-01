@@ -31,7 +31,7 @@ bool JoinCommand::execute() const {
                 _state.addNewChannel(*chan_it, _client, *key_it);
             }
         }
-        msg.message(_client, _command, *chan_it, {});
+        msg.message(_client, _client, _command, *chan_it, {});
         if (key_it != _keys.end()) {
             key_it++;
         }

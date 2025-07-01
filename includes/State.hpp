@@ -14,6 +14,7 @@ class State {
         std::vector<Channel>::iterator getChannel(std::string channel_name);
         std::vector<Channel> & getChannels();
         void addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password = "");
+        //void removeChannel(Channel channel);
 
         friend class Server;
 };

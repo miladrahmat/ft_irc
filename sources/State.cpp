@@ -20,3 +20,12 @@ void	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, st
 	_channels.push_back(Channel(name, client, password));
 	//some reply?
 }
+
+/*void	State::removeChannel(Channel channel) {
+	for (int i = 0; i < _channels.size(); i++) {
+		if (channel == _channels[i]) {
+			_channels.erase(_channels.begin() + i);
+			break;
+		}
+	}
+}*/

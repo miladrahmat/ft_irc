@@ -162,7 +162,10 @@ void	Server::removeClient(std::shared_ptr<Client>& client) {
 	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client->getClientSocket(), &ev);
 	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
 		if (_state._clients[i]->getClientSocket() == client->getClientSocket()) {
-			//remove client from vector;
+			//remove from all channels, if the only one in the channel, also the channel? if they were the operator of the channel?
+			//send disconnection message for others in the channel
+			_state._clients.erase(_state._clients.begin() + i);
+			break;
 		}
 	}
 	close(client->getClientSocket());
