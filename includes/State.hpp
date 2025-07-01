@@ -13,7 +13,7 @@ class State {
     public:
         std::vector<Channel>::iterator getChannel(std::string channel_name);
         std::vector<Channel> & getChannels();
-        void addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password = "");
+        bool addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password = "");
 
         friend class Server;
 };

@@ -152,3 +152,7 @@ std::string Channel::getClientsNick() const {
     }
     return (clients);
 }
+
+std::string Channel::getTopic() const {
+    return (_topic);
+}

@@ -16,6 +16,7 @@ class JoinCommand : public ACommand {
     public:
         static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client, State & state,
             std::vector<std::string> args);
-        bool execute() const override;
         static bool validChannelName(std::string channel);
+        bool execute() const override;
+        void joinReply(std::string channel) const;
 };

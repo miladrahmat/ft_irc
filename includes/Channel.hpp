@@ -38,5 +38,6 @@ class Channel {
         void setUserLimit(const std::shared_ptr<Client> & client, unsigned int limit);
         bool join(const std::shared_ptr<Client> & client, std::string password);
         std::string getName() const;
+        std::string getTopic() const;
         std::string getClientsNick() const;
 };
