@@ -48,6 +48,7 @@ class Client {
 		void		setInvitedTo(std::string channel_name);
 		void		appendBuffer(std::string const& msg);
 		void		appendSendBuffer(std::string const& msg);
+		void		changePut(uint32_t put, int epoll_fd);
 		bool		receiveData();
 		bool		sendData(); 
 		std::string	getSendBuffer();

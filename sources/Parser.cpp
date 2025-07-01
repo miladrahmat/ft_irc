@@ -23,20 +23,20 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input) {
 	}
 }
 
-void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input) {
+void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
 		if (input.compare(0, 4, "JOIN") == 0 || input.compare(0, 4, "join") == 0) {
-			parseJoinCommand(client, input);
+			parseJoinCommand(client, input, state);
 		}
 		else if (input.compare(0, 7, "PRIVMSG") == 0) {
-			parsePrivmsgCommand(client, input);
+			parsePrivmsgCommand(client, input, state);
 		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
 }
 
-bool	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& input) {
+bool	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::vector<std::string>	arg_vec;
 
 	std::string	command = input.substr(0, input.find_first_of(' '));
@@ -46,14 +46,13 @@ bool	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& inpu
 		input.erase(0, arg.length() + 1);
 		arg_vec.push_back(arg);
 	}
-	State	state;
 	std::unique_ptr<ACommand>	cmd = JoinCommand::create(command, client, state, arg_vec);
 	if (cmd == nullptr)
 		return (false);
 	return (cmd->execute());
 }
 
-bool	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input) {
+bool	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::vector<std::string>	arg_vec;
 
 	std::string command = input.substr(0, input.find_first_of(' '));
@@ -63,9 +62,10 @@ bool	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& i
 		input.erase(0, arg.length() + 1);
 		arg_vec.push_back(arg);
 	}
-	State state;
 	std::unique_ptr<ACommand>	cmd = PrivmsgCommand::create(command, client, state, arg_vec);
-	if (cmd == nullptr)
+	if (cmd == nullptr) {
+		std::cout << "Parser failed" << std::endl;
 		return (false);
+	}
 	return (cmd->execute());
 }

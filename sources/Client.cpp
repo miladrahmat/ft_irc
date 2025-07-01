@@ -107,6 +107,13 @@ void	Client::appendSendBuffer(std::string const& msg) {
 	_send_buffer.append(msg);
 }
 
+void	Client::changePut(uint32_t put, int epoll_fd) {
+	struct epoll_event ev;
+	ev.events = put;
+	ev.data.fd = this->getClientSocket();
+	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, this->getClientSocket(), &ev);
+}
+
 bool	Client::receiveData() {
 	char	buf[1024];
 	int		received_bytes = recv(this->_client_socket, buf, sizeof(buf), MSG_DONTWAIT);

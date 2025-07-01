@@ -77,10 +77,6 @@ int	Server::getServerSocket() const {
 	return (_server_socket);
 }
 
-int	Server::getEpollFd() const {
-	return (_epoll_fd);
-}
-
 int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd)
 {
 	for (size_t i = 0; i < clients.size(); i++)
@@ -94,21 +90,21 @@ int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd)
 }
 
 void	Server::start() {
-	_epoll_fd = epoll_create(1);
-    if (_epoll_fd < 0) {
+	_state._epoll_fd = epoll_create(1);
+    if (_state._epoll_fd < 0) {
         std::cerr << "Error with epoll" << std::endl;
         return ;
     }
     struct epoll_event ev_server;
     ev_server.events = EPOLLIN;
     ev_server.data.fd = _server_socket;
-    if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
+    if (epoll_ctl(_state._epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
         std::cerr << "Error with epoll_ctl" << std::endl;
         return ;
     }
 	struct epoll_event ev[64];
     while (true) {
-        int eventsCount = epoll_wait(_epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
+        int eventsCount = epoll_wait(_state._epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
         if (eventsCount < 0) {
             std::cerr << "Error with epoll_wait" << std::endl;
             break ;
@@ -125,13 +121,13 @@ void	Server::start() {
 				else if (ev[i].events & EPOLLOUT) { 
 					_state._clients[index]->sendData();
 					if (_state._clients[index]->getSendBuffer().empty()) {
-						changePut(_state._clients[index], EPOLLIN, _epoll_fd);
+						_state._clients[index]->changePut(EPOLLIN, _state._epoll_fd);
 					}
                 }
             }
         }
     }
-    close(_epoll_fd);
+    close(_state._epoll_fd);
 }
 
 void Server::handleNewClient() {
@@ -148,7 +144,7 @@ void Server::handleNewClient() {
         struct epoll_event ev2;
         ev2.events = EPOLLIN;
         ev2.data.fd = client;
-        if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
+        if (epoll_ctl(_state._epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
 		_state._clients.push_back(std::make_shared<Client>(client));
@@ -159,7 +155,7 @@ void	Server::removeClient(std::shared_ptr<Client>& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = client->getClientSocket();
-	epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client->getClientSocket(), &ev);
+	epoll_ctl(_state._epoll_fd, EPOLL_CTL_DEL, client->getClientSocket(), &ev);
 	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
 		if (_state._clients[i]->getClientSocket() == client->getClientSocket()) {
 			//remove from all channels, if the only one in the channel, also the channel? if they were the operator of the channel?
@@ -191,10 +187,10 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		int	error = msg.getType();
 		if (error == CAP_START || error == CAP_REQ) {
 			msg.emptyMsg();
-			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
+			client->changePut(EPOLLIN | EPOLLOUT, _state._epoll_fd);
 		} else if (error == CAP_END) {
 			msg.emptyMsg();
-			changePut(client, EPOLLIN | EPOLLOUT, _epoll_fd);
+			client->changePut(EPOLLIN | EPOLLOUT, _state._epoll_fd);
 			validateClient(client);
 		} 
 		else if (error == CAP) {
@@ -203,8 +199,8 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (error == CMD) {
 			std::cout << msg.getMsg() << std::endl;
-			changePut(client, EPOLLOUT, _epoll_fd);
-			parser.parseCommand(client, msg.getMsg());
+			client->changePut(EPOLLIN | EPOLLOUT, _state._epoll_fd);
+			parser.parseCommand(client, msg.getMsg(), _state);
 		}
 	}
 }
@@ -222,11 +218,4 @@ bool	Server::validateClient(std::shared_ptr<Client>& client) {
 		return (false);
 	client->printClient(); // To check that every attribute is valid. Remove later.
 	return (true);
-}
-
-void	Server::changePut(std::shared_ptr<Client>& client, uint32_t put, int epoll_fd) {
-	struct epoll_event ev;
-	ev.events = put;
-	ev.data.fd = client->getClientSocket();
-	epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client->getClientSocket(), &ev);
 }
