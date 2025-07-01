@@ -12,6 +12,7 @@ bool JoinCommand::execute() const {
     }
     std::vector<std::string>::const_iterator chan_it = _channels.begin();
     std::vector<std::string>::const_iterator key_it = _keys.begin();
+    Message msg;
     for ( ; chan_it != _channels.end(); chan_it++) {
         std::vector<Channel>::iterator chan = _state.getChannel(*chan_it);
         if (chan != _state.getChannels().end()) {
@@ -30,6 +31,7 @@ bool JoinCommand::execute() const {
                 _state.addNewChannel(*chan_it, _client, *key_it);
             }
         }
+        msg.message(_client, _command, *chan_it, {});
         if (key_it != _keys.end()) {
             key_it++;
         }

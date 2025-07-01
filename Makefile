@@ -1,6 +1,6 @@
 NAME := ircserv
 CC := c++
-FLAGS := -Wall -Wextra -Werror -g #REMOVE g
+FLAGS := -Wall -Wextra -Werror -std=c++17 -g #REMOVE g
 
 CFILES := main.cpp \
 			Server.cpp \
