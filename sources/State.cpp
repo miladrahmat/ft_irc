@@ -20,3 +20,16 @@ void	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, st
 	_channels.push_back(Channel(name, client, password));
 	//some reply?
 }
+
+std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nickname) {
+	std::vector<std::shared_ptr<Client>>::iterator it = _clients.begin();
+	for ( ; it != _clients.end(); it++) {
+		if ((*it)->getNickname() == nickname)
+			return (it);
+	}
+	return (it);
+}
+
+std::vector<std::shared_ptr<Client>>&	State::getClients() {
+	return (_clients);
+}

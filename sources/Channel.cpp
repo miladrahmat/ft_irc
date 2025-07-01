@@ -2,9 +2,9 @@
 #include "Channel.hpp"
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
-    _name(name), _clients{client}, _operators{client}, _password(password),
-    _invite_only(false), _topic_command_access(true),
-    _user_limit(std::numeric_limits<int>::max()) {};
+    _password(password), _invite_only(false), _topic_command_access(true),
+    _user_limit(std::numeric_limits<int>::max()), _name(name), _clients{client},
+    _operators{client} {};
 
 Channel::~Channel() {};
 

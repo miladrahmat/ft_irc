@@ -9,6 +9,7 @@ CFILES := main.cpp \
 			Channel.cpp \
 			ACommand.cpp \
 			JoinCommand.cpp  \
+			PrivmsgCommand.cpp \
 			Parser.cpp \
 			State.cpp
 

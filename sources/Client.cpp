@@ -94,11 +94,11 @@ void	Client::setClientSocket(int socket) {
 	_client_socket = socket;
 }
 
-void	Client::appendBuffer(std::string& msg) {
+void	Client::appendBuffer(std::string const& msg) {
 	_buffer.append(msg);
 }
 
-void	Client::appendSendBuffer(std::string& msg) {
+void	Client::appendSendBuffer(std::string const& msg) {
 	_send_buffer.append(msg);
 }
 

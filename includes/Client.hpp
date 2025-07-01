@@ -45,8 +45,8 @@ class Client {
 		void		setClientSocket(int socket);
 		void		authenticate();
 		void		setInvitedTo(std::string channel_name);
-		void		appendBuffer(std::string& msg);
-		void		appendSendBuffer(std::string& msg);
+		void		appendBuffer(std::string const& msg);
+		void		appendSendBuffer(std::string const& msg);
 		bool		receiveData();
 		bool		sendData(); 
 		std::string	getSendBuffer();

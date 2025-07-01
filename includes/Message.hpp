@@ -11,8 +11,7 @@ enum    MSG_TYPE {
     CAP_REQ,
     CAP,
     CAP_END,
-    CMD,
-    MSG
+    CMD
 };
 
 class Message {
