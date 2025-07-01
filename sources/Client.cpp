@@ -4,11 +4,6 @@
 Client::Client(int socket) : _client_socket(socket) {
 }
 
-/* Client::Client(const Client & old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
-										_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
-
-} */
-
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
 											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
 
@@ -17,19 +12,6 @@ Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client
 Client::~Client() {
 	close(_client_socket);
 }
-
-/* Client		&Client::operator=(const Client& other) {
-	if (this != &other) {
-		this->_client_socket = other._client_socket;
-		this->_name = other._name;
-		this->_nickname = other._nickname;
-		this->_username = other._username;
-		this->_buffer = other._buffer;
-		this->_send_buffer = other._buffer;
-		this->_channels = other._channels;
-	}
-	return (*this);
-} */
 
 bool		Client::operator==(const Client& other) const {
 	return (this->_client_socket == other._client_socket);
