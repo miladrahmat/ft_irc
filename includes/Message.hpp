@@ -31,6 +31,6 @@ class Message {
 	    void 		handleCap(std::shared_ptr<Client>& client);
         bool		getNextMessage(std::shared_ptr<Client>& client);
 	    void		welcomeMessage(std::shared_ptr<Client>& client);
-        void        message(std::shared_ptr<Client>& client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
+        void        message(std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
         void        codedMessage(std::shared_ptr<Client>& client, struct reply code, const std::optional<std::string>& target);
 };
