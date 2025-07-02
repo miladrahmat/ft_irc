@@ -32,7 +32,7 @@ class Server {
 		std::string	getPassword() const;
 		int			getServerSocket() const;
 		std::vector<Channel> getChannels() const;
-		void		handleNewClient();
+		void		handleNewClient(int epoll_fd);
 		void		removeClient(std::shared_ptr<Client>& client);
 		void    	receiveData(std::shared_ptr<Client>& client);
 		void		parseInput(std::string msg, std::shared_ptr<Client>& client);

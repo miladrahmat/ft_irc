@@ -93,6 +93,5 @@ void	Message::message(std::shared_ptr<Client>& s_client, std::shared_ptr<Client>
 	}
 	_send_msg += "\r\n";
 	r_client->appendSendBuffer(_send_msg);
-	std::cout << _send_msg << std::endl;
 	_send_msg.clear();
 }

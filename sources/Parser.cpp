@@ -64,7 +64,6 @@ bool	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& i
 	}
 	std::unique_ptr<ACommand>	cmd = PrivmsgCommand::create(command, client, state, arg_vec);
 	if (cmd == nullptr) {
-		std::cout << "Parser failed" << std::endl;
 		return (false);
 	}
 	return (cmd->execute());
