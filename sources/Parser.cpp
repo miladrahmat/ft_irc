@@ -1,6 +1,6 @@
 #include "Parser.hpp"
 
-void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input) {
+void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
 		if (input.compare(0, 6, "CAP LS") == 0) {
 			return ;
@@ -9,8 +9,7 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input) {
 			std::string	password = input.substr(5, input.length());
 			client->setPassword(password);
 		} else if (input.compare(0, 4, "NICK") == 0) {
-			std::string	nickname = input.substr(5, input.length());
-			client->setNickname(nickname);
+			parseNickCommand(client, input, state);
 		} else if (input.compare(0, 4, "USER") == 0) {
 			std::string	args = input.substr(5, input.length());
 			std::string	username = args.substr(0, args.find(' '));
@@ -37,6 +36,14 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
+}
+
+bool	Parser::parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	std::string command = input.substr(0, input.find_first_of(' '));
+	std::string nickname = input.substr(input.find_first_of(' ') + 1, input.length());
+	std::unique_ptr<ACommand> cmd = NickCommand::create(command, client, state, nickname);
+
+	return (cmd->execute());
 }
 
 bool	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {

@@ -54,21 +54,6 @@ void	Client::setNickname(std::string nickname) {
 	_nickname = nickname;
 }
 
-bool	Client::validateNickname(std::string nickname) {
-	std::string invalid_start = "$:#&~@+%";
-	if (invalid_start.find(nickname[0]) != std::string::npos) {
-		return (false);
-	}
-	std::string	invalid = " ,*?!@.";
-	for (size_t i = 0; i < invalid.length(); i++) {
-		if (nickname.find(invalid[i]) != std::string::npos) {
-			return (false);
-		}
-	}
-	setNickname(nickname);
-	return (true);
-}
-
 void	Client::setUsername(std::string username) {
 	_username = username;
 }

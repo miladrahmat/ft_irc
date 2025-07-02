@@ -74,7 +74,11 @@ void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
 }
 
 void	Message::codedMessage(std::shared_ptr<Client>& client, reply code, const std::optional<std::string>& target) {
-	_send_msg = ":ircserv.galleria " + code.code + " " + client->getNickname();
+	_send_msg = ":ircserv.galleria " + code.code + " ";
+	if (client->getNickname().empty())
+		_send_msg += "*";
+	else
+		_send_msg += client->getNickname();
 	if (target) {
 		_send_msg += " " + *target;
 	}
