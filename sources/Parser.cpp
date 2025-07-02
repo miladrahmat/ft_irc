@@ -2,7 +2,10 @@
 
 void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input) {
 	try {
-		if (input.compare(0, 4, "PASS") == 0) {
+		if (input.compare(0, 6, "CAP LS") == 0) {
+			return ;
+		}
+		else if (input.compare(0, 4, "PASS") == 0) {
 			std::string	password = input.substr(5, input.length());
 			client->setPassword(password);
 		} else if (input.compare(0, 4, "NICK") == 0) {

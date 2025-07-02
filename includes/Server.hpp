@@ -35,7 +35,6 @@ class Server {
 		void		handleNewClient(int epoll_fd);
 		void		removeClient(std::shared_ptr<Client>& client);
 		void    	receiveData(std::shared_ptr<Client>& client);
-		void		parseInput(std::string msg, std::shared_ptr<Client>& client);
-		bool		validateNick(std::string nickname);
+		bool		validateNick(std::shared_ptr<Client>& client);
 		bool		validateClient(std::shared_ptr<Client>& client);
 };

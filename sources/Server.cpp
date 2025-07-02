@@ -180,27 +180,51 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 	Message	msg;
 	Parser	parser;
 	while (msg.getNextMessage(client)) {
-		msg.handleCap(client);
-		int	error = msg.getType();
-		if (error == CAP_START || error == CAP_REQ) {
-			msg.emptyMsg();
-		} else if (error == CAP_END) {
-			msg.emptyMsg();
-			validateClient(client);
-		} 
-		else if (error == CAP) {
+		msg.determineType(client);
+		int	type = msg.getType();
+		if (type == CAP_LS) {
 			parser.parseCap(client, msg.getMsg());
+			msg.messageCap(client);
+			msg.clearMsg();
 		}
-		else if (error == CMD) {
+		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
+			if (type == CAP_REQ_AGAIN)
+				parser.parseCap(client, msg.getMsg());
+			if (validateNick(client))
+				msg.messageCap(client);
+			else {
+				const std::string	invalid = client->getNickname();
+				client->setNickname("*");
+				msg.codedMessage(client, ERR_NICKNAMEINUSE, invalid);
+			}
+			msg.clearMsg();
+		}
+		else if (type == CAP_END) {
+			validateClient(client);
+			msg.clearMsg();
+		}
+		else if (type == CMD) {
 			std::cout << msg.getMsg() << std::endl;
 			parser.parseCommand(client, msg.getMsg(), _state);
+			msg.clearMsg();
 		}
 	}
+}
+
+bool	Server::validateNick(std::shared_ptr<Client>& client) {
+	if (!client->validateNickname(client->getNickname()))
+		return (false);
+	for (auto it = _state._clients.begin(); it != _state._clients.end(); ++it) {
+		if ((*it)->getNickname() == client->getNickname() && *it != client)
+			return (false);
+	}
+	return (true);
 }
 
 bool	Server::validateClient(std::shared_ptr<Client>& client) {
 	Message	msg;
 
+	client->printClient();
 	if (client->getPassword() != _password)
 		return (false);
 	if (!client->validateNickname(client->getNickname()))
