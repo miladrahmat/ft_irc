@@ -29,6 +29,7 @@ class Message {
         std::string& getMsg();
         int          getType() const;
         void        clearMsg();
+        void	    clearSendMsg();
 	    void 		determineType(std::shared_ptr<Client>& client);
         bool		getNextMessage(std::shared_ptr<Client>& client);
 	    void		welcomeMessage(std::shared_ptr<Client>& client);

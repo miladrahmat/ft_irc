@@ -189,13 +189,21 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
 			if (type == CAP_REQ_AGAIN) {
-				parser.parseNickCommand(client, msg.getMsg(), _state);
+				if (!parser.parseNickCommand(client, msg.getMsg(), _state)) {
+					msg.clearMsg();
+					msg.clearSendMsg();
+					continue ;
+				}
 			}
 			msg.messageCap(client);
 			msg.clearMsg();
 		}
 		else if (type == CAP_END) {
-			validateClient(client);
+			if (!validateClient(client)) {
+				msg.clearMsg();
+				msg.clearSendMsg();
+				continue ;
+			}
 			msg.clearMsg();
 		}
 		else if (type == CMD) {

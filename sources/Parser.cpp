@@ -33,6 +33,9 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 		else if (input.compare(0, 7, "PRIVMSG") == 0) {
 			parsePrivmsgCommand(client, input, state);
 		}
+		else if (input.compare(0, 4, "NICK") == 0) {
+			parseNickCommand(client, input, state);
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}

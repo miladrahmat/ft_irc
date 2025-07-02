@@ -16,13 +16,17 @@ void	Message::clearMsg() {
 	_msg.clear();
 }
 
+void	Message::clearSendMsg() {
+	_send_msg.clear();
+}
+
 void	Message::determineType(std::shared_ptr<Client>& client) {
-	if (_msg.compare(0, 4, "NICK") == 0 && !client->getNickname().empty()) {
+	/* if (_msg.compare(0, 4, "NICK") == 0 && client->getNickname().empty()) {
 		_send_msg = "CAP * ACK :multi-prefix\r\n";
 		_type = CAP_REQ_AGAIN;
-	}
-	else if (_msg.compare(0, 6, "CAP LS") == 0 || _msg.compare(0, 4, "PASS") == 0 || \
-		 _msg.compare(0, 4, "NICK") == 0 || _msg.compare(0, 4, "USER") == 0) {
+	} */
+	if (_msg.compare(0, 6, "CAP LS") == 0 || _msg.compare(0, 4, "PASS") == 0 \
+		|| _msg.compare(0, 4, "USER") == 0) {
 		if (_msg.compare(0, 6, "CAP LS") == 0) {
 			_send_msg = "CAP * LS :multi-prefix account-notify account-tag invite-notify\r\n";
 		}
@@ -38,7 +42,8 @@ void	Message::determineType(std::shared_ptr<Client>& client) {
 	else if (_msg.compare(0, 7, "CAP END") == 0) {
 		_type = CAP_END;
 	}
-	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0) {
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 \
+		|| _msg.compare(0, 4, "NICK") == 0) {
 		_type = CMD;
 	}
 }
