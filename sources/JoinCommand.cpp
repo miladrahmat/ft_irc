@@ -101,7 +101,6 @@ void JoinCommand::joinReply(std::string channel) const {
         if (chan_it->isOperator(*it)) {
             nicks.append("@");
         }
-        std::cout << "appending to nicks: " << (*it)->getNickname() + " " << std::endl;
         nicks.append((*it)->getNickname() + " ");
         if (i == 10) {
             struct reply reply = RPL_NAMREPLY;
