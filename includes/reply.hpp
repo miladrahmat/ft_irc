@@ -7,11 +7,11 @@ struct reply {
 };
 
 static const reply SUCCESS = {"000", ""};
-static const reply RPL_WELCOME = {"001", " :Welcome to IRC\r\n"};
-static const reply RPL_YOURHOST = {"002", " :Your host is ircserv\r\n"}; 
-static const reply RPL_CREATED = {"003", " :This server was created today\r\n"};
-static const reply RPL_MYINFO = {"004", " ircserv 1.0 o o\r\n"}; 
-static const reply RPL_ISUPPORT = {"005", " CHANTYPES=# NICKLEN=9 PREFIX=(ov)@+ CHANMODES=itkol :are supported by this server\r\n"};
+static const reply RPL_WELCOME = {"001", "Welcome to IRC"};
+static const reply RPL_YOURHOST = {"002", "Your host is ircserv"}; 
+static const reply RPL_CREATED = {"003", "This server was created today"};
+static const reply RPL_MYINFO = {"004", "ircserv 1.0 o o"}; 
+static const reply RPL_ISUPPORT = {"005", "CHANTYPES=# NICKLEN=9 PREFIX=(ov)@+ CHANMODES=itkol :are supported by this server"};
 static reply RPL_TOPIC = {"332", " :"};
 //static const err RPL_TOPICWHOTIME  = {"333"};
 static const reply RPL_NAMREPLY = {"353", ""};
