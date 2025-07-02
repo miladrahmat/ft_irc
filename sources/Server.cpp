@@ -224,7 +224,6 @@ bool	Server::validateNick(std::shared_ptr<Client>& client) {
 bool	Server::validateClient(std::shared_ptr<Client>& client) {
 	Message	msg;
 
-	client->printClient();
 	if (client->getPassword() != _password)
 		return (false);
 	if (!client->validateNickname(client->getNickname()))
