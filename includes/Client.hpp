@@ -11,6 +11,7 @@ class Channel;
 class Client {
 	private:
 		int			_client_socket;
+		int			_epoll_fd;
 		std::string	_name;
 		std::string	_nickname;
 		std::string _username;
@@ -23,13 +24,14 @@ class Client {
 		std::vector<Channel*> _channels;
 
 	public:
-		Client(int socket);
+		Client(int socket, int epoll_fd);
 		Client (const Client & old_client) = delete;
 		Client(Client&& old_client) noexcept;
 		~Client();
 		Client		&operator=(const Client& other) = delete;
 		bool		operator==(const Client& other) const;
 		int			getClientSocket() const;
+		int			getEpollFd() const;
 		std::string	getName() const;
 		std::string	getNickname() const;
 		std::string	getPassword() const;
@@ -46,12 +48,15 @@ class Client {
 		void		setClientSocket(int socket);
 		void		authenticate();
 		void		setInvitedTo(std::string channel_name);
-		void		appendBuffer(std::string& msg);
-		void		appendSendBuffer(std::string& msg);
+		void		appendBuffer(std::string const& msg);
+		void		appendSendBuffer(std::string const& msg);
+		void		changePut(uint32_t put);
 		bool		receiveData();
 		bool		sendData(); 
 		std::string	getSendBuffer();
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
 		void		printClient() const;
+		Channel*	getChannel(int i) const;
+		int			getChannelsSize();
 };

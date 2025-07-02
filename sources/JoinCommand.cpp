@@ -75,7 +75,7 @@ bool JoinCommand::execute() const {
             joinReply(*chan_it);
         }
         else {
-            errReply(reply);
+            errReply(reply, *chan_it);
         }
         if (key_it != _keys.end()) {
             key_it++;
@@ -87,17 +87,41 @@ bool JoinCommand::execute() const {
 void JoinCommand::joinReply(std::string channel) const {
     Message msg;
     std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
-    msg.message(_client, _command, channel, {});
+    for (auto client : (*chan_it)._clients) {
+        msg.message(_client, client, "JOIN", channel, {});
+    }
     if (chan_it->getTopic() != "") {
         struct reply reply = RPL_TOPIC;
         reply.msg = chan_it->getTopic();
         msg.codedMessage(_client, reply, channel);
     }
-
+    std::vector<std::shared_ptr<Client>>::iterator it = (*chan_it)._clients.begin();
+    std::string nicks;
+    for (int i = 0; it != (*chan_it)._clients.end(); it++, i++) {
+        if (chan_it->isOperator(*it)) {
+            nicks.append("@");
+        }
+        std::cout << "appending to nicks: " << (*it)->getNickname() + " " << std::endl;
+        nicks.append((*it)->getNickname() + " ");
+        if (i == 10) {
+            struct reply reply = RPL_NAMREPLY;
+            reply.msg = nicks;
+            std::string target = "= " + (*chan_it).getName();
+            msg.codedMessage(_client, reply, target);
+            i = 0;
+            nicks.clear();
+        }
+    }
+    struct reply reply = RPL_NAMREPLY;
+    reply.msg = nicks;
+    std::string target = "= " + (*chan_it).getName();
+    msg.codedMessage(_client, reply, target);
+    nicks.clear();
+    msg.codedMessage(_client, RPL_ENDOFNAMES, (*chan_it).getName());
 }
 
 void JoinCommand::errReply(reply reply, std::string channel) const {
     Message msg;
-    std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
+    //std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
     msg.codedMessage(_client, reply, channel);
 }

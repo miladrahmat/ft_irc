@@ -13,10 +13,6 @@ class Client;
 
 class Channel {
     private:
-        const std::string _name;
-        std::vector<std::shared_ptr<Client>> _clients;
-        std::vector<std::shared_ptr<Client>> _operators;
-        std::string _topic;
         std::string _password;
         bool _invite_only;
         bool _topic_command_access;
@@ -24,6 +20,10 @@ class Channel {
     public:
         Channel(std::string name, std::shared_ptr<Client> client, std::string password = "");
         ~Channel();
+        const std::string _name;
+        std::vector<std::shared_ptr<Client>> _clients;
+        std::vector<std::shared_ptr<Client>> _operators;
+        std::string _topic;
         bool isClient(const std::shared_ptr<Client> & client) const;
         bool isOperator(const std::shared_ptr<Client> & client) const;
         bool channelFull() const;
