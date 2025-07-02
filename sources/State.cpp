@@ -21,11 +21,30 @@ void	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, st
 	//some reply?
 }
 
-/*void	State::removeChannel(Channel channel) {
-	for (int i = 0; i < _channels.size(); i++) {
-		if (channel == _channels[i]) {
-			_channels.erase(_channels.begin() + i);
+void	State::removeClient(std::shared_ptr<Client>& client) {
+	struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = client->getClientSocket();
+	epoll_ctl(client.getEpollFd(), EPOLL_CTL_DEL, client->getClientSocket(), &ev);
+	for (auto it = _channels.begin(); it != _channels.end();) {
+		if (it->isClient(client)) {
+			it->removeClient(client);
+			if (it->getSize() == 0) {
+				it = _channels.erase(it);
+			}
+			else {
+				it++;
+			}
+			//send message to all clients in the channel
+		}
+		else {
+			it++;
+		}
+	}
+	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
+		if (_state._clients[i]->getClientSocket() == client->getClientSocket()) {
+			_state._clients.erase(_state._clients.begin() + i);
 			break;
 		}
 	}
-}*/
+}

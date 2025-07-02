@@ -173,12 +173,3 @@ std::string Client::getChannelInvitedTo() const {
 void Client::setInvitedTo(std::string channel_name) {
 	_invited_to = channel_name;
 }
-
-
-Channel* Client::getChannel(int i) const {
-	return (_channels[i]);
-}
-
-int	Client::getChannelsSize() {
-	return (_channels.size());
-}

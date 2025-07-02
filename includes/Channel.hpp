@@ -12,7 +12,7 @@ class Client;
 
 class Channel {
     private:
-        const std::string _name;
+        std::string _name;
         std::vector<std::shared_ptr<Client>> _clients;
         std::vector<std::shared_ptr<Client>> _operators;
         std::string _topic;
@@ -22,6 +22,7 @@ class Channel {
         int _user_limit;
     public:
         Channel(std::string name, std::shared_ptr<Client> client, std::string password = "");
+        Channel(const Channel &other);
         ~Channel();
         bool isClient(const std::shared_ptr<Client> & client) const;
         bool isOperator(const std::shared_ptr<Client> & client) const;
@@ -39,4 +40,6 @@ class Channel {
         bool join(const std::shared_ptr<Client> & client, std::string password);
         std::string getName() const;
         std::string getClientsNick() const;
+        void    removeClient(const std::shared_ptr<Client> & client);
+        int     getSize();
 };

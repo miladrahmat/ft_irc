@@ -6,6 +6,10 @@ Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string p
     _invite_only(false), _topic_command_access(true),
     _user_limit(std::numeric_limits<int>::max()) {};
 
+Channel::Channel(const Channel &other) : _name(other._name), _clients{other._clients}, _operators{other._operators}, _password(other._password),
+    _invite_only(other._invite_only), _topic_command_access(other._topic_command_access),
+    _user_limit(other._user_limit) {};
+
 Channel::~Channel() {};
 
 bool Channel::isClient(const std::shared_ptr<Client> & client) const {
@@ -151,4 +155,17 @@ std::string Channel::getClientsNick() const {
         clients.append((*i)->getName());
     }
     return (clients);
+}
+
+void    Channel::removeClient(const std::shared_ptr<Client> & client) {
+    for (auto it = _clients.begin(); it != _clients.end(); it++) {
+        if ((*it)->getClientSocket() == client->getClientSocket()) {
+            _clients.erase(it);
+            break;
+        }
+    }
+}
+
+int Channel::getSize() {
+    return (_clients.size());
 }

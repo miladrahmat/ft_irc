@@ -20,7 +20,7 @@ class Client {
 		std::string	_buffer;
 		std::string _send_buffer;
 		std::string _invited_to;
-		std::vector<Channel*> _channels;
+		//std::vector<Channel*> _channels;
 
 	public:
 		Client(int socket);
@@ -54,6 +54,6 @@ class Client {
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
 		void		printClient() const;
-		Channel*	getChannel(int i) const;
-		int			getChannelsSize();
+		//Channel*	getChannel(int i) const;
+		//int			getChannelsSize();
 };
