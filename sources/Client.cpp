@@ -1,17 +1,11 @@
 #include "Client.hpp"
 #include <iostream>
 
-Client::Client(int socket) : _client_socket(socket) {
-	// std::vector<Channel&> _channels;
+Client::Client(int socket, int epoll_fd) : _client_socket(socket), _epoll_fd(epoll_fd) {
+
 }
 
-/* Client::Client(const Client & old_client) : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
-										_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
->>>>>>> 06940aac5c8c3c7c655454dbd1c6a76860ebd32d
-
-} */
-
-Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _name(old_client._name), _nickname(old_client._nickname), \
+Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _epoll_fd(old_client._epoll_fd), _name(old_client._name), _nickname(old_client._nickname), \
 											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
 
 }
@@ -20,25 +14,16 @@ Client::~Client() {
 	close(_client_socket);
 }
 
-/* Client		&Client::operator=(const Client& other) {
-	if (this != &other) {
-		this->_client_socket = other._client_socket;
-		this->_name = other._name;
-		this->_nickname = other._nickname;
-		this->_username = other._username;
-		this->_buffer = other._buffer;
-		this->_send_buffer = other._buffer;
-		this->_channels = other._channels;
-	}
-	return (*this);
-} */
-
 bool		Client::operator==(const Client& other) const {
 	return (this->_client_socket == other._client_socket);
 }
 
 int	Client::getClientSocket() const {
 	return (_client_socket);
+}
+
+int	Client::getEpollFd() const {
+	return (_epoll_fd);
 }
 
 std::string	Client::getName() const {
@@ -118,12 +103,20 @@ void	Client::setClientSocket(int socket) {
 	_client_socket = socket;
 }
 
-void	Client::appendBuffer(std::string& msg) {
+void	Client::appendBuffer(std::string const& msg) {
 	_buffer.append(msg);
 }
 
-void	Client::appendSendBuffer(std::string& msg) {
+void	Client::appendSendBuffer(std::string const& msg) {
 	_send_buffer.append(msg);
+	changePut(EPOLLOUT);
+}
+
+void	Client::changePut(uint32_t put) {
+	struct epoll_event ev;
+	ev.events = put;
+	ev.data.fd = this->getClientSocket();
+	epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, this->getClientSocket(), &ev);
 }
 
 bool	Client::receiveData() {
@@ -144,6 +137,8 @@ bool	Client::sendData() {
 	int	sent_bytes = send(this->_client_socket, this->_send_buffer.c_str(), this->_send_buffer.size(), MSG_DONTWAIT);
 	if (sent_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN) { return (false); }
 	this->_send_buffer.erase(0, sent_bytes);
+	if (_send_buffer.empty())
+		changePut(EPOLLIN);
 	return (true);
 }
 

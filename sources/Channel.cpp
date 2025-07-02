@@ -2,15 +2,19 @@
 #include "Channel.hpp"
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
-    _name(name), _clients{client}, _operators{client}, _password(password),
-    _invite_only(false), _topic_command_access(true),
-    _user_limit(std::numeric_limits<int>::max()) {};
+    _password(password), _invite_only(false), _topic_command_access(true),
+    _user_limit(std::numeric_limits<int>::max()), _name(name), _clients{client},
+    _operators{client} {};
 
 Channel::Channel(const Channel &other) : _name(other._name), _clients{other._clients}, _operators{other._operators}, _password(other._password),
     _invite_only(other._invite_only), _topic_command_access(other._topic_command_access),
     _user_limit(other._user_limit) {};
 
 Channel::~Channel() {};
+
+std::string Channel::getName() const {
+    return (_name);
+}
 
 bool Channel::isClient(const std::shared_ptr<Client> & client) const {
     if (std::find(_clients.begin(), _clients.end(), client) == _clients.end()) {

@@ -1,5 +1,6 @@
 
 #include "State.hpp"
+#include <iostream>
 
 std::vector<Channel>::iterator	State::getChannel(std::string channel_name) {
 	std::vector<Channel>::iterator it = _channels.begin();
@@ -47,4 +48,16 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 			break;
 		}
 	}
+}
+std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nickname) {
+	std::vector<std::shared_ptr<Client>>::iterator it = _clients.begin();
+	for ( ; it != _clients.end(); it++) {
+		if ((*it)->getNickname() == nickname)
+			return (it);
+	}
+	return (it);
+}
+
+std::vector<std::shared_ptr<Client>>&	State::getClients() {
+	return (_clients);
 }
