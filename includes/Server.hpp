@@ -21,7 +21,7 @@ class Server {
 		std::string			_port;
 		std::string			_password;
 		int					_server_socket;
-		int					_epoll_fd;
+		//int					_epoll_fd;
 		State				_state;
 
 	public:
@@ -31,12 +31,10 @@ class Server {
 		std::string	getPort() const;
 		std::string	getPassword() const;
 		int			getServerSocket() const;
-		int			getEpollFd() const;
 		std::vector<Channel> getChannels() const;
-		void		handleNewClient();
+		void		handleNewClient(int epoll_fd);
 		void		removeClient(std::shared_ptr<Client>& client);
 		void    	receiveData(std::shared_ptr<Client>& client);
-		void		changePut(std::shared_ptr<Client>& client, uint32_t put, int epoll_fd);
 		void		parseInput(std::string msg, std::shared_ptr<Client>& client);
 		bool		validateNick(std::string nickname);
 		bool		validateClient(std::shared_ptr<Client>& client);

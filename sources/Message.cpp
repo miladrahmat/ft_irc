@@ -36,7 +36,7 @@ void	Message::handleCap(std::shared_ptr<Client>& client) {
 			|| _msg.compare(0, 4, "USER") == 0) {
 		_type = CAP;
 	}
-	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 4, "join") == 0) {
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0) {
 		_type = CMD;
 	}
 }
@@ -69,14 +69,19 @@ void	Message::codedMessage(std::shared_ptr<Client>& client, reply code, const st
 	if (target) {
 		_send_msg += " " + *target;
 	}
-	_send_msg += code.msg;
+	if (code.code == RPL_MYINFO.code || code.code == RPL_ISUPPORT.code) {
+		_send_msg += " " + code.msg + "\r\n";
+	}
+	else {
+		_send_msg += " :" + code.msg + "\r\n";
+	}
 	client->appendSendBuffer(_send_msg);
 	_send_msg.clear();
 }
 
-void	Message::message(std::shared_ptr<Client>& client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
+void	Message::message(std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
 	//:nickname!username@hostname COMMAND #channel : <message or description of event>
-	_send_msg = ":" + client->getNickname() + "!" + client->getUsername() + "@" + client->getHostname();
+	_send_msg = ":" + s_client->getNickname() + "!" + s_client->getUsername() + "@" + s_client->getHostname();
 	if (cmd) {
 		_send_msg += " " + *cmd;
 	}
@@ -87,6 +92,6 @@ void	Message::message(std::shared_ptr<Client>& client, const std::optional<std::
 		_send_msg += " :" + *msg;
 	}
 	_send_msg += "\r\n";
-	client->appendSendBuffer(_send_msg);
+	r_client->appendSendBuffer(_send_msg);
 	_send_msg.clear();
 }
