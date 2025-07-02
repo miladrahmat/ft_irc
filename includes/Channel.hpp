@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include "Client.hpp"
+#include "reply.hpp"
 
 class Client;
 
@@ -36,7 +37,7 @@ class Channel {
         void addOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & new_operator);
         void removeOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & operator_to_remove);
         void setUserLimit(const std::shared_ptr<Client> & client, unsigned int limit);
-        bool join(const std::shared_ptr<Client> & client, std::string password);
+        reply join(const std::shared_ptr<Client> & client, std::string password);
         std::string getName() const;
         std::string getTopic() const;
         std::string getClientsNick() const;

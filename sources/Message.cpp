@@ -69,7 +69,7 @@ void	Message::codedMessage(std::shared_ptr<Client>& client, reply code, const st
 	if (target) {
 		_send_msg += " " + *target;
 	}
-	_send_msg += code.msg;
+	_send_msg += " :" + code.msg + "\r\n";
 	client->appendSendBuffer(_send_msg);
 	_send_msg.clear();
 }

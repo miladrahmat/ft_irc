@@ -119,26 +119,23 @@ void Channel::setUserLimit(const std::shared_ptr<Client> & client, unsigned int 
     }
 }
 
-bool Channel::join(const std::shared_ptr<Client> & client, std::string password) {
+reply Channel::join(const std::shared_ptr<Client> & client, std::string password) {
     if (_invite_only && this->_name != client->getChannelInvitedTo()) {
-        //ERR_INVITEONLYCHAN (473)
-        return (false);
+        return (ERR_INVITEONLYCHAN);
     }
     if (channelFull()) {
-        //ERR_CHANNELISFULL (471)    //TODO but not when invited????
-        return (false);
+        //TODO but not when invited????
+        return (ERR_CHANNELISFULL);
     }
-    if (isClient(client)) {
-        //already on channel, how to handle?
-        return (false);
-    }
+    // if (isClient(client)) {
+    //     //already on channel, how to handle?
+    //     return (false);
+    // }
     if (_password != "" && password != _password) {
-        //ERR_BADCHANNELKEY (475)
-        return (false);
+        return (ERR_BADCHANNELKEY);
     }
     _clients.push_back(client);
-    //successfull join (see JOIN)
-    return (true);
+    return (SUCCESS);
 }
 
 std::string Channel::getName() const {

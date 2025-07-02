@@ -19,4 +19,5 @@ class JoinCommand : public ACommand {
         static bool validChannelName(std::string channel);
         bool execute() const override;
         void joinReply(std::string channel) const;
+        void errReply(reply reply, std::string channel) const;
 };

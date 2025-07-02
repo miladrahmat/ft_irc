@@ -52,27 +52,30 @@ bool JoinCommand::validChannelName(std::string channel_name) {
 bool JoinCommand::execute() const {
     std::vector<std::string>::const_iterator chan_it = _channels.begin();
     std::vector<std::string>::const_iterator key_it = _keys.begin();
-    bool result;
+    reply reply;
     for ( ; chan_it != _channels.end(); chan_it++) {
         std::vector<Channel>::iterator chan = _state.getChannel(*chan_it);
         if (chan != _state.getChannels().end()) {
             if (key_it == _keys.end()) {
-                result = chan->join(_client, "");
+                reply = chan->join(_client, "");
             }
             else {
-                result = chan->join(_client, *key_it);
+                reply = chan->join(_client, *key_it);
             }
         }
         else {
             if (key_it == _keys.end()) {
-                result = _state.addNewChannel(*chan_it, _client);
+                reply = _state.addNewChannel(*chan_it, _client);
             }
             else {
-                result = _state.addNewChannel(*chan_it, _client, *key_it);
+                reply = _state.addNewChannel(*chan_it, _client, *key_it);
             }
         }
-        if (result == true) {
+        if (reply.code == SUCCESS.code) {
             joinReply(*chan_it);
+        }
+        else {
+            errReply(reply);
         }
         if (key_it != _keys.end()) {
             key_it++;
@@ -86,7 +89,15 @@ void JoinCommand::joinReply(std::string channel) const {
     std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
     msg.message(_client, _command, channel, {});
     if (chan_it->getTopic() != "") {
-
+        struct reply reply = RPL_TOPIC;
+        reply.msg = chan_it->getTopic();
+        msg.codedMessage(_client, reply, channel);
     }
 
+}
+
+void JoinCommand::errReply(reply reply, std::string channel) const {
+    Message msg;
+    std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
+    msg.codedMessage(_client, reply, channel);
 }
