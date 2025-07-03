@@ -14,6 +14,6 @@ class PrivmsgCommand : public ACommand {
 
 	public:
 		static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client, State& state,
-			std::vector<std::string> args);
+			std::string target, std::string msg);
 		bool	execute() const override;
 };

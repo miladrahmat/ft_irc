@@ -31,7 +31,5 @@ class Server {
 		int			getServerSocket() const;
 		void		handleNewClient(int epoll_fd);
 		void    	receiveData(std::shared_ptr<Client>& client);
-		void		parseInput(std::string msg, std::shared_ptr<Client>& client);
-		bool		validateNick(std::string nickname);
 		bool		validateClient(std::shared_ptr<Client>& client);
 };
