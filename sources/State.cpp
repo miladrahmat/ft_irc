@@ -22,9 +22,7 @@ reply	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, s
 	return (SUCCESS);
 }
 
-void	State::removeClient(std::shared_ptr<Client>& client) {
-	std::cout << "channels now: " << _channels.size() << std::endl;
-	std::cout << "clients now: " << _clients.size() << std::endl;
+void	State::removeClient(std::shared_ptr<Client>& client, std::string msg) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = client->getClientSocket();
@@ -36,16 +34,14 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 				it = _channels.erase(it);
 			}
 			else {
-				it->sendMsgToAll(client, "left the chat");
+				it->sendMsgToAll(client, "QUIT", {}, msg);
 				it++;
 			}
-			//send message to all clients in the channel
 		}
 		else {
 			it++;
 		}
 	}
-	std::cout << "remaining channels: " << _channels.size() << std::endl;
 	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _clients.size(); i++) {
 		if (_clients[i]->getClientSocket() == client->getClientSocket()) {
 			_clients[i]->getSendBuffer().clear();
@@ -53,7 +49,6 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 			break;
 		}
 	}
-	std::cout << "remaining clients: " << _clients.size() << std::endl;
 }
 std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nickname) {
 	std::vector<std::shared_ptr<Client>>::iterator it = _clients.begin();

@@ -12,7 +12,6 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "reply.hpp"
-//#include "Channel.hpp"
 #include "Parser.hpp"
 #include "State.hpp"
 
@@ -30,7 +29,6 @@ class Server {
 		std::string	getPort() const;
 		std::string	getPassword() const;
 		int			getServerSocket() const;
-		//std::vector<Channel> getChannels() const;
 		void		handleNewClient(int epoll_fd);
 		void    	receiveData(std::shared_ptr<Client>& client);
 		void		parseInput(std::string msg, std::shared_ptr<Client>& client);

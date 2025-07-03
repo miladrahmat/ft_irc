@@ -2,18 +2,9 @@
 #include "Channel.hpp"
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
-<<<<<<< HEAD
-    _name(name), _password(password), _invite_only(false), _topic_command_access(true),
-    _user_limit(std::numeric_limits<int>::max()), _clients{client},
-=======
-    _password(password), _invite_only(false), _topic_command_access(true),
-    _user_limit(-1), _name(name), _clients{client},
->>>>>>> c4b34a22c27cf112d4879a58bfeb4fbae10f2551
+   _name(name), _password(password), _invite_only(false), _topic_command_access(true),
+    _user_limit(-1), _clients{client},
     _operators{client} {};
-
-//Channel::Channel(const Channel &other) : _name(other._name), _clients{other._clients}, _operators{other._operators}, _password(other._password),
-    //_invite_only(other._invite_only), _topic_command_access(other._topic_command_access),
-    //_user_limit(other._user_limit) {};
 
 Channel::~Channel() {};
 
@@ -167,17 +158,13 @@ int Channel::getSize() {
     return (_clients.size());
 }
 
-#include <iostream>
-void    Channel::sendMsgToAll(std::shared_ptr<Client>& client, std::string msg) {
+void    Channel::sendMsgToAll(std::shared_ptr<Client>& client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
     Message	message;
 
-    std::cout << "should send message to all" << std::endl;
 	for (auto it = this->_clients.begin(); it != this->_clients.end(); it++) {
 		if (client != *it) {
-            std::cout << "reeeally close" << std::endl;
-			message.message(client, *it, "QUIT", {}, msg);
+			message.message(client, *it, cmd, target, msg);
         }
-		// (*it)->changePut(EPOLLIN | EPOLLOUT, _state.getEpollFd());
 	}
 }
 std::string Channel::getTopic() const {

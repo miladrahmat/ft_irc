@@ -6,6 +6,7 @@
 #include <limits>
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include "Message.hpp"
 #include "Client.hpp"
 #include "reply.hpp"
@@ -44,5 +45,5 @@ class Channel {
         std::string getClientsNick() const;
         void    removeClient(const std::shared_ptr<Client> & client);
         int     getSize();
-        void    sendMsgToAll(std::shared_ptr<Client>& client, std::string msg);
+        void    sendMsgToAll(std::shared_ptr<Client>& client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
 };

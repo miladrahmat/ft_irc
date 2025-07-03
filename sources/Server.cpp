@@ -153,7 +153,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		return ;
 	if (!client->receiveData()) {
 		//client disconnected, handle it
-		_state.removeClient(client);
+		_state.removeClient(client, "Client Quit");
 		return ;
 	}
 	Message	msg;

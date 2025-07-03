@@ -12,6 +12,7 @@ CFILES := main.cpp \
 			PrivmsgCommand.cpp \
 			Parser.cpp \
 			State.cpp \
+			QuitCommand.cpp
 
 INC := includes/
 SRC_PATH := sources/
