@@ -1,12 +1,10 @@
 
 #include "JoinCommand.hpp"
 
-#include <iostream>
-
 JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
 
 std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client, State & state,
-            std::vector<std::string> args) {
+        std::vector<std::string> args) {
 
     JoinCommand* cmd = new JoinCommand(command, client, state);
     std::vector<std::string>::iterator it = args.begin();

@@ -5,6 +5,8 @@
 #include <vector>
 #include <optional>
 #include <memory>
+#include <iostream>
+#include <sstream>
 #include "Channel.hpp"
 #include "Client.hpp"
 #include "State.hpp"

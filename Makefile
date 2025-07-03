@@ -10,6 +10,7 @@ CFILES := main.cpp \
 			ACommand.cpp \
 			JoinCommand.cpp  \
 			PrivmsgCommand.cpp \
+			ModeCommand.cpp \
 			Parser.cpp \
 			State.cpp
 
