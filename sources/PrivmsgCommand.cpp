@@ -9,7 +9,6 @@ std::unique_ptr<ACommand>	PrivmsgCommand::create(std::string command, std::share
 
 	cmd->_msg_to = args[0];
 	cmd->_msg = args[1].substr(1, args[1].length());
-	cmd->_msg.append("\r\n");
 	if (cmd->_msg_to[0] == '#' || cmd->_msg_to[0] == '&') {
 		std::vector<Channel>::iterator channel = cmd->_state.getChannel(cmd->_msg_to);
 		if (channel == cmd->_state.getChannels().end()) {
@@ -37,13 +36,11 @@ bool	PrivmsgCommand::execute() const {
 		for (auto it = channel->_clients.begin(); it != channel->_clients.end(); it++) {
 			if (_client != *it)
 				msg.message(_client, *it, _command, _msg_to, _msg);
-			// (*it)->changePut(EPOLLIN | EPOLLOUT, _state.getEpollFd());
 		}
 	}
 	else {
 		auto	client = _state.getClient(_msg_to);
 		msg.message(_client, *client, _command, _msg_to, _msg);
-		// (*client)->changePut(EPOLLIN | EPOLLOUT, _state.getEpollFd());
 	}
 	return (true);
 }

@@ -180,20 +180,39 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 	Message	msg;
 	Parser	parser;
 	while (msg.getNextMessage(client)) {
-		msg.handleCap(client);
-		int	error = msg.getType();
-		if (error == CAP_START || error == CAP_REQ) {
-			msg.emptyMsg();
-		} else if (error == CAP_END) {
-			msg.emptyMsg();
-			validateClient(client);
-		} 
-		else if (error == CAP) {
-			parser.parseCap(client, msg.getMsg());
+		msg.determineType(client);
+		int	type = msg.getType();
+		if (type == CAP_LS) {
+			parser.parseCap(client, msg.getMsg(), _state);
+			msg.messageCap(client);
+			msg.clearMsg();
 		}
-		else if (error == CMD) {
+		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
+			if (type == CAP_REQ_AGAIN) {
+				if (!parser.parseNickCommand(client, msg.getMsg(), _state)) {
+					msg.clearMsg();
+					msg.clearSendMsg();
+					continue ;
+				}
+			}
+			if (client->getNickname().empty()) {
+				msg.clearSendMsg();
+			}
+			msg.messageCap(client);
+			msg.clearMsg();
+		}
+		else if (type == CAP_END) {
+			if (!validateClient(client)) {
+				msg.clearMsg();
+				msg.clearSendMsg();
+				continue ;
+			}
+			msg.clearMsg();
+		}
+		else if (type == CMD) {
 			std::cout << msg.getMsg() << std::endl;
 			parser.parseCommand(client, msg.getMsg(), _state);
+			msg.clearMsg();
 		}
 	}
 }
@@ -202,8 +221,6 @@ bool	Server::validateClient(std::shared_ptr<Client>& client) {
 	Message	msg;
 
 	if (client->getPassword() != _password)
-		return (false);
-	if (!client->validateNickname(client->getNickname()))
 		return (false);
 	msg.welcomeMessage(client);
 	client->authenticate();

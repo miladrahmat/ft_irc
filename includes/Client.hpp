@@ -40,7 +40,6 @@ class Client {
 		bool		isAuthenticated() const;
 		std::string getChannelInvitedTo() const;
 		void 		setNickname(std::string nickname);
-		bool		validateNickname(std::string nickname);
 		void		setUsername(std::string username);
 		void		setHostname(std::string hostname);
 		void		setName(std::string name);
