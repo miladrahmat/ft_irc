@@ -217,23 +217,11 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 	}
 }
 
-/* bool	Server::validateNick(std::shared_ptr<Client>& client) {
-	if (!client->validateNickname(client->getNickname()))
-		return (false);
-	for (auto it = _state._clients.begin(); it != _state._clients.end(); ++it) {
-		if ((*it)->getNickname() == client->getNickname() && *it != client)
-			return (false);
-	}
-	return (true);
-} */
-
 bool	Server::validateClient(std::shared_ptr<Client>& client) {
 	Message	msg;
 
 	if (client->getPassword() != _password)
 		return (false);
-	/* if (!client->validateNickname(client->getNickname()))
-		return (false); */
 	msg.welcomeMessage(client);
 	client->authenticate();
 	if (!client->isAuthenticated())

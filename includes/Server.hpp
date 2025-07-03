@@ -21,7 +21,6 @@ class Server {
 		std::string			_port;
 		std::string			_password;
 		int					_server_socket;
-		//int					_epoll_fd;
 		State				_state;
 
 	public:
@@ -35,6 +34,5 @@ class Server {
 		void		handleNewClient(int epoll_fd);
 		void		removeClient(std::shared_ptr<Client>& client);
 		void    	receiveData(std::shared_ptr<Client>& client);
-		// bool		validateNick(std::shared_ptr<Client>& client);
 		bool		validateClient(std::shared_ptr<Client>& client);
 };
