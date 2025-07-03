@@ -144,7 +144,7 @@ void Server::handleNewClient(int epoll_fd) {
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		_state._clients.push_back(std::make_shared<Client>(client));
+		_state._clients.push_back(std::make_shared<Client>(client, epoll_fd));
     }
 }
 
@@ -153,6 +153,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		return ;
 	if (!client->receiveData()) {
 		//client disconnected, handle it
+		_state.removeClient(client);
 		return ;
 	}
 	Message	msg;

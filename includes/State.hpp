@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include "Client.hpp"
+#include "Channel.hpp"
 
 
 class State {

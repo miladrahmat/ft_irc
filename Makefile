@@ -11,7 +11,7 @@ CFILES := main.cpp \
 			JoinCommand.cpp  \
 			PrivmsgCommand.cpp \
 			Parser.cpp \
-			State.cpp
+			State.cpp \
 
 INC := includes/
 SRC_PATH := sources/

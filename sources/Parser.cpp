@@ -31,9 +31,30 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 		else if (input.compare(0, 7, "PRIVMSG") == 0) {
 			parsePrivmsgCommand(client, input, state);
 		}
+		else if (input.compare(0, 4, "QUIT") == 0 || input.compare(0, 4, "quit") == 0) {
+			parseQuitCommand(client, input, state);
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
+}
+
+bool	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	std::vector<std::string> arg_vec;
+	
+	std::string command = input.substr(0, input.find_first_of(' ')); //should be QUIT
+	input.erase(0, command.length() + 1);
+	//while (!input.empty()) {
+		//std::string arg = input.substr(0, input.find_first_of(' '));
+		//input.erase(0, arg.length() + 1);
+		//arg_vec.push_back(arg);
+	//} //should be the leaving message
+	//std::unique_ptr<ACommand>	cmd = QuitCommand::create(command, client, state, arg_vec);
+	//if (cmd == nullptr)
+	//	return (false);
+	//return (cmd->execute());
+	state.removeClient(client);
+	return (true);
 }
 
 bool	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {

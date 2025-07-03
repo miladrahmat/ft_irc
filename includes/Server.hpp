@@ -12,7 +12,7 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "reply.hpp"
-#include "Channel.hpp"
+//#include "Channel.hpp"
 #include "Parser.hpp"
 #include "State.hpp"
 
@@ -21,7 +21,6 @@ class Server {
 		std::string			_port;
 		std::string			_password;
 		int					_server_socket;
-		//int					_epoll_fd;
 		State				_state;
 
 	public:
@@ -31,9 +30,8 @@ class Server {
 		std::string	getPort() const;
 		std::string	getPassword() const;
 		int			getServerSocket() const;
-		std::vector<Channel> getChannels() const;
+		//std::vector<Channel> getChannels() const;
 		void		handleNewClient(int epoll_fd);
-		void		removeClient(std::shared_ptr<Client>& client);
 		void    	receiveData(std::shared_ptr<Client>& client);
 		void		parseInput(std::string msg, std::shared_ptr<Client>& client);
 		bool		validateNick(std::string nickname);

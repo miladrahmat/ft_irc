@@ -36,8 +36,11 @@ void	Message::handleCap(std::shared_ptr<Client>& client) {
 			|| _msg.compare(0, 4, "USER") == 0) {
 		_type = CAP;
 	}
-	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0) {
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 || _msg.compare(0, 4, "QUIT") == 0) {
 		_type = CMD;
+	}
+	else {
+		_type = -1;
 	}
 }
 
