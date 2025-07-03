@@ -66,16 +66,11 @@ bool	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& inpu
 }
 
 bool	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
-	std::vector<std::string>	arg_vec;
-
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
-	while (!input.empty()) {
-		std::string	arg = input.substr(0, input.find_first_of(' '));
-		input.erase(0, arg.length() + 1);
-		arg_vec.push_back(arg);
-	}
-	std::unique_ptr<ACommand>	cmd = PrivmsgCommand::create(command, client, state, arg_vec);
+	std::string	target = input.substr(0, input.find_first_of(' '));
+	input.erase(0, target.length() + 1);
+	std::unique_ptr<ACommand>	cmd = PrivmsgCommand::create(command, client, state, target, input);
 	if (cmd == nullptr) {
 		return (false);
 	}

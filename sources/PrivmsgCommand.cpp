@@ -4,11 +4,11 @@
 PrivmsgCommand::PrivmsgCommand(std::string command, std::shared_ptr<Client>& client, State& state) : ACommand(command, client, state) {}
 
 std::unique_ptr<ACommand>	PrivmsgCommand::create(std::string command, std::shared_ptr<Client>& client, State& state,
-	std::vector<std::string> args) {
+	std::string target, std::string msg) {
 		PrivmsgCommand*	cmd = new PrivmsgCommand(command, client, state);
 
-	cmd->_msg_to = args[0];
-	cmd->_msg = args[1].substr(1, args[1].length());
+	cmd->_msg_to = target;
+	cmd->_msg = msg.substr(1, msg.length());
 	if (cmd->_msg_to[0] == '#' || cmd->_msg_to[0] == '&') {
 		std::vector<Channel>::iterator channel = cmd->_state.getChannel(cmd->_msg_to);
 		if (channel == cmd->_state.getChannels().end()) {
