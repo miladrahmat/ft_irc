@@ -2,6 +2,10 @@
 #include "State.hpp"
 #include <iostream>
 
+std::string	State::getServerName() const {
+	return (_server_name);
+}
+
 std::vector<Channel>::iterator	State::getChannel(std::string channel_name) {
 	std::vector<Channel>::iterator it = _channels.begin();
 	for ( ; it != _channels.end(); it++) {

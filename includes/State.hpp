@@ -8,9 +8,11 @@
 
 class State {
     private:
+        const std::string _server_name = "ircserv.galleria";
         std::vector<std::shared_ptr<Client>> _clients;
         std::vector<Channel> _channels;
     public:
+        std::string getServerName() const;
         std::vector<Channel>::iterator getChannel(std::string channel_name);
         std::vector<Channel> & getChannels();
         reply addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password = "");

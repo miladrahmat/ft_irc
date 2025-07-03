@@ -46,6 +46,9 @@ void	Message::determineType(std::shared_ptr<Client>& client) {
 		|| _msg.compare(0, 4, "NICK") == 0) {
 		_type = CMD;
 	}
+	else if (_msg.compare(0, 4, "PING") == 0) {
+		_type = PING;
+	}
 }
 
 bool	Message::getNextMessage(std::shared_ptr<Client>& client) {
@@ -65,7 +68,13 @@ void	Message::messageCap(std::shared_ptr<Client>& client) {
 	_send_msg.clear();
 }
 
-void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
+void        Message::messagePong(std::shared_ptr<Client>& client, std::string sender, std::string command, std::string target, std::string msg) {
+	_send_msg = ":" + sender + " " + command + " " + target + " :" + msg + "\r\n";
+	client->appendSendBuffer(_send_msg);
+	_send_msg.clear();
+}
+
+void	Message::welcomeMessage(std::shared_ptr<Client>& client, State& state) {
 	reply replies[5] = {
 		RPL_WELCOME, 
 		RPL_YOURHOST, 
@@ -74,12 +83,12 @@ void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
 		RPL_ISUPPORT
 	};
 	for (short int i = 0; i < 5; i++) {
-		codedMessage(client, replies[i], {});
+		codedMessage(client, state, replies[i], {});
 	}
 }
 
-void	Message::codedMessage(std::shared_ptr<Client>& client, reply code, const std::optional<std::string>& target) {
-	_send_msg = ":ircserv.galleria " + code.code + " ";
+void	Message::codedMessage(std::shared_ptr<Client>& client, State& state, reply code, const std::optional<std::string>& target) {
+	_send_msg = ":" + state.getServerName() + " " + code.code + " ";
 	if (client->getNickname().empty())
 		_send_msg += "*";
 	else
