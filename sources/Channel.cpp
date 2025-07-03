@@ -2,8 +2,13 @@
 #include "Channel.hpp"
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
+<<<<<<< HEAD
     _name(name), _password(password), _invite_only(false), _topic_command_access(true),
     _user_limit(std::numeric_limits<int>::max()), _clients{client},
+=======
+    _password(password), _invite_only(false), _topic_command_access(true),
+    _user_limit(-1), _name(name), _clients{client},
+>>>>>>> c4b34a22c27cf112d4879a58bfeb4fbae10f2551
     _operators{client} {};
 
 //Channel::Channel(const Channel &other) : _name(other._name), _clients{other._clients}, _operators{other._operators}, _password(other._password),
@@ -31,6 +36,9 @@ bool Channel::isOperator(const std::shared_ptr<Client> & client) const {
 };
 
 bool Channel::channelFull() const {
+    if (_user_limit == -1) {
+        return (false);
+    }
     if (_clients.size() == static_cast<std::size_t>(_user_limit)) {
         return (true);
     }
@@ -38,7 +46,6 @@ bool Channel::channelFull() const {
 }
 
 std::string Channel::showTopic() const {
-    //TODO just return the topic as string?
     return (_topic);
 }
 
@@ -102,15 +109,12 @@ void Channel::setChannelPassword(const std::shared_ptr<Client> & client, std::st
 }
 
 void Channel::addOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & new_operator) {
-    //do we get new_operator as Client or string? Do we here have to check if
-    //it is a client of the channel here?
     if (isOperator(client)) {
         _operators.push_back(new_operator);
     }
 }
 
 void Channel::removeOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & operator_to_remove) {
-    //do we get operator_to_remove as Client or string?
     if (isOperator(client)) {
         if (isOperator(operator_to_remove)) {
             _operators.erase(std::find(_operators.begin(), _operators.end(), operator_to_remove));
@@ -119,7 +123,7 @@ void Channel::removeOperator(const std::shared_ptr<Client> & client, const std::
     }
 }
 
-//limit 0 means no limit
+//limit -1 means no limit
 void Channel::setUserLimit(const std::shared_ptr<Client> & client, unsigned int limit) {
     if (isOperator(client)) {
         //how many users can we handle in one channel?
@@ -127,26 +131,19 @@ void Channel::setUserLimit(const std::shared_ptr<Client> & client, unsigned int 
     }
 }
 
-bool Channel::join(const std::shared_ptr<Client> & client, std::string password) {
-    if (_invite_only && this->_name != client->getChannelInvitedTo()) {
-        //ERR_INVITEONLYCHAN (473)
-        return (false);
+reply Channel::join(const std::shared_ptr<Client> & client, std::string password) {
+    if (_invite_only && _name != client->getChannelInvitedTo()) {
+        return (ERR_INVITEONLYCHAN);
     }
     if (channelFull()) {
-        //ERR_CHANNELISFULL (471)    //TODO but not when invited????
-        return (false);
-    }
-    if (isClient(client)) {
-        //already on channel, how to handle?
-        return (false);
+        //TODO but not when invited????
+        return (ERR_CHANNELISFULL);
     }
     if (_password != "" && password != _password) {
-        //ERR_BADCHANNELKEY (475)
-        return (false);
+        return (ERR_BADCHANNELKEY);
     }
     _clients.push_back(client);
-    //successfull join (see JOIN)
-    return (true);
+    return (SUCCESS);
 }
 
 std::string Channel::getClientsNick() const {
@@ -182,4 +179,7 @@ void    Channel::sendMsgToAll(std::shared_ptr<Client>& client, std::string msg) 
         }
 		// (*it)->changePut(EPOLLIN | EPOLLOUT, _state.getEpollFd());
 	}
+}
+std::string Channel::getTopic() const {
+    return (_topic);
 }
