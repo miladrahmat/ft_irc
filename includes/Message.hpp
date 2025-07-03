@@ -9,12 +9,12 @@
 class Server;
 
 enum    MSG_TYPE {
-    CAP_LS,
-    CAP_REQ,
-    CAP_REQ_AGAIN,
-    CAP_END,
-    CMD,
-    PING
+    CAP_LS = 10,
+    CAP_REQ = 20,
+    CAP_REQ_AGAIN = 30,
+    CAP_END = 40,
+    CMD = 50,
+    PING = 60
 };
 
 class Message {

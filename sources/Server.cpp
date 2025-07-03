@@ -195,6 +195,9 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 					continue ;
 				}
 			}
+			if (client->getNickname().empty()) {
+				msg.clearSendMsg();
+			}
 			msg.messageCap(client);
 			msg.clearMsg();
 		}
