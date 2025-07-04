@@ -101,4 +101,5 @@ bool ModeCommand::execute() const {
             (*chan_it).setInviteMode(_client, (_action == ADD) ? true : false);
         }
     }
+    return (true);
 }

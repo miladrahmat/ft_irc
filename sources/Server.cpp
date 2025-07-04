@@ -148,62 +148,58 @@ void Server::handleNewClient(int epoll_fd) {
     }
 }
 
-void	Server::removeClient(std::shared_ptr<Client>& client) {
-	struct epoll_event ev;
-    ev.events = EPOLLIN;
-    ev.data.fd = client->getClientSocket();
-	epoll_ctl(client->getEpollFd(), EPOLL_CTL_DEL, client->getClientSocket(), &ev);
-	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
-		if (_state._clients[i]->getClientSocket() == client->getClientSocket()) {
-			//remove from all channels, if the only one in the channel, also the channel? if they were the operator of the channel?
-			//send disconnection message for others in the channel
-			_state._clients.erase(_state._clients.begin() + i);
-			break;
-		}
-	}
-	close(client->getClientSocket());
-	//remove from epoll (epoll_ctl)
-	//close client fd (client socket)
-	//remove from client vector
-	//remove from channels, if only one in channel, remove channel? if they were operator for channel???
-	//disconnection message for others in the channel??
-
-}
-
 void    Server::receiveData(std::shared_ptr<Client>& client) {
 	if (client == nullptr)
 		return ;
 	if (!client->receiveData()) {
-		//client disconnected, handle it
+		_state.removeClient(client, "Client Quit");
 		return ;
 	}
 	Message	msg;
 	Parser	parser;
 	while (msg.getNextMessage(client)) {
-		msg.handleCap(client);
-		int	error = msg.getType();
-		if (error == CAP_START || error == CAP_REQ) {
-			msg.emptyMsg();
-		} else if (error == CAP_END) {
-			msg.emptyMsg();
-			validateClient(client);
-		} 
-		else if (error == CAP) {
-			parser.parseCap(client, msg.getMsg());
+		msg.determineType(client);
+		int	type = msg.getType();
+		if (type == CAP_LS) {
+			parser.parseCap(client, msg.getMsg(), _state);
+			msg.messageCap(client);
+			msg.clearMsg();
 		}
-		else if (error == CMD) {
+		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
+			if (type == CAP_REQ_AGAIN) {
+				if (!parser.parseNickCommand(client, msg.getMsg(), _state)) {
+					msg.clearMsg();
+					msg.clearSendMsg();
+					continue ;
+				}
+			}
+			if (client->getNickname().empty()) {
+				msg.clearSendMsg();
+			}
+			msg.messageCap(client);
+			msg.clearMsg();
+		}
+		else if (type == CAP_END) {
+			if (!validateClient(client)) {
+				msg.clearMsg();
+				msg.clearSendMsg();
+				continue ;
+			}
+			msg.clearMsg();
+		}
+		else if (type == CMD) {
 			std::cout << msg.getMsg() << std::endl;
 			parser.parseCommand(client, msg.getMsg(), _state);
+			msg.clearMsg();
 		}
 	}
+	return ;
 }
 
 bool	Server::validateClient(std::shared_ptr<Client>& client) {
 	Message	msg;
 
 	if (client->getPassword() != _password)
-		return (false);
-	if (!client->validateNickname(client->getNickname()))
 		return (false);
 	msg.welcomeMessage(client);
 	client->authenticate();

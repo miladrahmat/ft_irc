@@ -34,7 +34,7 @@ class ModeCommand : public ACommand {
         std::string _target;
         std::string _key;   //param for +k
         std::string _nick;  //param for +/-o
-        unsigned int _limit;    //param for +l
+        int _limit;    //param for +l
         ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state);
         void setModeAction(char mode_action);
         void setMode(char mode);

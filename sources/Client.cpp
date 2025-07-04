@@ -1,7 +1,7 @@
 #include "Client.hpp"
 #include <iostream>
 
-Client::Client(int socket, int epoll_fd) : _client_socket(socket), _epoll_fd(epoll_fd) {
+Client::Client(int socket, int epoll_fd) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(""), _password("") {
 
 }
 
@@ -52,21 +52,6 @@ bool	Client::isAuthenticated() const {
 
 void	Client::setNickname(std::string nickname) {
 	_nickname = nickname;
-}
-
-bool	Client::validateNickname(std::string nickname) {
-	std::string invalid_start = "$:#&~@+%";
-	if (invalid_start.find(nickname[0]) != std::string::npos) {
-		return (false);
-	}
-	std::string	invalid = " ,*?!@.";
-	for (size_t i = 0; i < invalid.length(); i++) {
-		if (nickname.find(invalid[i]) != std::string::npos) {
-			return (false);
-		}
-	}
-	setNickname(nickname);
-	return (true);
 }
 
 void	Client::setUsername(std::string username) {
@@ -167,13 +152,4 @@ std::string Client::getChannelInvitedTo() const {
 
 void Client::setInvitedTo(std::string channel_name) {
 	_invited_to = channel_name;
-}
-
-
-Channel* Client::getChannel(int i) const {
-	return (_channels[i]);
-}
-
-int	Client::getChannelsSize() {
-	return (_channels.size());
 }

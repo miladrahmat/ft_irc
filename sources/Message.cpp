@@ -1,6 +1,6 @@
 #include "Message.hpp"
 
-Message::Message(){}
+Message::Message() : _type(-1) {}
 
 Message::~Message(){}
 
@@ -12,37 +12,45 @@ int	Message::getType() const {
 	return (_type);
 }
 
-void	Message::emptyMsg() {
-	_msg.erase(0, _msg.size());
+void	Message::clearMsg() {
+	_msg.clear();
 }
 
-void	Message::handleCap(std::shared_ptr<Client>& client) {
-	if (_msg.substr(0,6) == "CAP LS") {
-		_send_msg = "CAP * LS :\r\n";
-		client->appendSendBuffer(_send_msg);
-		_send_msg.erase(0, _send_msg.size());
-		_type = CAP_START;
+void	Message::clearSendMsg() {
+	_send_msg.clear();
+}
+
+void	Message::determineType(std::shared_ptr<Client>& client) {
+	if (_msg.compare(0, 4, "NICK") == 0 && client->getNickname().empty() && _type != CAP_LS) {
+		_send_msg = "CAP * ACK :multi-prefix\r\n";
+		_type = CAP_REQ_AGAIN;
 	}
-	else if (_msg.substr(0, 7) == "CAP REQ") {
-		_send_msg = "CAP * ACK:multi-prefix :\r\n";
-		client->appendSendBuffer(_send_msg);
-		_send_msg.erase(0, _send_msg.size());
+	else if (_msg.compare(0, 6, "CAP LS") == 0 || _msg.compare(0, 4, "PASS") == 0 \
+		|| _msg.compare(0, 4, "USER") == 0 || (_msg.compare(0, 4, "NICK") == 0 && _type == CAP_LS)) {
+		if (_msg.compare(0, 6, "CAP LS") == 0) {
+			_send_msg = "CAP * LS :multi-prefix account-notify account-tag invite-notify\r\n";
+		}
+		_type = CAP_LS;
+	}
+	else if (_msg.compare(0, 7, "CAP REQ") == 0) {
+		if (!client->getNickname().empty())
+			_send_msg = "CAP " + client->getNickname() + " ACK :multi-prefix\r\n";
+		else
+			_send_msg = "CAP * ACK :multi-prefix\r\n";
 		_type = CAP_REQ;
 	}
-	else if (_msg.substr(0, 7) == "CAP END") {
+	else if (_msg.compare(0, 7, "CAP END") == 0) {
 		_type = CAP_END;
 	}
-	else if (_msg.compare(0, 4, "PASS") == 0 || _msg.compare(0, 4, "NICK") == 0 \
-			|| _msg.compare(0, 4, "USER") == 0) {
-		_type = CAP;
-	}
-	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 \
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 || _msg.compare(0, 4, "NICK") == 0 || _msg.compare(0, 4, "QUIT") == 0 || _msg.compare(0, 4, "KICK") == 0 \
 			|| _msg.compare(0,4, "MODE") == 0) {
 		_type = CMD;
 	}
 }
 
 bool	Message::getNextMessage(std::shared_ptr<Client>& client) {
+	if (client.get() == nullptr) 
+		return (false);
 	size_t pos = client->getBuffer().find("\r\n");
 	if (pos != std::string::npos) {
 		_msg = client->getBuffer().substr(0, pos);
@@ -50,6 +58,13 @@ bool	Message::getNextMessage(std::shared_ptr<Client>& client) {
 		return (true);
 	}
 	return (false);
+}
+
+void	Message::messageCap(std::shared_ptr<Client>& client) {
+	if (_send_msg.empty())
+		return ;
+	client->appendSendBuffer(_send_msg);
+	_send_msg.clear();
 }
 
 void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
@@ -66,7 +81,11 @@ void	Message::welcomeMessage(std::shared_ptr<Client>& client) {
 }
 
 void	Message::codedMessage(std::shared_ptr<Client>& client, reply code, const std::optional<std::string>& target) {
-	_send_msg = ":ircserv " + code.code + " " + client->getNickname();
+	_send_msg = ":ircserv.galleria " + code.code + " ";
+	if (client->getNickname().empty())
+		_send_msg += "*";
+	else
+		_send_msg += client->getNickname();
 	if (target) {
 		_send_msg += " " + *target;
 	}
@@ -80,12 +99,9 @@ void	Message::codedMessage(std::shared_ptr<Client>& client, reply code, const st
 	_send_msg.clear();
 }
 
-void	Message::message(std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
+void	Message::message(const std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
 	//:nickname!username@hostname COMMAND #channel : <message or description of event>
-	_send_msg = ":" + s_client->getNickname() + "!" + s_client->getUsername() + "@" + s_client->getHostname();
-	if (cmd) {
-		_send_msg += " " + *cmd;
-	}
+	_send_msg = ":" + s_client->getNickname() + "!" + s_client->getUsername() + "@" + s_client->getHostname() + " " + cmd;
 	if (target) {
 		_send_msg += " " + *target;
 	}
