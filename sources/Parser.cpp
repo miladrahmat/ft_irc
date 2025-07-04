@@ -33,12 +33,33 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 		else if (input.compare(0, 7, "PRIVMSG") == 0) {
 			parsePrivmsgCommand(client, input, state);
 		}
+		else if (input.compare(0, 4, "QUIT") == 0) {
+			parseQuitCommand(client, input, state);
+		}
 		else if (input.compare(0, 4, "NICK") == 0) {
 			parseNickCommand(client, input, state);
 		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
+}
+
+bool	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	std::vector<std::string> arg_vec;
+	
+	std::string command = input.substr(0, input.find_first_of(' '));
+	input.erase(0, command.length() + 2);
+	std::string arg;
+	if (input != "leaving") {
+		arg = input;
+	}
+	else {
+		arg = "Client quit";
+	}
+	std::unique_ptr<ACommand>	cmd = QuitCommand::create(command, client, state, arg);
+	if (cmd == nullptr)
+		return (false);
+	return (cmd->execute());
 }
 
 bool	Parser::parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
