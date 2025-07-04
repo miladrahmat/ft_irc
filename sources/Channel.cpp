@@ -54,6 +54,7 @@ reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::sha
             std::string target = this->getName();
             target += " " + client_to_kick->getNickname();
             this->sendMsgToAll(client, "KICK", target, msg);
+            this->removeOperator(client, client_to_kick);
             _clients.erase(std::find(_clients.begin(), _clients.end(), client_to_kick));
             return (SUCCESS);
         }
