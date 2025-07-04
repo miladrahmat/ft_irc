@@ -65,16 +65,21 @@ reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::sha
 }
 
 bool Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client) {
+    Message msg;
+    std::string target;
     if (!isClient(client)) {
         //ERR_NOTONCHANNEL (442);
+        msg.codedMessage(client, ERR_NOTONCHANNEL, target);
         return (false);
     }
     if (isClient(new_client)) {
         //ERR_USERONCHANNEL (443)
+        msg.codedMessage(client, ERR_USERONCHANNEL, target);
         return  (false);
     }
     if (_invite_only && !isOperator(client)) {
         //ERR_CHANOPRIVSNEEDED (482)
+        msg.codedMessage(client, ERR_CHANOPRIVSNEEDED, target);
         return (false);
     }
     new_client->setInvitedTo(this->_name);

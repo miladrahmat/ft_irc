@@ -42,6 +42,9 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 		else if (input.compare(0, 4, "KICK") == 0) {
 			parseKickCommmand(client, input, state);
 		}
+		else if (input.compare(0, 6, "INVITE") == 0) {
+			parseInviteCommand(client, input, state);
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
@@ -78,6 +81,10 @@ bool	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& inp
 	std::unique_ptr<ACommand> cmd = KickCommand::create(command, client, state, arg_vec);
 
 	return (cmd->execute());
+}
+
+bool	Parser::parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	return (true);
 }
 
 bool	Parser::parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {

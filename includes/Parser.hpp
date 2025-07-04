@@ -20,4 +20,5 @@ class	Parser {
 	bool	parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	bool	parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	bool	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	bool	parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };
