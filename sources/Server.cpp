@@ -80,6 +80,7 @@ void	Server::closeServer() {
 	close(_server_socket);
 	for (auto it = _state->_channels.begin(); it != _state->_channels.end(); ++it) {
 		it->_clients.clear();
+		it->_operators.clear();
 	}
 	_state->_channels.clear();
 	for (auto it = _state->_clients.begin(); it != _state->_clients.end(); ++it) {
