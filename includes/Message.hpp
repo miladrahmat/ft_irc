@@ -3,11 +3,10 @@
 #include <memory>
 #include <optional>
 #include "Client.hpp"
-#include "Server.hpp"
 #include "State.hpp"
 #include "reply.hpp"
 
-class Server;
+class State;
 
 enum    MSG_TYPE {
     CAP_LS,
@@ -36,6 +35,6 @@ class Message {
 	    void		welcomeMessage(std::shared_ptr<Client>& client, State& state);
         void        messagePong(std::shared_ptr<Client>& client, std::string sender, std::string command, std::string target, std::string msg);
         void        messageCap(std::shared_ptr<Client>& client);
-        void        message(std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, const std::optional<std::string>& cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
+        void        message(const std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
         void        codedMessage(std::shared_ptr<Client>& client, State& state, struct reply code, const std::optional<std::string>& target);
 };

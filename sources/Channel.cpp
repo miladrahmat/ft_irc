@@ -2,11 +2,15 @@
 #include "Channel.hpp"
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
-    _password(password), _invite_only(false), _topic_command_access(true),
-    _user_limit(-1), _name(name), _clients{client},
+   _name(name), _password(password), _invite_only(false), _topic_command_access(true),
+    _user_limit(-1), _clients{client},
     _operators{client} {};
 
 Channel::~Channel() {};
+
+std::string Channel::getName() const {
+    return (_name);
+}
 
 bool Channel::isClient(const std::shared_ptr<Client> & client) const {
     if (std::find(_clients.begin(), _clients.end(), client) == _clients.end()) {
@@ -44,15 +48,21 @@ void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_t
     //TODO how to handle if client is not operator or channel does not allow topic change
 }
 
-void Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick) {
+reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg) {
     if (isOperator(client)) {
         if (isClient(client_to_kick)) {
+            std::string target = this->getName();
+            target += " " + client_to_kick->getNickname();
+            this->sendMsgToAll(client, "KICK", target, msg);
+            this->removeOperator(client, client_to_kick);
             _clients.erase(std::find(_clients.begin(), _clients.end(), client_to_kick));
-            //TODO some message? what happens to the kicked out client?
+            return (SUCCESS);
         }
-        //TODO what happens if the client to be kicked is not on the channel?
+        return (ERR_NOSUCHNICK);
     }
-    //TODO how to handle if client is not operator 
+    else {
+        return (ERR_CHANOPRIVSNEEDED);
+    } 
 }
 
 bool Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client) {
@@ -133,10 +143,6 @@ reply Channel::join(const std::shared_ptr<Client> & client, std::string password
     return (SUCCESS);
 }
 
-std::string Channel::getName() const {
-    return (_name);
-}
-
 std::string Channel::getClientsNick() const {
     std::string clients;
     for (auto i = _clients.begin(); i != _clients.end(); i++) {
@@ -145,6 +151,28 @@ std::string Channel::getClientsNick() const {
     return (clients);
 }
 
+void    Channel::removeClient(const std::shared_ptr<Client> & client) {
+    for (auto it = _clients.begin(); it != _clients.end(); it++) {
+        if ((*it)->getClientSocket() == client->getClientSocket()) {
+            _clients.erase(it);
+            break;
+        }
+    }
+}
+
+int Channel::getSize() {
+    return (_clients.size());
+}
+
+void    Channel::sendMsgToAll(const std::shared_ptr<Client>& client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
+    Message	message;
+
+	for (auto it = this->_clients.begin(); it != this->_clients.end(); it++) {
+		if (client != *it) {
+			message.message(client, *it, cmd, target, msg);
+        }
+	}
+}
 std::string Channel::getTopic() const {
     return (_topic);
 }

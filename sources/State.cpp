@@ -26,6 +26,35 @@ reply	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, s
 	return (SUCCESS);
 }
 
+void	State::removeClient(std::shared_ptr<Client>& client, std::string msg) {
+	struct epoll_event ev;
+    ev.events = EPOLLIN;
+    ev.data.fd = client->getClientSocket();
+	epoll_ctl(client->getEpollFd(), EPOLL_CTL_DEL, client->getClientSocket(), &ev);
+	for (auto it = _channels.begin(); it != _channels.end();) {
+		if (it->isClient(client)) {
+			it->removeClient(client);
+			if (it->getSize() == 0) {
+				it = _channels.erase(it);
+			}
+			else {
+				it->sendMsgToAll(client, "QUIT", {}, msg);
+				it++;
+			}
+		}
+		else {
+			it++;
+		}
+	}
+	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _clients.size(); i++) {
+		if (_clients[i]->getClientSocket() == client->getClientSocket()) {
+			_clients[i]->getSendBuffer().clear();
+			_clients[i].reset();
+			_clients.erase(_clients.begin() + i);
+			break;
+		}
+	}
+}
 std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nickname) {
 	std::vector<std::shared_ptr<Client>>::iterator it = _clients.begin();
 	for ( ; it != _clients.end(); it++) {

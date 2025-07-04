@@ -148,33 +148,11 @@ void Server::handleNewClient(int epoll_fd) {
     }
 }
 
-void	Server::removeClient(std::shared_ptr<Client>& client) {
-	struct epoll_event ev;
-    ev.events = EPOLLIN;
-    ev.data.fd = client->getClientSocket();
-	epoll_ctl(client->getEpollFd(), EPOLL_CTL_DEL, client->getClientSocket(), &ev);
-	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _state._clients.size(); i++) {
-		if (_state._clients[i]->getClientSocket() == client->getClientSocket()) {
-			//remove from all channels, if the only one in the channel, also the channel? if they were the operator of the channel?
-			//send disconnection message for others in the channel
-			_state._clients.erase(_state._clients.begin() + i);
-			break;
-		}
-	}
-	close(client->getClientSocket());
-	//remove from epoll (epoll_ctl)
-	//close client fd (client socket)
-	//remove from client vector
-	//remove from channels, if only one in channel, remove channel? if they were operator for channel???
-	//disconnection message for others in the channel??
-
-}
-
 void    Server::receiveData(std::shared_ptr<Client>& client) {
 	if (client == nullptr)
 		return ;
 	if (!client->receiveData()) {
-		//client disconnected, handle it
+		_state.removeClient(client, "Client Quit");
 		return ;
 	}
 	Message	msg;
@@ -218,6 +196,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 			msg.messagePong(client, _state._server_name, "PONG", _state._server_name, _state._server_name);
 		}
 	}
+	return ;
 }
 
 bool	Server::validateClient(std::shared_ptr<Client>& client) {
