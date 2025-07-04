@@ -4,9 +4,6 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <vector>
-#include "Channel.hpp"
-
-class Channel;
 
 class Client {
 	private:
@@ -21,8 +18,6 @@ class Client {
 		std::string	_buffer;
 		std::string _send_buffer;
 		std::string _invited_to;
-		std::vector<Channel*> _channels;
-
 	public:
 		Client(int socket, int epoll_fd);
 		Client (const Client & old_client) = delete;
@@ -56,6 +51,4 @@ class Client {
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
 		void		printClient() const;
-		Channel*	getChannel(int i) const;
-		int			getChannelsSize();
 };
