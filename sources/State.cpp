@@ -45,6 +45,7 @@ void	State::removeClient(std::shared_ptr<Client>& client, std::string msg) {
 	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _clients.size(); i++) {
 		if (_clients[i]->getClientSocket() == client->getClientSocket()) {
 			_clients[i]->getSendBuffer().clear();
+			_clients[i].reset();
 			_clients.erase(_clients.begin() + i);
 			break;
 		}

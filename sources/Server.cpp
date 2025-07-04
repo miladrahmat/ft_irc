@@ -152,7 +152,6 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 	if (client == nullptr)
 		return ;
 	if (!client->receiveData()) {
-		//client disconnected, handle it
 		_state.removeClient(client, "Client Quit");
 		return ;
 	}
@@ -194,6 +193,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 			msg.clearMsg();
 		}
 	}
+	return ;
 }
 
 bool	Server::validateClient(std::shared_ptr<Client>& client) {
