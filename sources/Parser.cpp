@@ -39,14 +39,15 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 		else if (input.compare(0, 4, "NICK") == 0) {
 			parseNickCommand(client, input, state);
 		}
+		else if (input.compare(0, 4, "KICK") == 0) {
+			parseKickCommmand(client, input, state);
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
 }
 
 bool	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
-	std::vector<std::string> arg_vec;
-	
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 2);
 	std::string arg;
@@ -59,6 +60,24 @@ bool	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& inpu
 	std::unique_ptr<ACommand>	cmd = QuitCommand::create(command, client, state, arg);
 	if (cmd == nullptr)
 		return (false);
+	return (cmd->execute());
+}
+
+bool	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	//KICK #haha <client_to_kick> :<msg>
+	std::vector<std::string>	arg_vec;
+
+	std::string command = input.substr(0, input.find_first_of(' '));
+	input.erase(0, command.length() + 1);
+	while (!input.empty()) {
+		std::string	arg = input.substr(0, input.find_first_of(' '));
+		input.erase(0, arg.length() + 1);
+		if (!input.empty() && input[0] == ':')
+			input.erase(0, 1);
+		arg_vec.push_back(arg);
+	}
+	std::unique_ptr<ACommand> cmd = KickCommand::create(command, client, state, arg_vec);
+
 	return (cmd->execute());
 }
 

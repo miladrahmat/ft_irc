@@ -28,3 +28,4 @@ static const reply ERR_CHANNELISFULL = {"471", "Cannot join channel (+l)"};
 static const reply ERR_INVITEONLYCHAN = {"473", "Cannot join channel (+i)"};
 static const reply ERR_BADCHANNELKEY = {"475", "Cannot join channel (+k)"};
 static const reply ERR_BADCHANMASK = {"476", "Bad Channel Mask"};
+static const reply ERR_CHANOPRIVSNEEDED = {"482", "You're not channel operator"};

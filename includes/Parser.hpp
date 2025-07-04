@@ -5,6 +5,7 @@
 #include "PrivmsgCommand.hpp"
 #include "QuitCommand.hpp"
 #include "NickCommand.hpp"
+#include "KickCommand.hpp"
 #include <vector>
 #include <memory>
 
@@ -18,4 +19,5 @@ class	Parser {
 	bool	parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	bool	parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	bool	parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	bool	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };

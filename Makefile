@@ -13,7 +13,8 @@ CFILES := main.cpp \
 			NickCommand.cpp \
 			Parser.cpp \
 			State.cpp \
-			QuitCommand.cpp
+			QuitCommand.cpp \
+			KickCommand.cpp
 
 INC := includes/
 SRC_PATH := sources/

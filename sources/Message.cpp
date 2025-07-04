@@ -42,7 +42,7 @@ void	Message::determineType(std::shared_ptr<Client>& client) {
 	else if (_msg.compare(0, 7, "CAP END") == 0) {
 		_type = CAP_END;
 	}
-	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 || _msg.compare(0, 4, "NICK") == 0 || _msg.compare(0, 4, "QUIT") == 0) {
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 || _msg.compare(0, 4, "NICK") == 0 || _msg.compare(0, 4, "QUIT") == 0 || _msg.compare(0, 4, "KICK") == 0) {
 		_type = CMD;
 	}
 }
@@ -96,7 +96,7 @@ void	Message::codedMessage(std::shared_ptr<Client>& client, reply code, const st
 	_send_msg.clear();
 }
 
-void	Message::message(std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
+void	Message::message(const std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
 	//:nickname!username@hostname COMMAND #channel : <message or description of event>
 	_send_msg = ":" + s_client->getNickname() + "!" + s_client->getUsername() + "@" + s_client->getHostname() + " " + cmd;
 	if (target) {
