@@ -46,10 +46,10 @@ bool	NickCommand::execute() const {
 
 	if (_error) {
 		if (_reply.code == ERR_NONICKNAMEGIVEN.code) {
-			msg.codedMessage(_client, _reply, {});
+			msg.codedMessage(_client, _state, _reply, {});
 		}
 		else {
-			msg.codedMessage(_client, _reply, _nickname);
+			msg.codedMessage(_client, _state, _reply, _nickname);
 		}
 		return (false);
 	}
