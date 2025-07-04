@@ -226,7 +226,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 			msg.clearMsg();
 		}
 		else if (type == PING) {
-			msg.messagePong(client, _state._server_name, "PONG", _state._server_name, _state._server_name);
+			msg.messagePong(client, _state->_server_name, "PONG", _state->_server_name, _state->_server_name);
 		}
 	}
 	return ;
@@ -237,7 +237,7 @@ bool	Server::validateClient(std::shared_ptr<Client>& client) {
 
 	if (client->getPassword() != _password)
 		return (false);
-	msg.welcomeMessage(client, _state);
+	msg.welcomeMessage(client, *_state);
 	client->authenticate();
 	if (!client->isAuthenticated())
 		return (false);
