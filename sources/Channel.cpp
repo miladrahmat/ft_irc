@@ -48,22 +48,20 @@ void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_t
     //TODO how to handle if client is not operator or channel does not allow topic change
 }
 
-bool Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg) {
+reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg) {
     if (isOperator(client)) {
         if (isClient(client_to_kick)) {
             std::string target = this->getName();
             target += " " + client_to_kick->getNickname();
             this->sendMsgToAll(client, "KICK", target, msg);
             _clients.erase(std::find(_clients.begin(), _clients.end(), client_to_kick));
-            //TODO some message? what happens to the kicked out client?
+            return (SUCCESS);
         }
-        //TODO what happens if the client to be kicked is not on the channel?
-        return (true);
+        return (ERR_NOSUCHNICK);
     }
     else {
-        return (false);
-    }
-    //TODO how to handle if client is not operator 
+        return (ERR_CHANOPRIVSNEEDED);
+    } 
 }
 
 bool Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client) {

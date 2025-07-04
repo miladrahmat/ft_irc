@@ -64,7 +64,6 @@ bool	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& inpu
 }
 
 bool	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state) {
-	//KICK #haha <client_to_kick> :<msg>
 	std::vector<std::string>	arg_vec;
 
 	std::string command = input.substr(0, input.find_first_of(' '));
