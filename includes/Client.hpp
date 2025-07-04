@@ -51,6 +51,4 @@ class Client {
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
 		void		printClient() const;
-		//Channel*	getChannel(int i) const;
-		//int			getChannelsSize();
 };
