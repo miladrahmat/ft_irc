@@ -9,7 +9,6 @@ std::unique_ptr<ACommand>	QuitCommand::create(std::string command, std::shared_p
     return (std::unique_ptr<QuitCommand>(cmd));
 }
 
-#include  <iostream>
 bool    QuitCommand::execute() const {
     _state.removeClient(_client, _msg);
 	return (true);
