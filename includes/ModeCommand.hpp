@@ -1,8 +1,9 @@
 
 #pragma once
 
-#include "ACommand.hpp"
 #include <optional>
+#include "ACommand.hpp"
+#include "Message.hpp"
 
 /*
 · i: Set/remove Invite-only channel (no param)
@@ -25,7 +26,8 @@ class ModeCommand : public ACommand {
             TOPIC = 't',
             KEY = 'k',
             OPERATOR = 'o',
-            LIMIT = 'l'
+            LIMIT = 'l',
+            UNKNOWN
         };
         mode_type _mode;
         mode_action _action;
@@ -34,6 +36,10 @@ class ModeCommand : public ACommand {
         std::string _nick;  //param for +/-o
         unsigned int _limit;    //param for +l
         ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state);
+        void setModeAction(char mode_action);
+        void setMode(char mode);
+        int checkTarget(std::string & target);
+
     public:
         static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,
             State & state, std::string target, std::string mode, std::optional<std::string> mode_param);

@@ -16,6 +16,7 @@ static reply RPL_TOPIC = {"332", " :"};
 //static const err RPL_TOPICWHOTIME  = {"333"};
 static const reply RPL_NAMREPLY = {"353", ""};
 static const reply RPL_ENDOFNAMES = {"366", "End of /NAMES list"};
+static reply ERR_UNKNOWNERROR = {"400", ""};
 static const reply ERR_NOSUCHNICK = {"401", "No such nick/channel"};
 static const reply ERR_CANNOTSENDTOCHAN = {"404", "Cannot send to channel"};
 static const reply ERR_NOSUCHCHANNEL = {"403",  "No such channel"};
