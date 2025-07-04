@@ -117,6 +117,7 @@ void	Server::start() {
                 }
 				else if (ev[i].events & EPOLLIN) {
 					receiveData(_state._clients[index]);
+						//_state.removeClient(_state._clients[index], "Client Quit");
 				}
 				else if (ev[i].events & EPOLLOUT) { 
 					_state._clients[index]->sendData();
@@ -152,8 +153,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 	if (client == nullptr)
 		return ;
 	if (!client->receiveData()) {
-		//client disconnected, handle it
-		_state.removeClient(client, "Client Quit");
+		//_state.removeClient(client, "Client Quit");
 		return ;
 	}
 	Message	msg;
@@ -194,6 +194,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 			msg.clearMsg();
 		}
 	}
+	return ;
 }
 
 bool	Server::validateClient(std::shared_ptr<Client>& client) {

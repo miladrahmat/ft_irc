@@ -4,7 +4,7 @@ QuitCommand::QuitCommand(std::string command, std::shared_ptr<Client>& client, S
 
 std::unique_ptr<ACommand>	QuitCommand::create(std::string command, std::shared_ptr<Client>& client, State& state,
 	std::string args) {
-		QuitCommand*	cmd = new QuitCommand(command, client, state);
+	QuitCommand*	cmd = new QuitCommand(command, client, state);
     cmd->_msg = args;
     return (std::unique_ptr<QuitCommand>(cmd));
 }

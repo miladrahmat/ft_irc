@@ -48,6 +48,8 @@ void	Message::determineType(std::shared_ptr<Client>& client) {
 }
 
 bool	Message::getNextMessage(std::shared_ptr<Client>& client) {
+	if (client.get() == nullptr) 
+		return (false);
 	size_t pos = client->getBuffer().find("\r\n");
 	if (pos != std::string::npos) {
 		_msg = client->getBuffer().substr(0, pos);
