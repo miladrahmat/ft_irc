@@ -1,4 +1,5 @@
 #pragma once
+#include <signal.h>
 #include <cstring>
 #include <vector>
 #include <iostream>
@@ -21,12 +22,14 @@ class Server {
 		std::string			_port;
 		std::string			_password;
 		int					_server_socket;
-		State				_state;
+		State*				_state;
 
 	public:
 		Server(char** argv);
 		~Server();
 		void		start();
+		static void	stop(int signum);
+		void		closeServer();
 		std::string	getPort() const;
 		std::string	getPassword() const;
 		int			getServerSocket() const;
