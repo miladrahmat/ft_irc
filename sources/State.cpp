@@ -10,7 +10,9 @@ std::vector<Channel>::iterator	State::getChannel(std::string channel_name) {
 	std::vector<Channel>::iterator it = _channels.begin();
 	for ( ; it != _channels.end(); it++) {
 		std::transform(channel_name.begin(), channel_name.end(), channel_name.begin(), ::tolower);
-		if (it->getName() == channel_name) {
+		std::string chan_name = it->getName();
+		std::transform(chan_name.begin(), chan_name.end(), chan_name.begin(), ::tolower);
+		if (chan_name == channel_name) {
 			return (it);
 		}
 	}
