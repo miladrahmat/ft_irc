@@ -6,6 +6,7 @@
 #include "QuitCommand.hpp"
 #include "NickCommand.hpp"
 #include "KickCommand.hpp"
+#include "InviteCommand.hpp"
 #include <vector>
 #include <memory>
 

@@ -3,7 +3,7 @@
 #include <iostream>
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
-   _name(name), _password(password), _invite_only(false), _topic_command_access(true),
+   _name(name), _password(password), _invite_only(true), _topic_command_access(true),
     _user_limit(-1), _clients{client},
     _operators{client} {};
 
@@ -66,27 +66,21 @@ reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::sha
     } 
 }
 
-bool Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client) {
+reply Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client) {
     Message msg;
     std::string target;
+
     if (!isClient(client)) {
-        //ERR_NOTONCHANNEL (442);
-        msg.codedMessage(client, ERR_NOTONCHANNEL, target);
-        return (false);
+        return (ERR_NOTONCHANNEL);
     }
     if (isClient(new_client)) {
-        //ERR_USERONCHANNEL (443)
-        msg.codedMessage(client, ERR_USERONCHANNEL, target);
-        return  (false);
+        return  (ERR_USERONCHANNEL);
     }
     if (_invite_only && !isOperator(client)) {
-        //ERR_CHANOPRIVSNEEDED (482)
-        msg.codedMessage(client, ERR_CHANOPRIVSNEEDED, target);
-        return (false);
+        return (ERR_CHANOPRIVSNEEDED);
     }
     new_client->setInvitedTo(this->_name);
-    //RPL_INVITING (341)
-    return (true);
+    return (RPL_INVITING);
 }
 
 //set = true -> _invite_only = true, else set = false -> _invite_only = false

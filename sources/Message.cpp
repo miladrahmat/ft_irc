@@ -102,8 +102,11 @@ void	Message::codedMessage(std::shared_ptr<Client>& client, State& state, reply 
 	if (code.code == RPL_MYINFO.code || code.code == RPL_ISUPPORT.code) {
 		_send_msg += " " + code.msg + "\r\n";
 	}
-	else {
+	else if (!code.msg.empty()) {
 		_send_msg += " :" + code.msg + "\r\n";
+	}
+	else {
+		_send_msg += "\r\n";
 	}
 	client->appendSendBuffer(_send_msg);
 	_send_msg.clear();
