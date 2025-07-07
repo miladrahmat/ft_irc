@@ -16,10 +16,10 @@ class	Parser {
 	~Parser() = default;
 	void	parseCap(std::shared_ptr<Client>& client, std::string& input, State& state);
 	void	parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	bool	parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	bool	parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	bool	parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	bool	parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	bool	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	bool	parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void	parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void	parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void	parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void	parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void	parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };

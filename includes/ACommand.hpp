@@ -24,6 +24,6 @@ class ACommand {
     
     public:
         ACommand(std::string command, std::shared_ptr<Client> & client, State & state);
-        virtual bool execute() const = 0;
+        virtual void execute() const = 0;
         virtual ~ACommand() = default;
 };
