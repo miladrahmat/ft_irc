@@ -200,7 +200,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
 			if (type == CAP_REQ_AGAIN) {
-				//if (!parser.parseNickCommand(client, msg.getMsg(), *_state)) {
+				parser.parseNickCommand(client, msg.getMsg(), *_state);
 				if (!client->getNickValidated()) {
 					msg.clearMsg();
 					msg.clearSendMsg();
