@@ -3,7 +3,7 @@
 #include <iostream>
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
-   _name(name), _password(password), _invite_only(true), _topic_command_access(true),
+   _name(name), _password(password), _invite_only(false), _topic_command_access(true),
     _user_limit(-1), _clients{client},
     _operators{client} {};
 
