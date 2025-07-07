@@ -91,7 +91,7 @@ void JoinCommand::joinReply(std::string channel) const {
     if (chan_it->getTopic() != "") {
         struct reply reply = RPL_TOPIC;
         reply.msg = chan_it->getTopic();
-        msg.codedMessage(_client, reply, channel);
+        msg.codedMessage(_client, _state, reply, channel);
     }
     std::vector<std::shared_ptr<Client>>::iterator it = (*chan_it)._clients.begin();
     std::string nicks;
@@ -104,7 +104,7 @@ void JoinCommand::joinReply(std::string channel) const {
             struct reply reply = RPL_NAMREPLY;
             reply.msg = nicks;
             std::string target = "= " + (*chan_it).getName();
-            msg.codedMessage(_client, reply, target);
+            msg.codedMessage(_client, _state, reply, target);
             i = 0;
             nicks.clear();
         }
@@ -112,13 +112,13 @@ void JoinCommand::joinReply(std::string channel) const {
     struct reply reply = RPL_NAMREPLY;
     reply.msg = nicks;
     std::string target = "= " + (*chan_it).getName();
-    msg.codedMessage(_client, reply, target);
+    msg.codedMessage(_client, _state, reply, target);
     nicks.clear();
-    msg.codedMessage(_client, RPL_ENDOFNAMES, (*chan_it).getName());
+    msg.codedMessage(_client, _state, RPL_ENDOFNAMES, (*chan_it).getName());
 }
 
 void JoinCommand::errReply(reply reply, std::string channel) const {
     Message msg;
     //std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
-    msg.codedMessage(_client, reply, channel);
+    msg.codedMessage(_client, _state, reply, channel);
 }

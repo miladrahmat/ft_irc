@@ -29,7 +29,7 @@ bool    KickCommand::execute() const {
             target = _client_to_kick;
         else
             target = _channel;
-        msg.codedMessage(_client, code, target);
+        msg.codedMessage(_client, _state, code, target);
     }
     else {
         std::string target = _channel + " " + _client_to_kick;
