@@ -1,5 +1,7 @@
 #include "Server.hpp"
 
+bool server_stop = false;
+
 Server::Server(char** argv) {
 	struct addrinfo	hints, *res;
 	std::memset(&hints, 0, sizeof(hints));
@@ -56,6 +58,9 @@ Server::Server(char** argv) {
 		}
 		std::cout << "Server started on port " << _port << std::endl;
 		std::cout << "Server started with password " << _password << std::endl;
+		_state = new State;
+		signal(SIGINT, &stop);
+		signal(SIGTSTP, &stop);
 	} catch (std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
 		//TODO this needs to be handeled somehow
@@ -64,6 +69,30 @@ Server::Server(char** argv) {
 
 Server::~Server() {
 	close(_server_socket);
+}
+
+void	Server::stop(int signum) {
+	if (signum == SIGINT || signum == SIGTSTP)
+		server_stop = true;
+}
+
+void	Server::closeServer() {
+	close(_server_socket);
+	for (auto it = _state->_channels.begin(); it != _state->_channels.end(); ++it) {
+		it->_clients.clear();
+		it->_operators.clear();
+	}
+	_state->_channels.clear();
+	for (auto it = _state->_clients.begin(); it != _state->_clients.end(); ++it) {
+		it->reset();
+	}
+	_state->_clients.clear();
+	delete _state;
+	_password.clear();
+	_port.clear();
+	signal(SIGINT, SIG_DFL);
+	signal(SIGTSTP, SIG_DFL);
+	exit(0);
 }
 
 std::string	Server::getPort() const {
@@ -105,21 +134,25 @@ void	Server::start() {
 	struct epoll_event ev[64];
     while (true) {
         int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
+		if (server_stop) {
+			close(epoll_fd);
+			closeServer();
+		}
         if (eventsCount < 0) {
             std::cerr << "Error with epoll_wait" << std::endl;
             break ;
         }
         if (eventsCount > 0) {
             for (int i = 0; i < eventsCount; ++i) {
-				int index = findIndex(_state._clients, ev[i].data.fd);
+				int index = findIndex(_state->_clients, ev[i].data.fd);
                 if (ev[i].data.fd == _server_socket) {
                     handleNewClient(epoll_fd);
                 }
 				else if (ev[i].events & EPOLLIN) {
-					receiveData(_state._clients[index]);
+					receiveData(_state->_clients[index]);
 				}
 				else if (ev[i].events & EPOLLOUT) { 
-					_state._clients[index]->sendData();
+					_state->_clients[index]->sendData();
                 }
             }
         }
@@ -144,7 +177,7 @@ void Server::handleNewClient(int epoll_fd) {
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		_state._clients.push_back(std::make_shared<Client>(client, epoll_fd));
+		_state->_clients.push_back(std::make_shared<Client>(client, epoll_fd));
     }
 }
 
@@ -152,7 +185,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 	if (client == nullptr)
 		return ;
 	if (!client->receiveData()) {
-		_state.removeClient(client, "Client Quit");
+		_state->removeClient(client, "Client Quit");
 		return ;
 	}
 	Message	msg;
@@ -161,13 +194,13 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		msg.determineType(client);
 		int	type = msg.getType();
 		if (type == CAP_LS) {
-			parser.parseCap(client, msg.getMsg(), _state);
+			parser.parseCap(client, msg.getMsg(), *_state);
 			msg.messageCap(client);
 			msg.clearMsg();
 		}
 		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
 			if (type == CAP_REQ_AGAIN) {
-				if (!parser.parseNickCommand(client, msg.getMsg(), _state)) {
+				if (!parser.parseNickCommand(client, msg.getMsg(), *_state)) {
 					msg.clearMsg();
 					msg.clearSendMsg();
 					continue ;
@@ -189,8 +222,11 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (type == CMD) {
 			std::cout << msg.getMsg() << std::endl;
-			parser.parseCommand(client, msg.getMsg(), _state);
+			parser.parseCommand(client, msg.getMsg(), *_state);
 			msg.clearMsg();
+		}
+		else if (type == PING) {
+			msg.messagePong(client, _state->_server_name, "PONG", _state->_server_name, _state->_server_name);
 		}
 	}
 	return ;
@@ -201,7 +237,7 @@ bool	Server::validateClient(std::shared_ptr<Client>& client) {
 
 	if (client->getPassword() != _password)
 		return (false);
-	msg.welcomeMessage(client);
+	msg.welcomeMessage(client, *_state);
 	client->authenticate();
 	if (!client->isAuthenticated())
 		return (false);

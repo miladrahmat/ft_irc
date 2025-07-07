@@ -79,7 +79,8 @@ bool	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& inp
 		arg_vec.push_back(arg);
 	}
 	std::unique_ptr<ACommand> cmd = KickCommand::create(command, client, state, arg_vec);
-
+	if (cmd == nullptr)
+		return (false);
 	return (cmd->execute());
 }
 

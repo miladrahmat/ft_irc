@@ -20,16 +20,16 @@ std::unique_ptr<ACommand>	KickCommand::create(std::string command, std::shared_p
 
 bool    KickCommand::execute() const {
     Message msg;
-    Channel & channel = *_state.getChannel(_channel);
-    std::shared_ptr<Client>  & client_to_kick = *_state.getClient(_client_to_kick);
-    const reply code = channel.kickClient(_client, client_to_kick, _msg);
-    if (code.code != "000") {
+    std::vector<Channel>::iterator channel = _state.getChannel(_channel);
+    std::vector<std::shared_ptr<Client>>::iterator client_to_kick = _state.getClient(_client_to_kick);
+    const reply code = channel->kickClient(_client, *client_to_kick, _msg);
+    if (code.code != SUCCESS.code) {
         std::string target;
-        if (code.code == "401")
+        if (code.code == ERR_NOSUCHNICK.code)
             target = _client_to_kick;
         else
             target = _channel;
-        msg.codedMessage(_client, code, target);
+        msg.codedMessage(_client, _state, code, target);
     }
     else {
         std::string target = _channel + " " + _client_to_kick;
