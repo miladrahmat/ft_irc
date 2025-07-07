@@ -39,6 +39,11 @@ class ModeCommand : public ACommand {
         void setModeAction(char mode_action);
         void setMode(char mode);
         int checkTarget(std::string & target);
+        void executeKey(Channel & channel) const;
+        void executeInvite(Channel & channel) const;
+        void executeTopic(Channel & channel) const;
+        void executeLimit(Channel & channel) const;
+        void executeOperator(Channel & channel) const;
 
     public:
         static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,

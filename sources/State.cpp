@@ -57,6 +57,7 @@ void	State::removeClient(std::shared_ptr<Client>& client, std::string msg) {
 		}
 	}
 }
+
 std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nickname) {
 	std::vector<std::shared_ptr<Client>>::iterator it = _clients.begin();
 	for ( ; it != _clients.end(); it++) {

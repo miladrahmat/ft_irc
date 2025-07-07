@@ -128,19 +128,34 @@ bool Parser::parseModeCommand(std::shared_ptr<Client>& client, std::string& inpu
 		target = input.substr(0, input.find_first_of(' '));
 		input.erase(0, target.length() + 1);
 	}
-	std::string mode;
+	std::string modes;
+	std::string action;
 	if (!input.empty()) {
-		mode = input.substr(0, input.find_first_of(' '));
-		input.erase(0, mode.length() + 1);
+		modes = input.substr(0, input.find_first_of(' '));
+		input.erase(0, modes.length() + 1);
+		for ( ; !modes.empty(); modes.erase(0, 1)) {
+			if (modes[0] == '+')  {
+				action = "+";
+				continue ;
+			}
+			else if (modes[0] == '-') {
+				action = "-";
+				continue;
+			}
+			else {
+				std::string mode = action + modes[0];
+				std::string param = "";
+				if (!input.empty()) {
+					param = input.substr(0, input.find_first_of(' '));
+					input.erase(0, param.length() + 1);
+				}
+				std::unique_ptr<ACommand> cmd = ModeCommand::create(command, client, state, target, mode, param);
+				if (cmd == nullptr) {
+					continue;
+				}
+				cmd->execute();
+			}
+		}
 	}
-	std::string param = "";
-	if (!input.empty()) {
-		param = input.substr(0, input.find_first_of(' '));
-		input.erase(0, param.length() + 1);
-	}
-	std::unique_ptr<ACommand> cmd = ModeCommand::create(command, client, state, target, mode, param);
-	if (cmd == nullptr) {
-		return (false);
-	}
-	return (cmd->execute());
+	return (true);
 }
