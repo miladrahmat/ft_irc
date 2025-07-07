@@ -20,13 +20,16 @@ class Channel {
         bool _invite_only;
         bool _topic_command_access;
         int _user_limit;
+
     public:
-        Channel(std::string name, std::shared_ptr<Client> client, std::string password = "");
-        ~Channel();
-        std::string getName() const;
         std::vector<std::shared_ptr<Client>> _clients;
         std::vector<std::shared_ptr<Client>> _operators;
         std::string _topic;
+
+        Channel(std::string name, std::shared_ptr<Client> client, std::string password = "");
+        ~Channel();
+        std::string getName() const;
+        reply checkPrivileges(std::shared_ptr<Client> & client) const;
         bool isClient(const std::shared_ptr<Client> & client) const;
         bool isOperator(const std::shared_ptr<Client> & client) const;
         bool channelFull() const;
@@ -34,7 +37,7 @@ class Channel {
         void setTopic(const std::shared_ptr<Client> & client, std::string new_topic);
         reply kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg);
         bool inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client);
-        void setInviteMode(const std::shared_ptr<Client> & client, bool set);
+        reply setInviteMode(std::shared_ptr<Client> & client, bool set);
         void setTopicMode(const std::shared_ptr<Client> & client, bool set);
         void setChannelPassword(const std::shared_ptr<Client> & client, std::string password);
         void addOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & new_operator);
@@ -43,7 +46,7 @@ class Channel {
         reply join(const std::shared_ptr<Client> & client, std::string password);
         std::string getTopic() const;
         std::string getClientsNick() const;
-        void    removeClient(const std::shared_ptr<Client> & client);
-        int     getSize();
-        void    sendMsgToAll(const std::shared_ptr<Client>& client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
+        void removeClient(const std::shared_ptr<Client> & client);
+        int getSize();
+        void sendMsgToAll(const std::shared_ptr<Client>& client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
 };

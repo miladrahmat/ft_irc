@@ -31,7 +31,7 @@ class ModeCommand : public ACommand {
         };
         mode_type _mode;
         mode_action _action;
-        std::string _target;
+        std::vector<Channel>::iterator _channel_it;    //channel that the mode will affect
         std::string _key;   //param for +k
         std::string _nick;  //param for +/-o
         int _limit;    //param for +l

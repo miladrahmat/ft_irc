@@ -26,6 +26,13 @@ bool Channel::isOperator(const std::shared_ptr<Client> & client) const {
     return (true);
 };
 
+reply Channel::checkPrivileges(std::shared_ptr<Client> & client) const {
+    if (isOperator(client) == false) {
+        return (ERR_CHANOPRIVSNEEDED);
+    }
+    return (SUCCESS);
+}
+
 bool Channel::channelFull() const {
     if (_user_limit == -1) {
         return (false);
@@ -36,17 +43,13 @@ bool Channel::channelFull() const {
     return (false);
 }
 
-std::string Channel::showTopic() const {
-    return (_topic);
-}
-
-void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_topic) {
-    if (isOperator(client) && _topic_command_access) {
-        _topic = new_topic;
-        return ;
-    }
-    //TODO how to handle if client is not operator or channel does not allow topic change
-}
+// void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_topic) {
+//     if (isOperator(client) && _topic_command_access) {
+//         _topic = new_topic;
+//         return ;
+//     }
+//     //TODO how to handle if client is not operator or channel does not allow topic change
+// }
 
 reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg) {
     if (isOperator(client)) {
@@ -62,7 +65,7 @@ reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::sha
     }
     else {
         return (ERR_CHANOPRIVSNEEDED);
-    } 
+    }
 }
 
 bool Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client) {
@@ -84,9 +87,13 @@ bool Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_p
 }
 
 //set = true -> _invite_only = true, else set = false -> _invite_only = false
-void Channel::setInviteMode(const std::shared_ptr<Client> & client, bool set) {
-    if (isOperator(client)) {
+reply Channel::setInviteMode(std::shared_ptr<Client> & client, bool set) {
+    reply reply = checkPrivileges(client);
+    if (reply.code == SUCCESS.code) {
         _invite_only = set;
+    }
+    else {
+        return (reply);
     }
 }
 

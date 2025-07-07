@@ -22,15 +22,19 @@ void ModeCommand::setMode(char mode) {
 }
 
 int ModeCommand::checkTarget(std::string & target) {
-    if (_state.getClient(target) != _state.getClients().end()) {
-        _target = target;
+    Message msg;
+    if (target[0] == ('#' || '&')) {
+        if (_state.getChannel(target) != _state.getChannels().end()) {
+            _channel_it = _state.getChannel(target);
+        }
+        else {
+            Message msg;
+            msg.codedMessage(_client, ERR_NOSUCHCHANNEL, target);
+            return (0);
+        }
     }
-    else if (_state.getChannel(target) != _state.getChannels().end()) {
-        _target = target;
-    }
-    else {
-        Message msg;
-        msg.codedMessage(_client, ERR_NOSUCHNICK, target);
+    else if (_state.getClient(target) != _state.getClients().end()) {
+        msg.codedMessage(_client, ERR_UMODEUNKNOWNFLAG, target);
         return (0);
     }
     return (1);
@@ -45,14 +49,11 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
         delete (cmd);
         return (nullptr);
     }
-    std::cout << "Target: " << cmd->_target << std::endl;       //remove this
     cmd->setModeAction(mode[0]);
     cmd->setMode(mode[1]);
     if (cmd->_mode == UNKNOWN) {
         delete (cmd);
-        reply reply = ERR_UNKNOWNERROR;
-        reply.msg = "Unsupported mode";
-        msg.codedMessage(client, reply, "MODE " + mode);
+        msg.codedMessage(client, ERR_UNKNOWNMODE, mode);
         return (nullptr);
     }
     if (mode_param) {
@@ -95,11 +96,20 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
 }
 
 bool ModeCommand::execute() const {
+    Message msg;
+    reply reply;
+    if (_channel_it->isOperator(_client) == false) {
+        msg.codedMessage(_client, ERR_CHANOPRIVSNEEDED, _channel_it->getName());
+        return (false);
+    }
     if (_mode == INVITE) {
-        std::vector<Channel>::iterator chan_it = _state.getChannel(_target);
-        if (chan_it != _state.getChannels().end()) {
-            (*chan_it).setInviteMode(_client, (_action == ADD) ? true : false);
+        reply = (*_channel_it).setInviteMode(_client, (_action == ADD) ? true : false);
+        if (reply.code == SUCCESS.code) {
+            //TODO send to all on channel
         }
+    }
+    else if (_mode == TOPIC) {
+        
     }
     return (true);
 }
