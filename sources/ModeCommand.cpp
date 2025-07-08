@@ -83,13 +83,7 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
 					param = input.substr(0, input.find_first_of(' '));
 					input.erase(0, param.length() + 1);
                     if (param != "") {
-                        if (mode_obj.mode == KEY && mode_obj.action == ADD) {
-                            mode_obj.param = param;
-                        }
-                        else if (mode_obj.mode == OPERATOR) {
-                            mode_obj.param = param;
-                        }
-                        else if (mode_obj.mode == LIMIT) {
+                        if (mode_obj.mode == LIMIT) {
                             if (mode_obj.action == REMOVE) {
                                 mode_obj.param = "-1";
                             }
