@@ -1,8 +1,6 @@
 
 #include "JoinCommand.hpp"
 
-#include <iostream>
-
 JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
 
 std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client, State & state,

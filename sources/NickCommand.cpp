@@ -55,7 +55,6 @@ void	NickCommand::execute() const {
 	}
 	if (!_client->isAuthenticated()) {
 		_client->setNickname(_nickname);
-		//_client->validateNick();
 	}
 	else {
 		msg.message(_client, _client, _command, {}, _nickname);
@@ -69,7 +68,6 @@ void	NickCommand::execute() const {
 			}
 		}
 		_client->setNickname(_nickname);
-		//_client->validateNick();
 	}
 	_client->validateNick();
 }

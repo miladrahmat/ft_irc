@@ -222,7 +222,7 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 			msg.clearMsg();
 		}
 		else if (type == CMD) {
-			std::cout << msg.getMsg() << std::endl;
+			std::cout << msg.getMsg() << std::endl; 
 			parser.parseCommand(client, msg.getMsg(), *_state);
 			msg.clearMsg();
 		}
