@@ -29,24 +29,25 @@ class ModeCommand : public ACommand {
             LIMIT = 'l',
             UNKNOWN
         };
-        mode_type _mode;
-        mode_action _action;
+        struct mode_struct {
+            mode_action action;
+            mode_type mode;
+            std::string param;
+        };
+        std::vector<mode_struct> modes;
         std::vector<Channel>::iterator _channel_it;    //channel that the mode will affect
-        std::string _key;   //param for +k
-        std::string _nick;  //param for +/-o
-        int _limit;    //param for +l
         ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state);
-        void setModeAction(char mode_action);
-        void setMode(char mode);
+        void setModeAction(mode_struct & mode, char mode_action);
+        void setMode(mode_struct & mode_struct, char mode);
         int checkTarget(std::string & target);
-        void executeKey(Channel & channel) const;
-        void executeInvite(Channel & channel) const;
-        void executeTopic(Channel & channel) const;
-        void executeLimit(Channel & channel) const;
-        void executeOperator(Channel & channel) const;
+        void executeKey(Channel & channel, const mode_struct & mode_obj) const;
+        void executeInvite(Channel & channel, const mode_struct & mode_obj) const;
+        void executeTopic(Channel & channel, const mode_struct & mode_obj) const;
+        void executeLimit(Channel & channel, const mode_struct & mode_obj) const;
+        void executeOperator(Channel & channel, const mode_struct & mode_obj) const;
 
     public:
         static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,
-            State & state, std::string target, std::string mode, std::optional<std::string> mode_param);
+            State & state, std::string target, std::string input);
         bool execute() const override;
 };

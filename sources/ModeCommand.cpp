@@ -1,23 +1,23 @@
 
 #include "ModeCommand.hpp"
 
-ModeCommand::ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state), _limit(-1) {}
+ModeCommand::ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
 
-void ModeCommand::setModeAction(char mode_action) {
+void ModeCommand::setModeAction(mode_struct & mode, char mode_action) {
     switch (mode_action) {
-        case '-': _action = REMOVE; break;
-        case '+': _action = ADD; break;
+        case '-': mode.action = REMOVE; break;
+        case '+': mode.action = ADD; break;
     }
 }
 
-void ModeCommand::setMode(char mode) {
+void ModeCommand::setMode(mode_struct & mode_struct, char mode) {
     switch (mode) {
-        case 'i': _mode = INVITE; break;
-        case 't': _mode = TOPIC; break;
-        case 'k': _mode = KEY; break;
-        case 'o': _mode = OPERATOR; break;
-        case 'l': _mode = LIMIT; break;
-        default: _mode = UNKNOWN;
+        case 'i': mode_struct.mode = INVITE; break;
+        case 't': mode_struct.mode = TOPIC; break;
+        case 'k': mode_struct.mode = KEY; break;
+        case 'o': mode_struct.mode = OPERATOR; break;
+        case 'l': mode_struct.mode = LIMIT; break;
+        default: mode_struct.mode = UNKNOWN;
     }
 }
 
@@ -41,7 +41,7 @@ int ModeCommand::checkTarget(std::string & target) {
 }
 
 std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_ptr<Client>& client,
-    State & state, std::string target, std::string mode, std::optional<std::string> mode_param) {
+    State & state, std::string target, std::string input) {
     
     ModeCommand* cmd = new ModeCommand(command, client, state);
     Message msg;
@@ -49,53 +49,59 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
         delete (cmd);
         return (nullptr);
     }
-    cmd->setModeAction(mode[0]);
-    cmd->setMode(mode[1]);
-    if (cmd->_mode == UNKNOWN) {
-        delete (cmd);
-        msg.codedMessage(client, cmd->_state, ERR_UNKNOWNMODE, mode);
-        return (nullptr);
-    }
-    if (mode_param) {
-        if (cmd->_mode == KEY && cmd->_action == ADD) {
-            cmd->_key = *mode_param;
-        }
-        else if (cmd->_mode == OPERATOR) {
-            cmd->_nick = *mode_param;
-        }
-        else if (cmd->_mode == LIMIT) {
-            if (cmd->_action == REMOVE) {
-                cmd->_limit = -1;
-            }
-            else {
-                try {
-                    int limit = std::stoi(*mode_param);
-                    if (limit <= 0) {
-                        delete (cmd);
-                        return (nullptr);
+    std::string modes;
+	std::string action;
+	if (!input.empty()) {
+		modes = input.substr(0, input.find_first_of(' '));
+		input.erase(0, modes.length() + 1);
+		for ( ; !modes.empty(); modes.erase(0, 1)) {
+			if (modes[0] == '+')  {
+				action = "+";
+				continue ;
+			}
+			else if (modes[0] == '-') {
+				action = "-";
+				continue;
+			}
+			else {
+				std::string mode = action + modes[0];
+				std::string param = "";
+                mode_struct mode_obj;
+                cmd->setModeAction(mode_obj, mode[0]);
+                cmd->setMode(mode_obj, mode[1]);
+                mode_obj.param = param;
+                if (mode_obj.mode == UNKNOWN) {
+                    msg.codedMessage(client, cmd->_state, ERR_UNKNOWNMODE, mode);
+                    continue;
+                }
+				if (mode == "+k" || mode == "+o" || mode == "+l") {
+					if (input.empty()) {
+						Message msg;
+						msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, command);
+						continue;
+					}
+					param = input.substr(0, input.find_first_of(' '));
+					input.erase(0, param.length() + 1);
+                    if (param != "") {
+                        if (mode_obj.mode == KEY && mode_obj.action == ADD) {
+                            mode_obj.param = param;
+                        }
+                        else if (mode_obj.mode == OPERATOR) {
+                            mode_obj.param = param;
+                        }
+                        else if (mode_obj.mode == LIMIT) {
+                            if (mode_obj.action == REMOVE) {
+                                mode_obj.param = "-1";
+                            }
+                            else {
+                                mode_obj.param = param;
+                            }
+                        }
                     }
-                    cmd->_limit = limit;
-                }
-                catch (std::exception & e) {
-                    delete (cmd);
-                    return (nullptr);
-                }
+				}
+                cmd->modes.push_back(mode_obj);
             }
         }
-    }
-    if (cmd->_mode == KEY && cmd->_action == ADD && cmd->_key == "") {
-        delete (cmd);
-        return (nullptr);
-    }
-    if (cmd->_mode == OPERATOR && cmd->_nick == "") {
-        delete (cmd);
-        msg.codedMessage(client, cmd->_state, ERR_NEEDMOREPARAMS, command);
-        return (nullptr);
-    }
-    if (cmd->_mode == LIMIT && cmd->_action == ADD && cmd->_limit == -1) {
-        delete (cmd);
-        msg.codedMessage(client, cmd->_state, ERR_NEEDMOREPARAMS, command);
-        return (nullptr);
     }
     return (std::unique_ptr<ModeCommand>(cmd));
 }
@@ -107,42 +113,45 @@ bool ModeCommand::execute() const {
         msg.codedMessage(_client, _state, ERR_CHANOPRIVSNEEDED, _channel_it->getName());
         return (false);
     }
-    switch (_mode) {
-        case INVITE:
-            executeInvite(*_channel_it);
-            return (true);
-        case TOPIC:
-            executeTopic(*_channel_it);
-            return  (true);
-        case KEY:
-            executeKey(*_channel_it);
-            return (true);
-        case LIMIT:
-            executeLimit(*_channel_it);
-            return (true);
-        case OPERATOR:
-            executeOperator(*_channel_it);
-        case UNKNOWN:
-            return (false);
+    for (auto mode = modes.begin(); mode != modes.end(); mode++) {
+        switch (mode->mode) {
+            case KEY:
+                executeKey(*_channel_it, *mode);
+                continue;
+            case INVITE:
+                executeInvite(*_channel_it, *mode);
+                continue;
+            case TOPIC:
+                executeTopic(*_channel_it, *mode);
+                continue;
+            case LIMIT:
+                executeLimit(*_channel_it, *mode);
+                continue;
+            case OPERATOR:
+                executeOperator(*_channel_it, *mode);
+                continue;
+            case UNKNOWN:
+                continue;
+        }
     }
     return (true);
 }
 
-void ModeCommand::executeKey(Channel & channel) const {
+void ModeCommand::executeKey(Channel & channel, const mode_struct & mode_obj) const {
     Message msg;
     reply reply;
-    if (_action == REMOVE && channel.getPassword() == "") {
+    if (mode_obj.action == REMOVE && channel.getPassword() == "") {
         return;
     }
-    reply = channel.setChannelPassword(_client, _key);
+    reply = channel.setChannelPassword(_client, mode_obj.param);
     if (reply.code == SUCCESS.code) {
-        char action_char = static_cast<char>(_action);
-        char mode_char = static_cast<char>(_mode);
-        std::string mode = std::string("") + action_char + mode_char;
-        std::string key = _key;
-        if (_key == "") {
+        char action_char = static_cast<char>(mode_obj.action);
+        char mode_char = static_cast<char>(mode_obj.mode);
+        std::string key = mode_obj.param;
+        if (mode_obj.param == "") {
             key = "*";
         }
+        std::string mode = std::string("") + action_char + mode_char;
         msg.message(_client, _client, "MODE", channel.getName() + " " + mode, key);
         channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, key);
     }
@@ -151,13 +160,13 @@ void ModeCommand::executeKey(Channel & channel) const {
     }
 }
 
-void ModeCommand::executeInvite(Channel & channel) const {
+void ModeCommand::executeInvite(Channel & channel, const mode_struct & mode_obj) const {
     Message msg;
     reply reply;
-    reply = channel.setInviteMode(_client, (_action == ADD) ? true : false);
+    reply = channel.setInviteMode(_client, (mode_obj.action == ADD) ? true : false);
     if (reply.code == SUCCESS.code) {
-        char action_char = static_cast<char>(_action);
-        char mode_char = static_cast<char>(_mode);
+        char action_char = static_cast<char>(mode_obj.action);
+        char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
         msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
         channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
@@ -167,13 +176,13 @@ void ModeCommand::executeInvite(Channel & channel) const {
     }
 }
 
-void ModeCommand::executeTopic(Channel & channel) const {
+void ModeCommand::executeTopic(Channel & channel, const mode_struct & mode_obj) const {
     Message msg;
     reply reply;
-    reply = (*_channel_it).setTopicMode(_client, (_action == ADD) ? true : false);
+    reply = (*_channel_it).setTopicMode(_client, (mode_obj.action == ADD) ? true : false);
     if (reply.code == SUCCESS.code) {
-        char action_char = static_cast<char>(_action);
-        char mode_char = static_cast<char>(_mode);
+        char action_char = static_cast<char>(mode_obj.action);
+        char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
         msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
         channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
@@ -183,21 +192,36 @@ void ModeCommand::executeTopic(Channel & channel) const {
     }
 }
 
-void ModeCommand::executeLimit(Channel & channel) const {
+void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) const {
     Message msg;
     reply reply;
-    reply = channel.setUserLimit(_client, _limit);
+    int limit;
+    if (mode_obj.action == ADD) {
+        try {
+            limit = std::stoi(mode_obj.param);
+            if (limit <= 0) {
+                return;
+            }
+        }
+        catch (std::exception & e) {
+            return ;
+        }
+    }
+    else {
+        limit = -1;
+    }
+    reply = channel.setUserLimit(_client, limit);
     if (reply.code == SUCCESS.code) {
-        char action_char = static_cast<char>(_action);
-        char mode_char = static_cast<char>(_mode);
+        char action_char = static_cast<char>(mode_obj.action);
+        char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
-        if (_action == REMOVE) {
+        if (mode_obj.action == REMOVE) {
             msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
             channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
         }
         else {
-            msg.message(_client, _client, "MODE", channel.getName() + " " + mode, std::to_string(_limit));
-            channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, std::to_string(_limit));
+            msg.message(_client, _client, "MODE", channel.getName() + " " + mode, mode_obj.param);
+            channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, mode_obj.param);
         }
     }
     else {
@@ -205,29 +229,29 @@ void ModeCommand::executeLimit(Channel & channel) const {
     }
 }
 
-void ModeCommand::executeOperator(Channel & channel) const {
+void ModeCommand::executeOperator(Channel & channel, const mode_struct & mode_obj) const {
     Message msg;
     reply reply;
-    if (_action == ADD) {
-        std::vector<std::shared_ptr<Client>>::iterator new_operator_it = channel.getClient(_nick);
+    if (mode_obj.action == ADD) {
+        std::vector<std::shared_ptr<Client>>::iterator new_operator_it = channel.getClient(mode_obj.param);
         if (new_operator_it != channel.clients.end()) {
             reply = channel.addOperator(_client, *(new_operator_it));
         }
     }
     else {
-        std::vector<std::shared_ptr<Client>>::iterator new_operator_it = channel.getClient(_nick);
+        std::vector<std::shared_ptr<Client>>::iterator new_operator_it = channel.getClient(mode_obj.param);
         if (new_operator_it != channel.clients.end()) {
             reply = channel.removeOperator(_client, *(new_operator_it));
         }
     }
     if (reply.code == SUCCESS.code) {
-        char action_char = static_cast<char>(_action);
-        char mode_char = static_cast<char>(_mode);
+        char action_char = static_cast<char>(mode_obj.action);
+        char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
-        msg.message(_client, _client, "MODE", channel.getName() + " " + mode, _nick);
-        channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, _nick);
+        msg.message(_client, _client, "MODE", channel.getName() + " " + mode, mode_obj.param);
+        channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, mode_obj.param);
     }
     else {
-        msg.codedMessage(_client, _state, ERR_NOSUCHNICK, _nick);
+        msg.codedMessage(_client, _state, ERR_NOSUCHNICK, mode_obj.param);
     }
 }
