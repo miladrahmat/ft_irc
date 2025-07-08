@@ -56,14 +56,19 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 bool	Parser::parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
-	std::string channel = input.substr(0, input.find_first_of(' '));
-	input.erase(0, channel.length() + 1);
-	std::string topic;
-	if (input == ":") {
-		topic = "";
+	std::string channel = "";
+	if (!input.empty()) {
+		channel = input.substr(0, input.find_first_of(' '));
+		input.erase(0, channel.length() + 1);
 	}
-	else {
-		topic = input.substr(1, input.length());
+	std::string topic = "";
+	if (!input.empty()) {
+		if (input == ":") {
+			topic = "";
+		}
+		else {
+			topic = input.substr(1, input.length());
+		}
 	}
 	std::unique_ptr<ACommand> cmd = TopicCommand::create(command, client, state, channel, topic);
 	if (cmd == nullptr) {

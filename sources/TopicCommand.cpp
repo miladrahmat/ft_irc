@@ -1,6 +1,5 @@
 
 #include "TopicCommand.hpp"
-#include <iostream>
 
 TopicCommand::TopicCommand(std::string command, std::shared_ptr<Client>& client, State& state) : ACommand(command, client, state) {}
 
@@ -8,28 +7,35 @@ std::unique_ptr<ACommand>	TopicCommand::create(std::string command, std::shared_
 	std::string channel, std::string topic) {
 	TopicCommand*	cmd = new TopicCommand(command, client, state);
 
-	auto chan = cmd->_state.getChannel(channel);
-	cmd->_error = false;
-	cmd->_set_topic = false;
-	if (chan == cmd->_state.getChannels().end()) {
-		cmd->_channel = "";
-		cmd->_error = true;
-		cmd->_reply = ERR_NOSUCHCHANNEL;
-	}
-	else if (!chan->isClient(cmd->_client)) {
+	if (channel.empty()) {
 		cmd->_channel = channel;
 		cmd->_error = true;
-		cmd->_reply = ERR_NOTONCHANNEL;
+		cmd->_reply = ERR_NEEDMOREPARAMS;
 	}
 	else {
-		cmd->_channel = channel;
-		if (!chan->isOperator(cmd->_client) && chan->getTopicMode()) {
+		auto chan = cmd->_state.getChannel(channel);
+		cmd->_error = false;
+		cmd->_set_topic = false;
+		if (chan == cmd->_state.getChannels().end()) {
+			cmd->_channel = "";
 			cmd->_error = true;
-			cmd->_reply = ERR_CHANOPRIVSNEEDED;
+			cmd->_reply = ERR_NOSUCHCHANNEL;
+		}
+		else if (!chan->isClient(cmd->_client)) {
+			cmd->_channel = channel;
+			cmd->_error = true;
+			cmd->_reply = ERR_NOTONCHANNEL;
 		}
 		else {
-			cmd->_set_topic = true;
-			cmd->_topic = topic;
+			cmd->_channel = channel;
+			if (!chan->isOperator(cmd->_client) && chan->getTopicMode()) {
+				cmd->_error = true;
+				cmd->_reply = ERR_CHANOPRIVSNEEDED;
+			}
+			else {
+				cmd->_set_topic = true;
+				cmd->_topic = topic;
+			}
 		}
 	}
 	return (std::unique_ptr<ACommand>(cmd));
