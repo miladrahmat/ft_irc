@@ -36,7 +36,7 @@ class Channel {
         std::string showTopic() const;
         void setTopic(const std::shared_ptr<Client> & client, std::string new_topic);
         reply kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg);
-        bool inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client);
+        reply inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client);
         reply setInviteMode(std::shared_ptr<Client> & client, bool set);
         reply setTopicMode(const std::shared_ptr<Client> & client, bool set);
         reply setChannelPassword(const std::shared_ptr<Client> & client, std::string password);

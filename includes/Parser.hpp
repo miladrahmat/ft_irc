@@ -7,6 +7,7 @@
 #include "QuitCommand.hpp"
 #include "NickCommand.hpp"
 #include "KickCommand.hpp"
+#include "InviteCommand.hpp"
 #include <vector>
 #include <memory>
 
@@ -22,4 +23,5 @@ class	Parser {
 	bool	parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	bool	parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	bool	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	bool	parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };

@@ -14,6 +14,7 @@ static const reply RPL_MYINFO = {"004", " ircserv 1.0 o o"};
 static const reply RPL_ISUPPORT = {"005", " CHANTYPES=#& NICKLEN=15 PREFIX=(ov)@+ CHANMODES=itkol :are supported by this server"};
 static reply RPL_TOPIC = {"332", " :"};
 //static const err RPL_TOPICWHOTIME  = {"333"};
+static const reply RPL_INVITING = {"341", ""};
 static const reply RPL_NAMREPLY = {"353", ""};
 static const reply RPL_ENDOFNAMES = {"366", "End of /NAMES list"};
 static reply ERR_UNKNOWNERROR = {"400", ""};
@@ -24,6 +25,8 @@ static const reply ERR_TOOMANYCHANNELS = {"405", "You have joined too many chann
 static const reply ERR_NONICKNAMEGIVEN = {"431", "No nickname given"};
 static const reply ERR_ERRONEUSNICKNAME = {"432", "Erroneus nickname"};
 static const reply ERR_NICKNAMEINUSE = {"433", "Nickname is already in use."};
+static const reply ERR_NOTONCHANNEL = {"442", "You're not on that channel"};
+static const reply ERR_USERONCHANNEL = {"443", "is already on channel"};
 static const reply ERR_NEEDMOREPARAMS = {"461", "Not enough parameters"};
 static const reply ERR_CHANNELISFULL = {"471", "Cannot join channel (+l)"};
 static const reply ERR_UNKNOWNMODE = {"472", "is unknown mode char to me"};

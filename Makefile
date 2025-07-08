@@ -15,7 +15,8 @@ CFILES := main.cpp \
 			Parser.cpp \
 			State.cpp \
 			QuitCommand.cpp \
-			KickCommand.cpp
+			KickCommand.cpp \
+			InviteCommand.cpp
 
 INC := includes/
 SRC_PATH := sources/

@@ -42,7 +42,9 @@ void	Message::determineType(std::shared_ptr<Client>& client) {
 	else if (_msg.compare(0, 7, "CAP END") == 0) {
 		_type = CAP_END;
 	}
-	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 || _msg.compare(0, 4, "NICK") == 0 || _msg.compare(0, 4, "QUIT") == 0 || _msg.compare(0, 4, "KICK") == 0 \
+	else if (_msg.compare(0, 4, "JOIN") == 0 || _msg.compare(0, 7, "PRIVMSG") == 0 \
+		|| _msg.compare(0, 4, "NICK") == 0 || _msg.compare(0, 4, "QUIT") == 0 \
+		|| _msg.compare(0, 4, "KICK") == 0 || _msg.compare(0, 6, "INVITE") == 0 \
 			|| _msg.compare(0,4, "MODE") == 0) {
 		_type = CMD;
 	}
@@ -101,8 +103,11 @@ void	Message::codedMessage(std::shared_ptr<Client>& client, State& state, reply 
 	if (code.code == RPL_MYINFO.code || code.code == RPL_ISUPPORT.code) {
 		_send_msg += " " + code.msg + "\r\n";
 	}
-	else {
+	else if (!code.msg.empty()) {
 		_send_msg += " :" + code.msg + "\r\n";
+	}
+	else {
+		_send_msg += "\r\n";
 	}
 	client->appendSendBuffer(_send_msg);
 	_send_msg.clear();
