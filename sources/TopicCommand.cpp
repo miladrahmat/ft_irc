@@ -16,6 +16,11 @@ std::unique_ptr<ACommand>	TopicCommand::create(std::string command, std::shared_
 		cmd->_error = true;
 		cmd->_reply = ERR_NOSUCHCHANNEL;
 	}
+	else if (!chan->isClient(cmd->_client)) {
+		cmd->_channel = channel;
+		cmd->_error = true;
+		cmd->_reply = ERR_NOTONCHANNEL;
+	}
 	else {
 		cmd->_channel = channel;
 		if (!chan->isOperator(cmd->_client) && chan->getTopicMode()) {
