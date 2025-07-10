@@ -92,6 +92,9 @@ void JoinCommand::joinReply(std::string channel) const {
         struct reply reply = RPL_TOPIC;
         reply.msg = chan_it->topic;
         msg.codedMessage(_client, _state, reply, channel);
+        reply = RPL_TOPICWHOTIME;
+        std::string message = chan_it->topic_who->getNickname() + "!" + chan_it->topic_who->getUsername() + "@" + chan_it->topic_who->getHostname() + " " + std::to_string(chan_it->topic_when);
+        msg.codedMessage(_client, _state, reply, channel + " " + message);
     }
     std::vector<std::shared_ptr<Client>>::iterator it = (*chan_it).clients.begin();
     std::string nicks;

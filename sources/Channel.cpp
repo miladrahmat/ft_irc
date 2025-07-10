@@ -4,8 +4,7 @@
 
 Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string password) :
    _name(name), _password(password), _invite_only(false), _topic_command_access(true),
-    _user_limit(-1), clients{client},
-    operators{client} {};
+    _user_limit(-1), clients{client}, operators{client}, topic("") {};
 
 Channel::~Channel() {};
 
@@ -44,13 +43,13 @@ bool Channel::channelFull() const {
     return (false);
 }
 
-// void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_topic) {
-//     if (isOperator(client) && _topic_command_access) {
-//         _topic = new_topic;
-//         return ;
-//     }
-//     //TODO how to handle if client is not operator or channel does not allow topic change
-// }
+void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_topic) {
+    topic = new_topic;
+    topic_who = client;
+    topic_when = std::time(0);
+    return ;
+    //TODO how to handle if client is not operator or channel does not allow topic change
+}
 
 reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg) {
     if (isOperator(client)) {
@@ -104,6 +103,10 @@ reply Channel::setTopicMode(const std::shared_ptr<Client> & client, bool set) {
         _topic_command_access = set;
     }
     return (reply);
+}
+
+bool Channel::getTopicMode() const {
+    return (_topic_command_access);
 }
 
 //OK
@@ -202,4 +205,8 @@ std::vector<std::shared_ptr<Client>>::iterator Channel::getClient(std::string ni
 
 std::string Channel::getPassword() const {
     return (_password);
+}
+
+int Channel::getUserLimit() {
+    return (_user_limit);
 }

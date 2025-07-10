@@ -34,7 +34,17 @@ int ModeCommand::checkTarget(std::string & target) {
         }
     }
     else if (_state.getClient(target) != _state.getClients().end()) {
-        msg.codedMessage(_client, _state, ERR_UMODEUNKNOWNFLAG, target);
+        if (target != _client->getNickname()) {
+            msg.codedMessage(_client, _state, ERR_USERSDONTMATCH, target);
+            return (0);
+        }
+        reply message = ERR_UMODEUNKNOWNFLAG;
+        message.msg += ". Supported user modes: (none)";
+        msg.codedMessage(_client, _state, message, target);
+        return (0);
+    }
+    else {
+        msg.codedMessage(_client, _state, ERR_UNKNOWNMODE, target);
         return (0);
     }
     return (1);
@@ -70,7 +80,7 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
                 msg.codedMessage(client, cmd->_state, ERR_UNKNOWNMODE, mode);
                 continue;
             }
-            if (mode == "+k" || mode[1] == 'o' || mode == "+l") {
+            if (mode == "+k" || mode[1] == 'o' || mode[1] == 'l') {
                 if (params.empty()) {
                     Message msg;
                     msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, command);
@@ -79,10 +89,8 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
                 param = params.substr(0, params.find_first_of(' '));
                 params.erase(0, param.length() + 1);
                 if (param != "") {
-                    if (mode_obj.mode == LIMIT) {
-                        if (mode_obj.action == REMOVE) {
-                            mode_obj.param = "-1";
-                        }
+                    if (mode_obj.mode == LIMIT && mode_obj.action == REMOVE) {
+                        mode_obj.param = "-1";
                     }
                     else {
                         mode_obj.param = param;
@@ -185,6 +193,7 @@ void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) 
     Message msg;
     reply reply;
     int limit;
+    std::cout << "In execute limit" << std::endl;
     if (mode_obj.action == ADD) {
         try {
             limit = std::stoi(mode_obj.param);
@@ -199,16 +208,21 @@ void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) 
     else {
         limit = -1;
     }
+    int limit_before = channel.getUserLimit();
+    std::cout << "Limit before: " << limit_before << std::endl;
     reply = channel.setUserLimit(_client, limit);
     if (reply.code == SUCCESS.code) {
+        std::cout << "In limit success" << std::endl;
         char action_char = static_cast<char>(mode_obj.action);
         char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
-        if (mode_obj.action == REMOVE) {
+        if (mode_obj.action == REMOVE && limit_before != -1) {
+            std::cout << "Existing limit removed" << std::endl;
             msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
             channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
         }
-        else {
+        else if (mode_obj.action == ADD) {
+            std::cout << "Limit added" << std::endl;
             msg.message(_client, _client, "MODE", channel.getName() + " " + mode, mode_obj.param);
             channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, mode_obj.param);
         }
