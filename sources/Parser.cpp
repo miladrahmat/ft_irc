@@ -147,7 +147,16 @@ bool Parser::parseModeCommand(std::shared_ptr<Client>& client, std::string& inpu
 		target = input.substr(0, input.find_first_of(' '));
 		input.erase(0, target.length() + 1);
 	}
-	std::unique_ptr<ACommand> cmd = ModeCommand::create(command, client, state, target, input);
+	std::string modes;
+	if (!input.empty()) {
+		modes = input.substr(0, input.find_first_of(' '));
+		input.erase(0, modes.length() + 1);
+	}
+	std::string params;
+	if (!input.empty()) {
+		params = input;
+	}
+	std::unique_ptr<ACommand> cmd = ModeCommand::create(command, client, state, target, modes, params);
 	if (cmd != nullptr) {
 		cmd->execute();
 	}

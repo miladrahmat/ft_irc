@@ -41,7 +41,7 @@ int ModeCommand::checkTarget(std::string & target) {
 }
 
 std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_ptr<Client>& client,
-    State & state, std::string target, std::string input) {
+    State & state, std::string target, std::string modes, std::string params) {
     
     ModeCommand* cmd = new ModeCommand(command, client, state);
     Message msg;
@@ -49,52 +49,47 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
         delete (cmd);
         return (nullptr);
     }
-    std::string modes;
-	std::string action;
-	if (!input.empty()) {
-		modes = input.substr(0, input.find_first_of(' '));
-		input.erase(0, modes.length() + 1);
-		for ( ; !modes.empty(); modes.erase(0, 1)) {
-			if (modes[0] == '+')  {
-				action = "+";
-				continue ;
-			}
-			else if (modes[0] == '-') {
-				action = "-";
-				continue;
-			}
-			else {
-				std::string mode = action + modes[0];
-				std::string param = "";
-                mode_struct mode_obj;
-                cmd->setModeAction(mode_obj, mode[0]);
-                cmd->setMode(mode_obj, mode[1]);
-                mode_obj.param = param;
-                if (mode_obj.mode == UNKNOWN) {
-                    msg.codedMessage(client, cmd->_state, ERR_UNKNOWNMODE, mode);
+	char action;
+    for ( ; !modes.empty(); modes.erase(0, 1)) {
+        if (modes[0] == '+')  {
+            action = '+';
+            continue ;
+        }
+        else if (modes[0] == '-') {
+            action = '-';
+            continue;
+        }
+        else {
+            std::string mode = std::string(1, action) + modes[0];
+            std::string param = "";
+            mode_struct mode_obj;
+            cmd->setModeAction(mode_obj, action);
+            cmd->setMode(mode_obj, mode[1]);
+            mode_obj.param = param;
+            if (mode_obj.mode == UNKNOWN) {
+                msg.codedMessage(client, cmd->_state, ERR_UNKNOWNMODE, mode);
+                continue;
+            }
+            if (mode == "+k" || mode[1] == 'o' || mode == "+l") {
+                if (params.empty()) {
+                    Message msg;
+                    msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, command);
                     continue;
                 }
-				if (mode == "+k" || mode == "+o" || mode == "+l") {
-					if (input.empty()) {
-						Message msg;
-						msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, command);
-						continue;
-					}
-					param = input.substr(0, input.find_first_of(' '));
-					input.erase(0, param.length() + 1);
-                    if (param != "") {
-                        if (mode_obj.mode == LIMIT) {
-                            if (mode_obj.action == REMOVE) {
-                                mode_obj.param = "-1";
-                            }
-                            else {
-                                mode_obj.param = param;
-                            }
+                param = params.substr(0, params.find_first_of(' '));
+                params.erase(0, param.length() + 1);
+                if (param != "") {
+                    if (mode_obj.mode == LIMIT) {
+                        if (mode_obj.action == REMOVE) {
+                            mode_obj.param = "-1";
                         }
                     }
-				}
-                cmd->modes.push_back(mode_obj);
+                    else {
+                        mode_obj.param = param;
+                    }
+                }
             }
+            cmd->modes.push_back(mode_obj);
         }
     }
     return (std::unique_ptr<ModeCommand>(cmd));
