@@ -210,3 +210,31 @@ std::string Channel::getPassword() const {
 int Channel::getUserLimit() {
     return (_user_limit);
 }
+
+std::string Channel::getModes() {
+    std::string modes = "+";
+    std::string params;
+    if (_invite_only) {
+        modes += "i";
+    }
+    if (_topic_command_access) {
+        modes += "t";
+    }
+    if (_password != "") {
+        modes += "k";
+        params += _password;
+    }
+    if (_user_limit != -1) {
+        modes += "l";
+        if (params == "") {
+            params = std::to_string(_user_limit);
+        }
+        else {
+            params += " " + std::to_string(_user_limit);
+        }
+    }
+    if (modes == "+") {
+        return ("");
+    }
+    return (modes + " " + params);
+}

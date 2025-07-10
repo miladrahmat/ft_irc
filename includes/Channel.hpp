@@ -54,4 +54,5 @@ class Channel {
         int getUserLimit();
         std::vector<std::shared_ptr<Client>>::iterator getClient(std::string nickname);
         void sendMsgToAll(const std::shared_ptr<Client>& client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg);
+        std::string getModes();
 };

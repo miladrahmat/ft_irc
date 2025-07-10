@@ -35,11 +35,12 @@ class ModeCommand : public ACommand {
             std::string param;
         };
         std::vector<mode_struct> modes;
-        std::vector<Channel>::iterator _channel_it;    //channel that the mode will affect
+        std::vector<Channel>::iterator _channel_it;
         ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state);
         void setModeAction(mode_struct & mode, char mode_action);
         void setMode(mode_struct & mode_struct, char mode);
         int checkTarget(std::string & target);
+        void executeEmptyMode(Channel & channel) const;
         void executeKey(Channel & channel, const mode_struct & mode_obj) const;
         void executeInvite(Channel & channel, const mode_struct & mode_obj) const;
         void executeTopic(Channel & channel, const mode_struct & mode_obj) const;

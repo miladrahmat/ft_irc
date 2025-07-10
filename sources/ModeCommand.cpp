@@ -59,7 +59,10 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
         delete (cmd);
         return (nullptr);
     }
-	char action;
+    if (modes == "") {
+        return (std::unique_ptr<ModeCommand>(cmd));
+    }
+	char action = '+';
     for ( ; !modes.empty(); modes.erase(0, 1)) {
         if (modes[0] == '+')  {
             action = '+';
@@ -106,6 +109,10 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
 bool ModeCommand::execute() const {
     Message msg;
     reply reply;
+    if (modes.empty()) {
+        executeEmptyMode(*(_channel_it));
+        return (true);
+    }
     if (_channel_it->isOperator(_client) == false) {
         msg.codedMessage(_client, _state, ERR_CHANOPRIVSNEEDED, _channel_it->getName());
         return (false);
@@ -132,6 +139,14 @@ bool ModeCommand::execute() const {
         }
     }
     return (true);
+}
+
+void ModeCommand::executeEmptyMode(Channel & channel) const {
+    Message msg;
+
+    std::string message_to_send = channel.getName() + " ";
+    message_to_send += channel.getModes();
+    msg.codedMessage(_client, _state, RPL_CHANNELMODEIS, message_to_send);
 }
 
 void ModeCommand::executeKey(Channel & channel, const mode_struct & mode_obj) const {
@@ -193,7 +208,6 @@ void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) 
     Message msg;
     reply reply;
     int limit;
-    std::cout << "In execute limit" << std::endl;
     if (mode_obj.action == ADD) {
         try {
             limit = std::stoi(mode_obj.param);
@@ -209,20 +223,16 @@ void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) 
         limit = -1;
     }
     int limit_before = channel.getUserLimit();
-    std::cout << "Limit before: " << limit_before << std::endl;
     reply = channel.setUserLimit(_client, limit);
     if (reply.code == SUCCESS.code) {
-        std::cout << "In limit success" << std::endl;
         char action_char = static_cast<char>(mode_obj.action);
         char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
         if (mode_obj.action == REMOVE && limit_before != -1) {
-            std::cout << "Existing limit removed" << std::endl;
             msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
             channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
         }
         else if (mode_obj.action == ADD) {
-            std::cout << "Limit added" << std::endl;
             msg.message(_client, _client, "MODE", channel.getName() + " " + mode, mode_obj.param);
             channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, mode_obj.param);
         }
