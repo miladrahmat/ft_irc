@@ -87,10 +87,13 @@ void JoinCommand::joinReply(std::string channel) const {
     for (auto client : (*chan_it)._clients) {
         msg.message(_client, client, "JOIN", channel, {});
     }
-    if (chan_it->getTopic() != "") {
+    if (chan_it->_topic != "") {
         struct reply reply = RPL_TOPIC;
-        reply.msg = chan_it->getTopic();
+        reply.msg = chan_it->_topic;
         msg.codedMessage(_client, _state, reply, channel);
+        reply = RPL_TOPICWHOTIME;
+        std::string message = chan_it->_topic_who->getNickname() + "!" + chan_it->_topic_who->getUsername() + "@" + chan_it->_topic_who->getHostname() + " " + std::to_string(chan_it->_topic_when);
+        msg.codedMessage(_client, _state, reply, channel + " " + message);
     }
     std::vector<std::shared_ptr<Client>>::iterator it = (*chan_it)._clients.begin();
     std::string nicks;
