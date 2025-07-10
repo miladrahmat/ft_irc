@@ -22,4 +22,5 @@ class	Parser {
 	void	parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	void	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	void	parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	//void	parseWhoIsCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };

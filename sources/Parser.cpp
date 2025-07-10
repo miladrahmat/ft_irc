@@ -14,10 +14,10 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 			std::string	args = input.substr(5, input.length());
 			std::string	username = args.substr(0, args.find(' '));
 			args = args.substr(username.length() + 1, args.length());
-			std::string	hostname = args.substr(0, args.find(' ')); // The hostname in the old protocol. Probably need to change.
+			//std::string	hostname = args.substr(0, args.find(' ')); // The hostname in the old protocol. Probably need to change.
 			std::string	real_name = args.substr(args.find(':') + 1, args.length());
 			client->setUsername(username);
-			client->setHostname(hostname);
+			//client->setHostname(hostname);
 			client->setName(real_name);
 		} 
 	} catch (std::exception& e) {
@@ -45,10 +45,32 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 		else if (input.compare(0, 6, "INVITE") == 0) {
 			parseInviteCommand(client, input, state);
 		}
+		//else if (input.compare(0, 5, "WHOIS") == 0) {
+		//	parseWhoIsCommand(client, input, state);
+		//}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
 }
+
+/*void	Parser::parseWhoIsCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	std::string command = input.substr(0, input.find_first_of(' '));
+	input.erase(0, command.length() + 1);
+	std::string nickname = input.substr(0, input.find_first_of("\r"));
+	
+	Message msg;
+	std::string target;
+	//RPL_WHOISUSER 311 <client> <target> <username> <hostname> * :<real name>
+	//std::vector<std::shared_ptr<Client>>::iterator 
+	Client client2 = state.getClient(nickname));
+	target += nickname + " " + nickname + " " + client2getHostname() + " * :" + client2.getName();
+
+	msg.codedMessage(client, state, RPL_WHOISUSER, target)
+	//RPL_WHOISSERVER 312 <client> <target> <server> :<server info>
+
+	//RPL_ENDOFWHOIS 318 <client> <target> :<msg>
+	target +=
+}*/
 
 void	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::string command = input.substr(0, input.find_first_of(' '));

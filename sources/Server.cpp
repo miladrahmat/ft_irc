@@ -160,9 +160,12 @@ void	Server::start() {
     close(epoll_fd);
 }
 
+#include <arpa/inet.h>
+
 void Server::handleNewClient(int epoll_fd) {
     struct sockaddr_in client_addr;
     socklen_t   client_len = sizeof(client_addr);
+	
 	int client = accept(_server_socket, (struct sockaddr *)&client_addr, &client_len);
     if (client < 0) {
         std::cerr << "Error with accept" << std::endl;
@@ -171,13 +174,14 @@ void Server::handleNewClient(int epoll_fd) {
             std::cerr << "Error with fcntl (client)" << std::endl;
             return ;
         }
+		std::string ip = inet_ntoa(client_addr.sin_addr);
         struct epoll_event ev2;
         ev2.events = EPOLLIN;
         ev2.data.fd = client;
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
         }
-		_state->_clients.push_back(std::make_shared<Client>(client, epoll_fd));
+		_state->_clients.push_back(std::make_shared<Client>(client, epoll_fd, ip));
     }
 }
 
