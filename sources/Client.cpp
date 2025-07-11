@@ -1,12 +1,13 @@
 #include "Client.hpp"
 #include <iostream>
 
-Client::Client(int socket, int epoll_fd) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(""), _password(""), _authenticated(false) {
+Client::Client(int socket, int epoll_fd) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(""), _password(""), _authenticated(false), _nick_validated(false) {
 
 }
 
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _epoll_fd(old_client._epoll_fd), _name(old_client._name), _nickname(old_client._nickname), \
-											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), _send_buffer(old_client._send_buffer) {
+											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), \
+											_send_buffer(old_client._send_buffer), _nick_validated(old_client._nick_validated) {
 
 }
 
@@ -44,6 +45,14 @@ std::string	Client::getHostname() const {
 
 std::string	Client::getUsername() const {
 	return(_username);
+}
+
+bool	Client::getNickValidated() const {
+	return (_nick_validated);
+}
+
+void	Client::validateNick() {
+	_nick_validated = true;
 }
 
 bool	Client::isAuthenticated() const {

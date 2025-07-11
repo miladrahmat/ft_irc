@@ -18,6 +18,7 @@ class Client {
 		std::string	_buffer;
 		std::string _send_buffer;
 		std::string _invited_to;
+		bool		_nick_validated;
 	public:
 		Client(int socket, int epoll_fd);
 		Client (const Client & old_client) = delete;
@@ -32,6 +33,7 @@ class Client {
 		std::string	getPassword() const;
 		std::string	getHostname() const;
 		std::string	getUsername() const;
+		bool		getNickValidated() const;
 		bool		isAuthenticated() const;
 		std::string getChannelInvitedTo() const;
 		void 		setNickname(std::string nickname);
@@ -40,6 +42,7 @@ class Client {
 		void		setName(std::string name);
 		void		setPassword(std::string password);
 		void		setClientSocket(int socket);
+		void		validateNick();
 		void		authenticate();
 		void		setInvitedTo(std::string channel_name);
 		void		appendBuffer(std::string const& msg);

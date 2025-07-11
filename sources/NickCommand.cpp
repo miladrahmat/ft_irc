@@ -41,7 +41,7 @@ std::unique_ptr<ACommand> NickCommand::create(std::string command, std::shared_p
 	return (std::unique_ptr<NickCommand>(cmd));
 }
 
-bool	NickCommand::execute() const {
+void	NickCommand::execute() const {
 	Message	msg;
 
 	if (_error) {
@@ -51,7 +51,7 @@ bool	NickCommand::execute() const {
 		else {
 			msg.codedMessage(_client, _state, _reply, _nickname);
 		}
-		return (false);
+		return ;
 	}
 	if (!_client->isAuthenticated()) {
 		_client->setNickname(_nickname);
@@ -69,5 +69,5 @@ bool	NickCommand::execute() const {
 		}
 		_client->setNickname(_nickname);
 	}
-	return (true);
+	_client->validateNick();
 }

@@ -1,6 +1,5 @@
 
 #include "State.hpp"
-#include <iostream>
 
 std::string	State::getServerName() const {
 	return (_server_name);

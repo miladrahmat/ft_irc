@@ -28,7 +28,7 @@ std::unique_ptr<ACommand>	PrivmsgCommand::create(std::string command, std::share
 	return (std::unique_ptr<PrivmsgCommand>(cmd));
 }
 
-bool	PrivmsgCommand::execute() const {
+void	PrivmsgCommand::execute() const {
 	Message	msg;
 
 	if (_channel) {
@@ -36,11 +36,10 @@ bool	PrivmsgCommand::execute() const {
 		for (auto it = channel->clients.begin(); it != channel->clients.end(); it++) {
 			if (_client != *it)
 				msg.message(_client, *it, _command, _msg_to, _msg);
+			}
 		}
-	}
 	else {
 		auto	client = _state.getClient(_msg_to);
 		msg.message(_client, *client, _command, _msg_to, _msg);
 	}
-	return (true);
 }
