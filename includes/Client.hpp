@@ -20,7 +20,7 @@ class Client {
 		std::string _invited_to;
 		bool		_nick_validated;
 	public:
-		Client(int socket, int epoll_fd);
+		Client(int socket, int epoll_fd, std::string ip);
 		Client (const Client & old_client) = delete;
 		Client(Client&& old_client) noexcept;
 		~Client();

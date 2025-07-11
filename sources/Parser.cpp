@@ -16,10 +16,8 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 			std::string	args = input.substr(5, input.length());
 			std::string	username = args.substr(0, args.find(' '));
 			args = args.substr(username.length() + 1, args.length());
-			std::string	hostname = args.substr(0, args.find(' ')); // The hostname in the old protocol. Probably need to change.
 			std::string	real_name = args.substr(args.find(':') + 1, args.length());
 			client->setUsername(username);
-			client->setHostname(hostname);
 			client->setName(real_name);
 		} 
 	} catch (std::exception& e) {
