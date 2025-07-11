@@ -34,11 +34,7 @@ void	PrivmsgCommand::execute() const {
 	if (_channel) {
 		std::vector<Channel>::iterator channel = _state.getChannel(_msg_to);
 		channel->sendMsgToAll(_client, _command, _msg_to, _msg);
-		/* for (auto it = channel->clients.begin(); it != channel->clients.end(); it++) {
-			if (_client != *it)
-				msg.message(_client, *it, _command, _msg_to, _msg);
-			} */
-		}
+	}
 	else {
 		auto	client = _state.getClient(_msg_to);
 		msg.message(_client, *client, _command, _msg_to, _msg);
