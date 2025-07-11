@@ -35,6 +35,7 @@ static const reply ERR_UNKNOWNMODE = {"472", "is unknown mode char to me"};
 static const reply ERR_INVITEONLYCHAN = {"473", "Cannot join channel (+i)"};
 static const reply ERR_BADCHANNELKEY = {"475", "Cannot join channel (+k)"};
 static const reply ERR_BADCHANMASK = {"476", "Bad Channel Mask"};
+static const reply ERR_BADCHANNAME = {"479", "Illegal channel name"};
 static const reply ERR_CHANOPRIVSNEEDED = {"482", "You're not channel operator"};
 static const reply ERR_UMODEUNKNOWNFLAG = {"501", "Unknown MODE flag"};
 static const reply ERR_USERSDONTMATCH = {"502", "Cant change mode for other users"};

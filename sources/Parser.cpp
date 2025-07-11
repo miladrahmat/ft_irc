@@ -27,7 +27,7 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 
 std::unique_ptr<ACommand>	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
-		if (input.compare(0, 4, "JOIN") == 0 || input.compare(0, 4, "join") == 0) {
+		if (input.compare(0, 4, "JOIN") == 0) {
 			return (parseJoinCommand(client, input, state));
 		}
 		else if (input.compare(0, 7, "PRIVMSG") == 0) {
@@ -98,6 +98,8 @@ std::unique_ptr<ACommand>	Parser::parseKickCommmand(std::shared_ptr<Client>& cli
 	while (!input.empty()) {
 		std::string	arg = input.substr(0, input.find_first_of(' '));
 		input.erase(0, arg.length() + 1);
+		if (!input.empty() && input[0] == ':')
+			input.erase(0, 1);
 		arg_vec.push_back(arg);
 	}
 	return (KickCommand::create(command, client, state, arg_vec));

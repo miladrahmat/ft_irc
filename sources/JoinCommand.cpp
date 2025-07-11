@@ -12,9 +12,7 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
     while (ss.good()) {
         std::string substr;
         std::getline(ss, substr, ',');
-        if (validChannelName(substr)) {
-            cmd->_channels.push_back(substr);
-        }
+        cmd->_channels.push_back(substr);
     }
     it++;
     if (it != args.end()) {
@@ -29,12 +27,13 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
     return (std::unique_ptr<JoinCommand>(cmd));
 }
 
-bool JoinCommand::validChannelName(std::string channel_name) {
+bool JoinCommand::validChannelName(std::string channel_name) const {
     if (channel_name[0] != '#' && channel_name[0] != '&' ) {
         return (false);
     }
     if (channel_name.length() >= 50) {
-        //ERR_INPUTTOOLONG (417)
+        Message msg;
+        msg.codedMessage(_client, _state, ERR_BADCHANNAME, channel_name);
         return (false);
     }
     std::string name = channel_name.substr(1);
@@ -52,6 +51,9 @@ void JoinCommand::execute() const {
     std::vector<std::string>::const_iterator key_it = _keys.begin();
     reply reply;
     for ( ; chan_it != _channels.end(); chan_it++) {
+        if (!validChannelName(*chan_it)) {
+            continue ;
+        }
         std::vector<Channel>::iterator chan = _state.getChannel(*chan_it);
         if (chan != _state.getChannels().end()) {
             if (key_it == _keys.end()) {
