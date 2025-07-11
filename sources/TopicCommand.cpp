@@ -56,8 +56,8 @@ void	TopicCommand::execute() const {
 	if (_set_topic) {
 		auto chan = _state.getChannel(_channel);
 		if (_topic.empty()) {
-			chan->_topic_who.reset();
-			chan->_topic_when = 0;
+			chan->topic_who.reset();
+			chan->topic_when = 0;
 		}
 		chan->setTopic(_client, _topic);
 		chan->sendMsgToAll(_client, _command, _channel, _topic);

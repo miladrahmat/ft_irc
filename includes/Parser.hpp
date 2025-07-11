@@ -3,6 +3,7 @@
 #include "Client.hpp"
 #include "JoinCommand.hpp"
 #include "PrivmsgCommand.hpp"
+#include "ModeCommand.hpp"
 #include "QuitCommand.hpp"
 #include "NickCommand.hpp"
 #include "KickCommand.hpp"
@@ -24,4 +25,5 @@ class	Parser {
 	void	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	void	parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	void	parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void	parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };

@@ -4,7 +4,7 @@
 JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
 
 std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client, State & state,
-            std::vector<std::string> args) {
+        std::vector<std::string> args) {
 
     JoinCommand* cmd = new JoinCommand(command, client, state);
     std::vector<std::string>::iterator it = args.begin();
@@ -84,20 +84,20 @@ void JoinCommand::execute() const {
 void JoinCommand::joinReply(std::string channel) const {
     Message msg;
     std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
-    for (auto client : (*chan_it)._clients) {
+    for (auto client : (*chan_it).clients) {
         msg.message(_client, client, "JOIN", channel, {});
     }
-    if (chan_it->_topic != "") {
+    if (chan_it->topic != "") {
         struct reply reply = RPL_TOPIC;
-        reply.msg = chan_it->_topic;
+        reply.msg = chan_it->topic;
         msg.codedMessage(_client, _state, reply, channel);
         reply = RPL_TOPICWHOTIME;
-        std::string message = chan_it->_topic_who->getNickname() + "!" + chan_it->_topic_who->getUsername() + "@" + chan_it->_topic_who->getHostname() + " " + std::to_string(chan_it->_topic_when);
+        std::string message = chan_it->topic_who->getNickname() + "!" + chan_it->topic_who->getUsername() + "@" + chan_it->topic_who->getHostname() + " " + std::to_string(chan_it->topic_when);
         msg.codedMessage(_client, _state, reply, channel + " " + message);
     }
-    std::vector<std::shared_ptr<Client>>::iterator it = (*chan_it)._clients.begin();
+    std::vector<std::shared_ptr<Client>>::iterator it = (*chan_it).clients.begin();
     std::string nicks;
-    for (int i = 0; it != (*chan_it)._clients.end(); it++, i++) {
+    for (int i = 0; it != (*chan_it).clients.end(); it++, i++) {
         if (chan_it->isOperator(*it)) {
             nicks.append("@");
         }
@@ -121,6 +121,5 @@ void JoinCommand::joinReply(std::string channel) const {
 
 void JoinCommand::errReply(reply reply, std::string channel) const {
     Message msg;
-    //std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
     msg.codedMessage(_client, _state, reply, channel);
 }

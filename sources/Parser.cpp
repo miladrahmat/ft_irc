@@ -33,6 +33,9 @@ void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, S
 		else if (input.compare(0, 7, "PRIVMSG") == 0) {
 			parsePrivmsgCommand(client, input, state);
 		}
+		else if (input.compare(0, 4, "MODE") == 0) {
+			parseModeCommand(client, input, state);
+		}
 		else if (input.compare(0, 4, "QUIT") == 0) {
 			parseQuitCommand(client, input, state);
 		}
@@ -161,4 +164,27 @@ void	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& i
 		return ;
 	}
 	cmd->execute();
+}
+
+void Parser::parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	std::string command = input.substr(0, input.find_first_of(' '));
+	input.erase(0, command.length() + 1);
+	std::string target;
+	if (!input.empty()) {
+		target = input.substr(0, input.find_first_of(' '));
+		input.erase(0, target.length() + 1);
+	}
+	std::string modes;
+	if (!input.empty()) {
+		modes = input.substr(0, input.find_first_of(' '));
+		input.erase(0, modes.length() + 1);
+	}
+	std::string params;
+	if (!input.empty()) {
+		params = input;
+	}
+	std::unique_ptr<ACommand> cmd = ModeCommand::create(command, client, state, target, modes, params);
+	if (cmd != nullptr) {
+		cmd->execute();
+	}
 }

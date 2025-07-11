@@ -3,7 +3,6 @@
 
 #include "ACommand.hpp"
 #include "Message.hpp"
-#include <sstream>
 
 class ACommand;
 
