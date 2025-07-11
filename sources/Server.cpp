@@ -160,8 +160,6 @@ void	Server::start() {
     close(epoll_fd);
 }
 
-#include <arpa/inet.h>
-
 void Server::handleNewClient(int epoll_fd) {
     struct sockaddr_in client_addr;
     socklen_t   client_len = sizeof(client_addr);

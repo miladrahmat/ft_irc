@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <bits/stdc++.h>
+#include <arpa/inet.h>
 #include "Client.hpp"
 #include "Message.hpp"
 #include "reply.hpp"
