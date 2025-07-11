@@ -202,7 +202,6 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 			if (type == CAP_REQ_AGAIN) {
 				std::unique_ptr<ACommand> cmd = parser.parseNickCommand(client, msg.getMsg(), *_state);
 				if (cmd != nullptr) {
-					std::cout << "executing nick" << std::endl;
 					cmd->execute();
 				}
 				if (!client->getNickValidated()) {
