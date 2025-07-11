@@ -27,7 +27,7 @@ reply	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, s
 	return (SUCCESS);
 }
 
-void	State::removeClient(std::shared_ptr<Client>& client, std::string msg) {
+void	State::removeClient(std::shared_ptr<Client>& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = client->getClientSocket();
@@ -39,7 +39,6 @@ void	State::removeClient(std::shared_ptr<Client>& client, std::string msg) {
 				it = _channels.erase(it);
 			}
 			else {
-				it->sendMsgToAll(client, "QUIT", {}, msg);
 				it++;
 			}
 		}

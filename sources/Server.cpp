@@ -184,14 +184,20 @@ void Server::handleNewClient(int epoll_fd) {
 }
 
 void    Server::receiveData(std::shared_ptr<Client>& client) {
-	if (client == nullptr)
-		return ;
-	if (!client->receiveData()) {
-		_state->removeClient(client, "Client Quit");
-		return ;
-	}
 	Message	msg;
 	Parser	parser;
+
+	if (client == nullptr) {
+		return ;
+	}
+	if (!client->receiveData()) {
+		std::string input = "QUIT :Read error: Connection reset by peer";
+		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, input, *_state);
+		if (cmd != nullptr) {
+			cmd->execute();
+		}
+		return ;
+	}
 	while (msg.getNextMessage(client)) {
 		msg.determineType(client);
 		int	type = msg.getType();

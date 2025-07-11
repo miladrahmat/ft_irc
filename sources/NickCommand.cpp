@@ -60,11 +60,7 @@ void	NickCommand::execute() const {
 		msg.message(_client, _client, _command, {}, _nickname);
 		for (auto it = _state.getChannels().begin(); it != _state.getChannels().end(); ++it) {
 			if (it->isClient(_client)) {
-				for (auto cit = it->clients.begin(); cit != it->clients.end(); ++cit) {
-					if (*cit != _client) {
-						msg.message(_client, *cit, _command, {}, _nickname);
-					}
-				}
+				it->sendMsgToAll(_client, _command, {}, _nickname);
 			}
 		}
 		_client->setNickname(_nickname);
