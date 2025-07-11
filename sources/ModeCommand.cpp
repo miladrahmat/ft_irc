@@ -103,6 +103,10 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
             cmd->modes.push_back(mode_obj);
         }
     }
+    if (cmd->modes.empty()) {
+        delete (cmd);
+        return (nullptr);
+    }
     return (std::unique_ptr<ModeCommand>(cmd));
 }
 
