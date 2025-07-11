@@ -10,12 +10,14 @@ CFILES := main.cpp \
 			ACommand.cpp \
 			JoinCommand.cpp  \
 			PrivmsgCommand.cpp \
+			ModeCommand.cpp \
 			NickCommand.cpp \
 			Parser.cpp \
 			State.cpp \
 			QuitCommand.cpp \
 			KickCommand.cpp \
-			InviteCommand.cpp
+			InviteCommand.cpp \
+			TopicCommand.cpp
 
 INC := includes/
 SRC_PATH := sources/
