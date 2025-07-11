@@ -41,7 +41,7 @@ std::unique_ptr<ACommand>	TopicCommand::create(std::string command, std::shared_
 	return (std::unique_ptr<ACommand>(cmd));
 }
 
-bool	TopicCommand::execute() const {
+void	TopicCommand::execute() const {
 	Message msg;
 
 	if (_error) {
@@ -51,7 +51,7 @@ bool	TopicCommand::execute() const {
 		else {
 			msg.codedMessage(_client, _state, _reply, _channel);
 		}
-		return (false);
+		return ;
 	}
 	if (_set_topic) {
 		auto chan = _state.getChannel(_channel);
@@ -67,5 +67,4 @@ bool	TopicCommand::execute() const {
 		msg.codedMessage(_client, _state, _reply, _channel);
 		msg.codedMessage(_client, _state, _extra, _channel);
 	}
-	return (true);
 }

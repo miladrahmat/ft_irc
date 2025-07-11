@@ -18,5 +18,5 @@ class TopicCommand : public ACommand {
 	public:
 		static std::unique_ptr<ACommand>	create(std::string command, std::shared_ptr<Client>& client, State& state, \
 			std::string channel, std::string topic);
-		bool execute() const override;
+		void execute() const override;
 };

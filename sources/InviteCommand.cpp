@@ -11,7 +11,7 @@ std::unique_ptr<ACommand>	InviteCommand::create(std::string command, std::shared
     return (std::unique_ptr<InviteCommand>(cmd));
 }
 
-bool    InviteCommand::execute() const {
+void    InviteCommand::execute() const {
     Message msg;
 	std::string target;
 	reply	code;
@@ -21,9 +21,8 @@ bool    InviteCommand::execute() const {
 	if (invited_client == _state.getClients().end()) {
 		code = ERR_NOSUCHNICK;
 	}
-	else if (channel == _state.getChannels().end()) {
+	else if (channel == _state.getChannels().end()) 
 		code = ERR_NOSUCHCHANNEL;
-	}
 	else {
 		code = channel->inviteClient(_client, *invited_client);
 	}
@@ -39,7 +38,5 @@ bool    InviteCommand::execute() const {
 	msg.codedMessage(_client, _state, code, target);
 	if (code.code == RPL_INVITING.code) {
 		msg.message(_client, *invited_client, "INVITE", _invited_client, _channel);
-		return (true);
 	}
-	return (false);
 }

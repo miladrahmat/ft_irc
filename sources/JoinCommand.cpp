@@ -47,7 +47,7 @@ bool JoinCommand::validChannelName(std::string channel_name) {
     return (true);
 }
 
-bool JoinCommand::execute() const {
+void JoinCommand::execute() const {
     std::vector<std::string>::const_iterator chan_it = _channels.begin();
     std::vector<std::string>::const_iterator key_it = _keys.begin();
     reply reply;
@@ -79,7 +79,6 @@ bool JoinCommand::execute() const {
             key_it++;
         }
     }
-    return (true);
 }
 
 void JoinCommand::joinReply(std::string channel) const {

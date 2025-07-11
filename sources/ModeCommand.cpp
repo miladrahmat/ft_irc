@@ -110,16 +110,16 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
     return (std::unique_ptr<ModeCommand>(cmd));
 }
 
-bool ModeCommand::execute() const {
+void ModeCommand::execute() const {
     Message msg;
     reply reply;
     if (modes.empty()) {
         executeEmptyMode(*(_channel_it));
-        return (true);
+        return ;
     }
     if (_channel_it->isOperator(_client) == false) {
         msg.codedMessage(_client, _state, ERR_CHANOPRIVSNEEDED, _channel_it->getName());
-        return (false);
+        return ;
     }
     for (auto mode = modes.begin(); mode != modes.end(); mode++) {
         switch (mode->mode) {
@@ -142,7 +142,7 @@ bool ModeCommand::execute() const {
                 continue;
         }
     }
-    return (true);
+    return ;
 }
 
 void ModeCommand::executeEmptyMode(Channel & channel) const {

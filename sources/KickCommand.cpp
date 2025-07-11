@@ -18,7 +18,7 @@ std::unique_ptr<ACommand>	KickCommand::create(std::string command, std::shared_p
 }
 
 
-bool    KickCommand::execute() const {
+void    KickCommand::execute() const {
     Message msg;
     std::vector<Channel>::iterator channel = _state.getChannel(_channel);
     std::vector<std::shared_ptr<Client>>::iterator client_to_kick = _state.getClient(_client_to_kick);
@@ -35,5 +35,4 @@ bool    KickCommand::execute() const {
         std::string target = _channel + " " + _client_to_kick;
         msg.message(_client, _client, "KICK", target, _msg);
     }
-    return (true);
 }

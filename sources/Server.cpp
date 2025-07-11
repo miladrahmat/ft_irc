@@ -200,7 +200,11 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
 			if (type == CAP_REQ_AGAIN) {
-				if (!parser.parseNickCommand(client, msg.getMsg(), *_state)) {
+				std::unique_ptr<ACommand> cmd = parser.parseNickCommand(client, msg.getMsg(), *_state);
+				if (cmd != nullptr) {
+					cmd->execute();
+				}
+				if (!client->getNickValidated()) {
 					msg.clearMsg();
 					msg.clearSendMsg();
 					continue ;
@@ -221,8 +225,10 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 			msg.clearMsg();
 		}
 		else if (type == CMD) {
-			std::cout << msg.getMsg() << std::endl;
-			parser.parseCommand(client, msg.getMsg(), *_state);
+			std::cout << msg.getMsg() << std::endl; 
+			std::unique_ptr<ACommand> cmd = parser.parseCommand(client, msg.getMsg(), *_state);
+			if (cmd != nullptr)
+				cmd->execute();
 			msg.clearMsg();
 		}
 		else if (type == PING) {

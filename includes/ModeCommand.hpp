@@ -50,5 +50,5 @@ class ModeCommand : public ACommand {
     public:
         static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,
             State & state, std::string target, std::string modes, std::string params);
-        bool execute() const override;
+        void execute() const override;
 };
