@@ -9,7 +9,9 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 			std::string	password = input.substr(5, input.length());
 			client->setPassword(password);
 		} else if (input.compare(0, 4, "NICK") == 0) {
-			parseNickCommand(client, input, state);
+			std::unique_ptr<ACommand> cmd = parseNickCommand(client, input, state);
+			if (cmd != nullptr)
+				cmd->execute();
 		} else if (input.compare(0, 4, "USER") == 0) {
 			std::string	args = input.substr(5, input.length());
 			std::string	username = args.substr(0, args.find(' '));
@@ -25,38 +27,39 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 	}
 }
 
-void	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
 		if (input.compare(0, 4, "JOIN") == 0 || input.compare(0, 4, "join") == 0) {
-			parseJoinCommand(client, input, state);
+			return (parseJoinCommand(client, input, state));
 		}
 		else if (input.compare(0, 7, "PRIVMSG") == 0) {
-			parsePrivmsgCommand(client, input, state);
+			return (parsePrivmsgCommand(client, input, state));
 		}
 		else if (input.compare(0, 4, "MODE") == 0) {
-			parseModeCommand(client, input, state);
+			return (parseModeCommand(client, input, state));
 		}
 		else if (input.compare(0, 4, "QUIT") == 0) {
-			parseQuitCommand(client, input, state);
+			return (parseQuitCommand(client, input, state));
 		}
 		else if (input.compare(0, 4, "NICK") == 0) {
-			parseNickCommand(client, input, state);
+			return (parseNickCommand(client, input, state));
 		}
 		else if (input.compare(0, 4, "KICK") == 0) {
-			parseKickCommmand(client, input, state);
+			return (parseKickCommmand(client, input, state));
 		}
 		else if (input.compare(0, 6, "INVITE") == 0) {
-			parseInviteCommand(client, input, state);
+			return (parseInviteCommand(client, input, state));
 		}
 		else if (input.compare(0, 5, "TOPIC") == 0) {
-			parseTopicCommand(client, input, state);
+			return (parseTopicCommand(client, input, state));
 		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
+	return (nullptr);
 }
 
-void	Parser::parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string channel = "";
@@ -73,14 +76,10 @@ void	Parser::parseTopicCommand(std::shared_ptr<Client>& client, std::string& inp
 			topic = input.substr(1, input.length());
 		}
 	}
-	std::unique_ptr<ACommand> cmd = TopicCommand::create(command, client, state, channel, topic);
-	if (cmd == nullptr) {
-		return ;
-	}
-	cmd->execute();
+	return (TopicCommand::create(command, client, state, channel, topic));
 }
 
-void	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 2);
 	std::string arg;
@@ -90,13 +89,10 @@ void	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& inpu
 	else {
 		arg = "Client quit";
 	}
-	std::unique_ptr<ACommand>	cmd = QuitCommand::create(command, client, state, arg);
-	if (cmd == nullptr)
-		return ;
-	cmd->execute();
+	return (QuitCommand::create(command, client, state, arg));
 }
 
-void	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::vector<std::string>	arg_vec;
 
 	std::string command = input.substr(0, input.find_first_of(' '));
@@ -106,13 +102,10 @@ void	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& inp
 		input.erase(0, arg.length() + 1);
 		arg_vec.push_back(arg);
 	}
-	std::unique_ptr<ACommand> cmd = KickCommand::create(command, client, state, arg_vec);
-	if (cmd == nullptr)
-		return ;
-	cmd->execute();
+	return (KickCommand::create(command, client, state, arg_vec));
 }
 
-void	Parser::parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::vector<std::string>	arg_vec;
 	
 	std::string command = input.substr(0, input.find_first_of(' '));
@@ -124,21 +117,17 @@ void	Parser::parseInviteCommand(std::shared_ptr<Client>& client, std::string& in
 			input.erase(0, 1);
 		arg_vec.push_back(arg);
 	}
-	std::unique_ptr<ACommand> cmd = InviteCommand::create(command, client, state, arg_vec);
-	if (cmd == nullptr)
-		return ;
-	cmd->execute();
+	return (InviteCommand::create(command, client, state, arg_vec));
+	
 }
 
-void	Parser::parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::string command = input.substr(0, input.find_first_of(' '));
 	std::string nickname = input.substr(input.find_first_of(' ') + 1, input.length());
-	std::unique_ptr<ACommand> cmd = NickCommand::create(command, client, state, nickname);
-
-	cmd->execute();
+	return (NickCommand::create(command, client, state, nickname));
 }
 
-void	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::vector<std::string>	arg_vec;
 
 	std::string	command = input.substr(0, input.find_first_of(' '));
@@ -148,25 +137,18 @@ void	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& inpu
 		input.erase(0, arg.length() + 1);
 		arg_vec.push_back(arg);
 	}
-	std::unique_ptr<ACommand>	cmd = JoinCommand::create(command, client, state, arg_vec);
-	if (cmd == nullptr)
-		return ;
-	cmd->execute();
+	return (JoinCommand::create(command, client, state, arg_vec));
 }
 
-void	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand>	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string	target = input.substr(0, input.find_first_of(' '));
 	input.erase(0, target.length() + 1);
-	std::unique_ptr<ACommand>	cmd = PrivmsgCommand::create(command, client, state, target, input);
-	if (cmd == nullptr) {
-		return ;
-	}
-	cmd->execute();
+	return (PrivmsgCommand::create(command, client, state, target, input));
 }
 
-void Parser::parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand> Parser::parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string target;
@@ -183,8 +165,5 @@ void Parser::parseModeCommand(std::shared_ptr<Client>& client, std::string& inpu
 	if (!input.empty()) {
 		params = input;
 	}
-	std::unique_ptr<ACommand> cmd = ModeCommand::create(command, client, state, target, modes, params);
-	if (cmd != nullptr) {
-		cmd->execute();
-	}
+	return (ModeCommand::create(command, client, state, target, modes, params));
 }
