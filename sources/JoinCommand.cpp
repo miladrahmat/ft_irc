@@ -87,6 +87,7 @@ void JoinCommand::joinReply(std::string channel) const {
     Message msg;
     std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
     chan_it->sendMsgToAll(_client, _command, channel, {});
+    msg.message(_client, _client, _command, channel, {});
     if (chan_it->topic != "") {
         struct reply reply = RPL_TOPIC;
         reply.msg = chan_it->topic;
