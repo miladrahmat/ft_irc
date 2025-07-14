@@ -1,3 +1,5 @@
 .vscode
 ircserv
 *.log
+*.py
+__pycache__/
