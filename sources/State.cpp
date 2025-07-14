@@ -36,13 +36,9 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 		if (it->isClient(client)) {
 			it->removeClient(client);
 			if (it->getSize() == 0) {
-				it = _channels.erase(it);
+				it =_channels.erase(it);
+				continue ;
 			}
-			else {
-				it++;
-			}
-		}
-		else {
 			it++;
 		}
 	}
