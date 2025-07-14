@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ACommand.hpp"
+#include <map>
 
 class QuitCommand : public ACommand {
     private:
