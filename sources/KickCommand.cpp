@@ -22,7 +22,13 @@ void    KickCommand::execute() const {
     Message msg;
     std::vector<Channel>::iterator channel = _state.getChannel(_channel);
     std::vector<std::shared_ptr<Client>>::iterator client_to_kick = _state.getClient(_client_to_kick);
-    const reply code = channel->kickClient(_client, *client_to_kick, _msg);
+    reply code;
+    if (client_to_kick != _state.getClients().end()) {
+        code = channel->kickClient(_client, *client_to_kick, _msg);
+    }
+    else {
+        code = ERR_NOSUCHNICK;
+    }
     if (code.code != SUCCESS.code) {
         std::string target;
         if (code.code == ERR_NOSUCHNICK.code)
