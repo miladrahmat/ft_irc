@@ -28,4 +28,5 @@ class ACommand {
         ACommand(std::string command, std::shared_ptr<Client> & client, State & state);
         virtual void execute() const = 0;
         virtual ~ACommand() = default;
+        std::string getCommand() const; // Used for debugging, remove later.
 };

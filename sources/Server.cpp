@@ -184,13 +184,13 @@ void Server::handleNewClient(int epoll_fd) {
 }
 
 void    Server::receiveData(std::shared_ptr<Client>& client) {
-	Message	msg;
 	Parser	parser;
 
 	if (client == nullptr) {
 		return ;
 	}
 	if (!client->receiveData()) {
+		std::cout << "Client receiveData() ret = false" << std::endl;
 		std::string input = "QUIT :Read error: Connection reset by peer";
 		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, input, *_state);
 		if (cmd != nullptr) {
@@ -198,22 +198,22 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		return ;
 	}
+	Message	msg;
 	while (msg.getNextMessage(client)) {
 		msg.determineType(client);
 		int	type = msg.getType();
 		if (type == CAP_LS) {
 			parser.parseCap(client, msg.getMsg(), *_state);
 			msg.messageCap(client);
-			msg.clearMsg();
 		}
 		else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
 			if (type == CAP_REQ_AGAIN) {
 				std::unique_ptr<ACommand> cmd = parser.parseNickCommand(client, msg.getMsg(), *_state);
 				if (cmd != nullptr) {
+					std::cout << "Executing " << cmd->getCommand() << std::endl;
 					cmd->execute();
 				}
 				if (!client->getNickValidated()) {
-					msg.clearMsg();
 					msg.clearSendMsg();
 					continue ;
 				}
@@ -222,26 +222,25 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 				msg.clearSendMsg();
 			}
 			msg.messageCap(client);
-			msg.clearMsg();
 		}
 		else if (type == CAP_END) {
 			if (!validateClient(client)) {
-				msg.clearMsg();
 				msg.clearSendMsg();
 				continue ;
 			}
-			msg.clearMsg();
 		}
 		else if (type == CMD) {
-			std::cout << msg.getMsg() << std::endl; 
+			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
 			std::unique_ptr<ACommand> cmd = parser.parseCommand(client, msg.getMsg(), *_state);
-			if (cmd != nullptr)
+			if (cmd != nullptr) {
+				std::cout << "Executing " << cmd->getCommand() << std::endl;
 				cmd->execute();
-			msg.clearMsg();
+			}
 		}
 		else if (type == PING) {
 			msg.messagePong(client, _state->_server_name, "PONG", _state->_server_name, _state->_server_name);
 		}
+		msg.clearMsg();
 	}
 	return ;
 }

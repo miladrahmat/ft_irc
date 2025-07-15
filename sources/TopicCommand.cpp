@@ -7,27 +7,24 @@ std::unique_ptr<ACommand>	TopicCommand::create(std::string command, std::shared_
 	std::string channel, std::string topic) {
 	TopicCommand*	cmd = new TopicCommand(command, client, state);
 
-	if (channel.empty()) {
-		cmd->_channel = channel;
+	cmd->_channel = channel;
+	if (cmd->_channel.empty()) {
 		cmd->_error = true;
 		cmd->_reply = ERR_NEEDMOREPARAMS;
 	}
 	else {
-		auto chan = cmd->_state.getChannel(channel);
+		auto chan = cmd->_state.getChannel(cmd->_channel);
 		cmd->_error = false;
 		cmd->_set_topic = false;
 		if (chan == cmd->_state.getChannels().end()) {
-			cmd->_channel = "";
 			cmd->_error = true;
 			cmd->_reply = ERR_NOSUCHCHANNEL;
 		}
 		else if (!chan->isClient(cmd->_client)) {
-			cmd->_channel = channel;
 			cmd->_error = true;
 			cmd->_reply = ERR_NOTONCHANNEL;
 		}
 		else {
-			cmd->_channel = channel;
 			if (!chan->isOperator(cmd->_client) && chan->getTopicMode()) {
 				cmd->_error = true;
 				cmd->_reply = ERR_CHANOPRIVSNEEDED;
