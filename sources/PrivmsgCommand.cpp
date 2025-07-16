@@ -20,6 +20,8 @@ std::unique_ptr<ACommand>	PrivmsgCommand::create(std::string command, std::share
 	else {
 		std::vector<std::shared_ptr<Client>>::iterator client = cmd->_state.getClient(cmd->_msg_to);
 		if (client == cmd->_state.getClients().end()) {
+			Message msg;
+			msg.codedMessage(cmd->_client, cmd->_state, ERR_NOSUCHNICK, cmd->_msg_to);
 			delete cmd;
 			return (nullptr);
 		}
