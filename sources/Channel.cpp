@@ -7,9 +7,71 @@ Channel::Channel(std::string name, std::shared_ptr<Client> client, std::string p
 
 Channel::~Channel() {};
 
+
+/****************************************************************************************
+    GETTERS
+****************************************************************************************/
+
 std::string Channel::getName() const {
     return (_name);
 }
+
+bool Channel::getTopicMode() const {
+    return (_topic_command_access);
+}
+
+int Channel::getUserLimit() {
+    return (_user_limit);
+}
+
+std::string Channel::getPassword() const {
+    return (_password);
+}
+
+int Channel::getSize() {
+    return (clients.size());
+}
+
+std::vector<std::shared_ptr<Client>>::iterator Channel::getClient(std::string nickname) {
+	std::vector<std::shared_ptr<Client>>::iterator it = clients.begin();
+	for ( ; it != clients.end(); it++) {
+		if ((*it)->getNickname() == nickname)
+			return (it);
+	}
+	return (it);
+}
+
+std::string Channel::getModes() {
+    std::string modes = "+";
+    std::string params;
+    if (_invite_only) {
+        modes += "i";
+    }
+    if (_topic_command_access) {
+        modes += "t";
+    }
+    if (_password != "") {
+        modes += "k";
+        params += _password;
+    }
+    if (_user_limit != -1) {
+        modes += "l";
+        if (params == "") {
+            params = std::to_string(_user_limit);
+        }
+        else {
+            params += " " + std::to_string(_user_limit);
+        }
+    }
+    if (modes == "+") {
+        return ("");
+    }
+    return (modes + " " + params);
+}
+
+/****************************************************************************************
+    CHECKS
+****************************************************************************************/
 
 bool Channel::isClient(const std::shared_ptr<Client> & client) const {
     if (std::find(clients.begin(), clients.end(), client) == clients.end()) {
@@ -42,12 +104,14 @@ bool Channel::channelFull(const std::shared_ptr<Client> & client) const {
     return (false);
 }
 
+/****************************************************************************************
+    OPERTIONAL FUNCTIONS
+****************************************************************************************/
+
 void Channel::setTopic(const std::shared_ptr<Client> & client, std::string new_topic) {
     topic = new_topic;
     topic_who = client;
     topic_when = std::time(0);
-    return ;
-    //TODO how to handle if client is not operator or channel does not allow topic change
 }
 
 reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg) {
@@ -84,32 +148,22 @@ reply Channel::inviteClient(const std::shared_ptr<Client> & client, std::shared_
     return (RPL_INVITING);
 }
 
-//OK
-//set = true -> _invite_only = true, else set = false -> _invite_only = false
-reply Channel::setInviteMode(std::shared_ptr<Client> & client, bool set) {
+reply Channel::setInviteMode(std::shared_ptr<Client> & client, bool set_to) {
     reply reply = checkPrivileges(client);
     if (reply.code == SUCCESS.code) {
-        _invite_only = set;
+        _invite_only = set_to;
     }
     return (reply);
 }
 
-//OK
-//set = true -> _topic_command_access = true, else set = false -> _topic_command_access = false
-reply Channel::setTopicMode(const std::shared_ptr<Client> & client, bool set) {
+reply Channel::setTopicMode(const std::shared_ptr<Client> & client, bool set_to) {
     reply reply = checkPrivileges(client);
     if (reply.code == SUCCESS.code) {
-        _topic_command_access = set;
+        _topic_command_access = set_to;
     }
     return (reply);
 }
 
-bool Channel::getTopicMode() const {
-    return (_topic_command_access);
-}
-
-//OK
-//if '/MODE -k' then set new_password to ""
 reply Channel::setChannelPassword(const std::shared_ptr<Client> & client, std::string new_password) {
     reply reply = checkPrivileges(client);
     if (reply.code == SUCCESS.code) {
@@ -126,7 +180,6 @@ reply Channel::addOperator(const std::shared_ptr<Client> & client, const std::sh
     return (reply);
 }
 
-//OK
 reply Channel::removeOperator(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & operator_to_remove) {
     reply reply = checkPrivileges(client);
     if (reply.code == SUCCESS.code) {
@@ -137,8 +190,6 @@ reply Channel::removeOperator(const std::shared_ptr<Client> & client, const std:
     return (reply);
 }
 
-
-//limit -1 means no limit
 reply Channel::setUserLimit(const std::shared_ptr<Client> & client, unsigned int limit) {
     reply reply = checkPrivileges(client);
     if (reply.code == SUCCESS.code) {
@@ -152,7 +203,6 @@ reply Channel::join(const std::shared_ptr<Client> & client, std::string password
         return (ERR_INVITEONLYCHAN);
     }
     if (channelFull(client)) {
-        //TODO but not when invited????
         return (ERR_CHANNELISFULL);
     }
     if (_password != "" && password != _password) {
@@ -160,14 +210,6 @@ reply Channel::join(const std::shared_ptr<Client> & client, std::string password
     }
     clients.push_back(client);
     return (SUCCESS);
-}
-
-std::string Channel::getClientsNick() const {
-    std::string nicks;
-    for (auto i = clients.begin(); i != clients.end(); i++) {
-        nicks.append((*i)->getName());
-    }
-    return (nicks);
 }
 
 void    Channel::removeClient(const std::shared_ptr<Client> & client) {
@@ -179,10 +221,6 @@ void    Channel::removeClient(const std::shared_ptr<Client> & client) {
     }
 }
 
-int Channel::getSize() {
-    return (clients.size());
-}
-
 void    Channel::sendMsgToAll(const std::shared_ptr<Client>& client, std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
     Message	message;
 
@@ -191,49 +229,4 @@ void    Channel::sendMsgToAll(const std::shared_ptr<Client>& client, std::string
 			message.message(client, *it, cmd, target, msg);
         }
 	}
-}
-
-std::vector<std::shared_ptr<Client>>::iterator Channel::getClient(std::string nickname) {
-	std::vector<std::shared_ptr<Client>>::iterator it = clients.begin();
-	for ( ; it != clients.end(); it++) {
-		if ((*it)->getNickname() == nickname)
-			return (it);
-	}
-	return (it);
-}
-
-std::string Channel::getPassword() const {
-    return (_password);
-}
-
-int Channel::getUserLimit() {
-    return (_user_limit);
-}
-
-std::string Channel::getModes() {
-    std::string modes = "+";
-    std::string params;
-    if (_invite_only) {
-        modes += "i";
-    }
-    if (_topic_command_access) {
-        modes += "t";
-    }
-    if (_password != "") {
-        modes += "k";
-        params += _password;
-    }
-    if (_user_limit != -1) {
-        modes += "l";
-        if (params == "") {
-            params = std::to_string(_user_limit);
-        }
-        else {
-            params += " " + std::to_string(_user_limit);
-        }
-    }
-    if (modes == "+") {
-        return ("");
-    }
-    return (modes + " " + params);
 }
