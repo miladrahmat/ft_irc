@@ -39,8 +39,8 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 				it =_channels.erase(it);
 				continue ;
 			}
-			it++;
 		}
+		it++;
 	}
 	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _clients.size(); i++) {
 		if (_clients[i]->getClientSocket() == client->getClientSocket()) {
