@@ -13,6 +13,7 @@ void    QuitCommand::execute() const {
 	std::map<std::string, std::shared_ptr<Client>>	msg_clients;
 	Message msg;
 
+	std::cout << "quit execute" << std::endl;
 	for (auto it = _state.getChannels().begin(); it != _state.getChannels().end(); ++it) {
 		if (it->isClient(_client)) {
 			for (auto cit = it->clients.begin(); cit != it->clients.end(); ++cit) {
@@ -25,5 +26,7 @@ void    QuitCommand::execute() const {
 	for (auto it = msg_clients.begin(); it != msg_clients.end(); ++it) {
 		msg.message(_client, it->second, _command, {}, _msg);
 	}
+	std::cout << "next removing client" << std::endl;
     _state.removeClient(_client);
+	std::cout << "at the end of quit" << std::endl;
 }

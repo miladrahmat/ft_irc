@@ -11,59 +11,61 @@ Server::Server(char** argv) {
 	hints.ai_flags = AI_PASSIVE;
 
 	try {
+		_server_socket = -1;
+		_state = new State;
 		int	port = std::stoi(static_cast<std::string>(argv[1]));
 		if (port < 1024 || port > 65535) {
 			std::cerr << "Error: Port not within range (1024 - 65535)" << std::endl;
-			exit(1);
+			closeServer(1);
 		}
 		std::string	password = static_cast<std::string>(argv[2]);
 		if (password.length() < 4) {
 			std::cerr << "Error: Password should be at least 4 characters long" << std::endl;
-			exit(1);
+			closeServer(1);
 		}
 		_port = std::to_string(port);
 		_password = password;
 		int error = getaddrinfo(NULL, _port.c_str(), &hints, &res);
 		if (error) {
 			std::cerr << "Error: getaddrinfo failed: " << gai_strerror(error) << std::endl;
-			exit(1);
+			closeServer(1);
 		}
 		_server_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (_server_socket < 0) {
 			std::cerr << "Socker error" << std::endl;
 			freeaddrinfo(res);
-			exit(1);
+			closeServer(1);
 		}
 		int flags = fcntl(_server_socket, F_GETFL, 0);
     	if (flags < 0) {
         	std::cerr << "Error with fnctl (F_GETFL)" << std::endl;
-        	exit (1);
+			freeaddrinfo(res);
+        	closeServer(1);
     	}
-    	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) < 0) {
+    	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) >= 0) {
         	std::cerr << "Error with fcntl (F_SETFL)" << std::endl;
-        	exit (1);
+			freeaddrinfo(res);
+        	closeServer(1);
     	}
 		int	opt = 1;
 		setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 		if (bind(_server_socket, res->ai_addr, res->ai_addrlen) < 0) {
 			std::cerr << "Error: Cannot bind socket" << std::endl;
 			freeaddrinfo(res);
-			close(_server_socket);
-			exit(1);
+			closeServer(1);
 		}
 		freeaddrinfo(res);
 		if (listen(_server_socket, SOMAXCONN) < 0) {
 			std::cerr << "Error: listen failed" << std::endl;
-			exit(1);
+			closeServer(1);
 		}
 		std::cout << "Server started on port " << _port << std::endl;
 		std::cout << "Server started with password " << _password << std::endl;
-		_state = new State;
 		signal(SIGINT, &stop);
 		signal(SIGTSTP, &stop);
 	} catch (std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
-		//TODO this needs to be handeled somehow
+		closeServer(1);
 	}
 }
 
@@ -76,8 +78,9 @@ void	Server::stop(int signum) {
 		server_stop = true;
 }
 
-void	Server::closeServer() {
-	close(_server_socket);
+void	Server::closeServer(int ret) {
+	if (_server_socket >= 0)
+		close(_server_socket);
 	for (auto it = _state->_channels.begin(); it != _state->_channels.end(); ++it) {
 		it->clients.clear();
 		it->operators.clear();
@@ -92,7 +95,7 @@ void	Server::closeServer() {
 	_port.clear();
 	signal(SIGINT, SIG_DFL);
 	signal(SIGTSTP, SIG_DFL);
-	exit(0);
+	exit(ret);
 }
 
 std::string	Server::getPort() const {
@@ -136,7 +139,7 @@ void	Server::start() {
         int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
 		if (server_stop) {
 			close(epoll_fd);
-			closeServer();
+			closeServer(0);
 		}
         if (eventsCount < 0) {
             std::cerr << "Error with epoll_wait" << std::endl;

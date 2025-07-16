@@ -29,7 +29,7 @@ class Server {
 		~Server();
 		void		start();
 		static void	stop(int signum);
-		void		closeServer();
+		void		closeServer(int ret);
 		std::string	getPort() const;
 		std::string	getPassword() const;
 		int			getServerSocket() const;
