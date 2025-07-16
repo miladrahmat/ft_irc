@@ -36,7 +36,7 @@ bool Channel::channelFull(const std::shared_ptr<Client> & client) const {
     if (_user_limit == -1) {
         return (false);
     }
-    if (clients.size() >= static_cast<std::size_t>(_user_limit) && client->getChannelInvitedTo() != this->_name) {
+    if (clients.size() >= static_cast<std::size_t>(_user_limit) && !client->isInvited(this->_name)) {
         return (true);
     }
     return (false);
@@ -148,7 +148,7 @@ reply Channel::setUserLimit(const std::shared_ptr<Client> & client, unsigned int
 }
 
 reply Channel::join(const std::shared_ptr<Client> & client, std::string password) {
-    if (_invite_only && _name != client->getChannelInvitedTo()) {
+    if (_invite_only && client->isInvited(this->_name)) {
         return (ERR_INVITEONLYCHAN);
     }
     if (channelFull(client)) {

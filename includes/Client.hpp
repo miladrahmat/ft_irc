@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <vector>
+#include <algorithm>
 
 class Client {
 	private:
@@ -17,7 +18,7 @@ class Client {
 		bool		_authenticated;
 		std::string	_buffer;
 		std::string _send_buffer;
-		std::string _invited_to;
+		std::vector<std::string> _invited_to;
 		bool		_nick_validated;
 	public:
 		Client(int socket, int epoll_fd, std::string ip);
@@ -35,7 +36,7 @@ class Client {
 		std::string	getUsername() const;
 		bool		getNickValidated() const;
 		bool		isAuthenticated() const;
-		std::string getChannelInvitedTo() const;
+		bool		isInvited(const std::string& channel_name) const;
 		void 		setNickname(std::string nickname);
 		void		setUsername(std::string username);
 		void		setHostname(std::string hostname);

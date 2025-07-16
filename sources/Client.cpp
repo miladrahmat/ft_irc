@@ -155,10 +155,13 @@ void	Client::printClient() const {
 	std::cout << "USERNAME: " << _username << std::endl;
 }
 
-std::string Client::getChannelInvitedTo() const {
-	return (_invited_to);
+bool Client::isInvited(const std::string& channel_name) const {
+	if (std::find(_invited_to.begin(), _invited_to.end(), channel_name) != _invited_to.end()) {
+		return (true);
+	}
+	return (false);
 }
 
 void Client::setInvitedTo(std::string channel_name) {
-	_invited_to = channel_name;
+	_invited_to.push_back(channel_name);
 }
