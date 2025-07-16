@@ -35,7 +35,7 @@ class Channel {
         reply checkPrivileges(const std::shared_ptr<Client> & client) const;
         bool isClient(const std::shared_ptr<Client> & client) const;
         bool isOperator(const std::shared_ptr<Client> & client) const;
-        bool channelFull() const;
+        bool channelFull(const std::shared_ptr<Client> & client) const;
         void setTopic(const std::shared_ptr<Client> & client, std::string new_topic);
         reply kickClient(const std::shared_ptr<Client> & client, const std::shared_ptr<Client> & client_to_kick, std::string msg);
         reply inviteClient(const std::shared_ptr<Client> & client, std::shared_ptr<Client> & new_client);

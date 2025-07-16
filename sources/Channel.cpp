@@ -32,11 +32,11 @@ reply Channel::checkPrivileges(const std::shared_ptr<Client> & client) const {
     return (SUCCESS);
 }
 
-bool Channel::channelFull() const {
+bool Channel::channelFull(const std::shared_ptr<Client> & client) const {
     if (_user_limit == -1) {
         return (false);
     }
-    if (clients.size() == static_cast<std::size_t>(_user_limit)) {
+    if (clients.size() >= static_cast<std::size_t>(_user_limit) && client->getChannelInvitedTo() != this->_name) {
         return (true);
     }
     return (false);
@@ -151,7 +151,7 @@ reply Channel::join(const std::shared_ptr<Client> & client, std::string password
     if (_invite_only && _name != client->getChannelInvitedTo()) {
         return (ERR_INVITEONLYCHAN);
     }
-    if (channelFull()) {
+    if (channelFull(client)) {
         //TODO but not when invited????
         return (ERR_CHANNELISFULL);
     }
