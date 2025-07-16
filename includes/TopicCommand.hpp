@@ -8,11 +8,8 @@
 class TopicCommand : public ACommand {
 	private:
 		bool	_set_topic;
-		bool	_error;
 		std::string	_channel;
 		std::string	_topic;
-		reply	_reply;
-		reply	_extra;
 		TopicCommand(std::string command, std::shared_ptr<Client>& client, State& state);
 
 	public:
