@@ -1,7 +1,8 @@
 
 #include "ModeCommand.hpp"
 
-ModeCommand::ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
+ModeCommand::ModeCommand(std::string command, std::shared_ptr<Client> & client, State & state) :
+    ACommand(command, client, state) {}
 
 void ModeCommand::setModeAction(mode_struct & mode, char mode_action) {
     switch (mode_action) {
@@ -142,7 +143,6 @@ void ModeCommand::execute() const {
                 continue;
         }
     }
-    return ;
 }
 
 void ModeCommand::executeEmptyMode(Channel & channel) const {
@@ -220,6 +220,7 @@ void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) 
             }
         }
         catch (std::exception & e) {
+            std::cerr << e.what() << std::endl;
             return ;
         }
     }

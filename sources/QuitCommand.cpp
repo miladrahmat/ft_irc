@@ -1,15 +1,16 @@
 #include "QuitCommand.hpp"
 
-QuitCommand::QuitCommand(std::string command, std::shared_ptr<Client>& client, State& state) : ACommand(command, client, state) {}
+QuitCommand::QuitCommand(std::string command, std::shared_ptr<Client>& client, State& state) :
+	ACommand(command, client, state) {}
 
-std::unique_ptr<ACommand>	QuitCommand::create(std::string command, std::shared_ptr<Client>& client, State& state,
-	std::string args) {
-	QuitCommand*	cmd = new QuitCommand(command, client, state);
+std::unique_ptr<ACommand> QuitCommand::create(std::string command, std::shared_ptr<Client>& client,
+	State& state, std::string args) {
+	QuitCommand* cmd = new QuitCommand(command, client, state);
     cmd->_msg = args;
     return (std::unique_ptr<QuitCommand>(cmd));
 }
 
-void    QuitCommand::execute() const {
+void QuitCommand::execute() const {
 	std::map<std::string, std::shared_ptr<Client>>	msg_clients;
 	Message msg;
 

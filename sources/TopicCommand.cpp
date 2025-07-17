@@ -1,12 +1,14 @@
 
 #include "TopicCommand.hpp"
 
-TopicCommand::TopicCommand(std::string command, std::shared_ptr<Client>& client, State& state) : ACommand(command, client, state) {}
+TopicCommand::TopicCommand(std::string command, std::shared_ptr<Client>& client, State& state) :
+	ACommand(command, client, state) {}
 
-std::unique_ptr<ACommand>	TopicCommand::create(std::string command, std::shared_ptr<Client>& client, State& state, \
-	std::string channel, std::string topic) {
-	TopicCommand*	cmd = new TopicCommand(command, client, state);
-	Message			msg;
+std::unique_ptr<ACommand> TopicCommand::create(std::string command, std::shared_ptr<Client>& client,
+	State& state, std::string channel, std::string topic) {
+
+	TopicCommand* cmd = new TopicCommand(command, client, state);
+	Message msg;
 
 	cmd->_channel = channel;
 	if (cmd->_channel.empty()) {
@@ -36,7 +38,8 @@ std::unique_ptr<ACommand>	TopicCommand::create(std::string command, std::shared_
 	return (std::unique_ptr<ACommand>(cmd));
 }
 
-void	TopicCommand::execute() const {
+void TopicCommand::execute() const {
+
 	Message msg;
 
 	if (_set_topic) {

@@ -8,7 +8,7 @@ class InviteCommand : public ACommand {
         std::string _channel;
         InviteCommand(std::string command, std::shared_ptr<Client>& client, State& state);
     public:
-        static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client, State& state,
-			std::vector<std::string> args);
-        void    execute() const override;
+        static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,
+            State& state, std::vector<std::string> args);
+        void execute() const override;
 };

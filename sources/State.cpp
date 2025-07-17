@@ -22,12 +22,12 @@ std::vector<Channel> & State::getChannels() {
 	return (_channels);
 }
 
-reply	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password) {
+reply State::addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password) {
 	_channels.push_back(Channel(name, client, password));
 	return (SUCCESS);
 }
 
-void	State::removeClient(std::shared_ptr<Client>& client) {
+void State::removeClient(std::shared_ptr<Client>& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = client->getClientSocket();
@@ -52,7 +52,7 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 	}
 }
 
-std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nickname) {
+std::vector<std::shared_ptr<Client>>::iterator State::getClient(std::string nickname) {
 	std::vector<std::shared_ptr<Client>>::iterator it = _clients.begin();
 	for ( ; it != _clients.end(); it++) {
 		if ((*it)->getNickname() == nickname)
@@ -61,6 +61,6 @@ std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nick
 	return (it);
 }
 
-std::vector<std::shared_ptr<Client>>&	State::getClients() {
+std::vector<std::shared_ptr<Client>> & State::getClients() {
 	return (_clients);
 }

@@ -1,5 +1,4 @@
 #include "Client.hpp"
-#include <iostream>
 
 Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), _authenticated(false), _nick_validated(false) {
 
@@ -25,10 +24,6 @@ int	Client::getClientSocket() const {
 
 int	Client::getEpollFd() const {
 	return (_epoll_fd);
-}
-
-std::string	Client::getName() const {
-	return (_name);
 }
 
 std::string	Client::getNickname() const {
@@ -80,16 +75,10 @@ void	Client::setPassword(std::string password) {
 }
 
 void	Client::authenticate() {
-	if (_name.empty())
+	if (_name.empty() || _nickname.empty() || _hostname.empty() ||
+		_username.empty() || _password.empty()) {
 		return ;
-	if (_nickname.empty())
-		return ;
-	if (_hostname.empty())
-		return ;
-	if (_username.empty())
-		return ;
-	if (_password.empty())
-		return ;
+	}
 	_authenticated = true;
 }
 
@@ -114,25 +103,31 @@ void	Client::changePut(uint32_t put) {
 }
 
 bool	Client::receiveData() {
-	char	buf[1024];
-	int		received_bytes = recv(this->_client_socket, buf, sizeof(buf), MSG_DONTWAIT);
+	char buf[1024];
+	int received_bytes = recv(this->_client_socket, buf, sizeof(buf), MSG_DONTWAIT);
 	if (received_bytes > 0) {
 		std::string msg(buf, received_bytes);
 		appendBuffer(msg);
 		return (true);
-	} else if (received_bytes == 0 || (received_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN)) {
+	}
+	else if (received_bytes == 0 || (received_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN)) {
 		return (false);
 	}
 	return (true);
 }
 
 bool	Client::sendData() {
-	if (this->_send_buffer.empty()) { return (true); }
+	if (this->_send_buffer.empty()) {
+		return (true);
+	}
 	int	sent_bytes = send(this->_client_socket, this->_send_buffer.c_str(), this->_send_buffer.size(), MSG_DONTWAIT);
-	if (sent_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN) { return (false); }
+	if (sent_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN) {
+		return (false);
+	}
 	this->_send_buffer.erase(0, sent_bytes);
-	if (_send_buffer.empty())
+	if (_send_buffer.empty()) {
 		changePut(EPOLLIN);
+	}
 	return (true);
 }
 

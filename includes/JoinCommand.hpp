@@ -8,13 +8,13 @@ class ACommand;
 
 class JoinCommand : public ACommand {
     private:
-        std::vector<std::string> _channels; //at least one required, otherwise comma separated
-        std::vector<std::string> _keys; //optional, comma separated
+        std::vector<std::string> _channels;
+        std::vector<std::string> _keys;
         JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state);
     
     public:
-        static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client, State & state,
-            std::vector<std::string> args);
+        static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,
+            State & state, std::vector<std::string> args);
         bool validChannelName(std::string channel) const;
         void execute() const override;
         void joinReply(std::string channel) const;
