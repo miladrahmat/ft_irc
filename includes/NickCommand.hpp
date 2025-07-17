@@ -11,7 +11,7 @@ class NickCommand : public ACommand {
 		NickCommand(std::string command, std::shared_ptr<Client>& client, State& state);
 
 	public:
-		static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client, State& state,
-			std::string nick);
+		static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,
+			State& state, std::string nick);
 		void execute() const override;
 };
