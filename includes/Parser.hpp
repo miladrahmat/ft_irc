@@ -1,4 +1,6 @@
+
 #pragma once
+
 #include "Server.hpp"
 #include "Client.hpp"
 #include "JoinCommand.hpp"
@@ -16,14 +18,14 @@ class	Parser {
 	public:
 	Parser() = default;
 	~Parser() = default;
-	void	parseCap(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
-	std::unique_ptr<ACommand>	parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void parseCap(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };

@@ -1,6 +1,6 @@
 #include "Parser.hpp"
 
-void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State& state) {
+void Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
 		if (input.compare(0, 6, "CAP LS") == 0) {
 			return ;
@@ -25,7 +25,9 @@ void	Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 	}
 }
 
-std::unique_ptr<ACommand>	Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input,
+	State& state) {
+
 	try {
 		if (input.compare(0, 4, "JOIN") == 0) {
 			return (parseJoinCommand(client, input, state));
@@ -57,7 +59,9 @@ std::unique_ptr<ACommand>	Parser::parseCommand(std::shared_ptr<Client>& client, 
 	return (nullptr);
 }
 
-std::unique_ptr<ACommand>	Parser::parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand> Parser::parseTopicCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
+
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string channel = "";
@@ -77,7 +81,9 @@ std::unique_ptr<ACommand>	Parser::parseTopicCommand(std::shared_ptr<Client>& cli
 	return (TopicCommand::create(command, client, state, channel, topic));
 }
 
-std::unique_ptr<ACommand>	Parser::parseQuitCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand> Parser::parseQuitCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
+
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 2);
 	std::string arg;
@@ -90,46 +96,53 @@ std::unique_ptr<ACommand>	Parser::parseQuitCommand(std::shared_ptr<Client>& clie
 	return (QuitCommand::create(command, client, state, arg));
 }
 
-std::unique_ptr<ACommand>	Parser::parseKickCommmand(std::shared_ptr<Client>& client, std::string& input, State& state) {
-	std::vector<std::string>	arg_vec;
+std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
 
+	std::vector<std::string> arg_vec;
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	while (!input.empty()) {
 		std::string	arg = input.substr(0, input.find_first_of(' '));
 		input.erase(0, arg.length() + 1);
-		if (!input.empty() && input[0] == ':')
+		if (!input.empty() && input[0] == ':') {
 			input.erase(0, 1);
+		}
 		arg_vec.push_back(arg);
 	}
 	return (KickCommand::create(command, client, state, arg_vec));
 }
 
-std::unique_ptr<ACommand>	Parser::parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
-	std::vector<std::string>	arg_vec;
-	
+std::unique_ptr<ACommand> Parser::parseInviteCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
+
+	std::vector<std::string> arg_vec;
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	while (!input.empty()) {
 		std::string	arg = input.substr(0, input.find_first_of(' '));
 		input.erase(0, arg.length() + 1);
-		if (!input.empty() && input[0] == ':')
+		if (!input.empty() && input[0] == ':') {
 			input.erase(0, 1);
+		}
 		arg_vec.push_back(arg);
 	}
 	return (InviteCommand::create(command, client, state, arg_vec));
 	
 }
 
-std::unique_ptr<ACommand>	Parser::parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand> Parser::parseNickCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
+
 	std::string command = input.substr(0, input.find_first_of(' '));
 	std::string nickname = input.substr(input.find_first_of(' ') + 1, input.length());
 	return (NickCommand::create(command, client, state, nickname));
 }
 
-std::unique_ptr<ACommand>	Parser::parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
-	std::vector<std::string>	arg_vec;
+std::unique_ptr<ACommand> Parser::parseJoinCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
 
+	std::vector<std::string> arg_vec;
 	std::string	command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	while (!input.empty()) {
@@ -140,7 +153,9 @@ std::unique_ptr<ACommand>	Parser::parseJoinCommand(std::shared_ptr<Client>& clie
 	return (JoinCommand::create(command, client, state, arg_vec));
 }
 
-std::unique_ptr<ACommand>	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand> Parser::parsePrivmsgCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
+
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string	target = input.substr(0, input.find_first_of(' '));
@@ -148,7 +163,9 @@ std::unique_ptr<ACommand>	Parser::parsePrivmsgCommand(std::shared_ptr<Client>& c
 	return (PrivmsgCommand::create(command, client, state, target, input));
 }
 
-std::unique_ptr<ACommand> Parser::parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+std::unique_ptr<ACommand> Parser::parseModeCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
+
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string target;
