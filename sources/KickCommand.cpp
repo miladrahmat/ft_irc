@@ -25,16 +25,16 @@ void KickCommand::execute() const {
     if (channel == _state.getChannels().end()) {
         code = ERR_NOSUCHCHANNEL;
     }
+    else if (!channel->isClient(_client)) {
+        code = ERR_NOTONCHANNEL;
+    }
     else if (!channel->isOperator(_client)) {
         code = ERR_CHANOPRIVSNEEDED;
     }
     else if (client_to_kick == _state.getClients().end()) {
         code = ERR_NOSUCHNICK;
     }
-    else if (!channel->isClient(_client)) {
-        code = ERR_NOTONCHANNEL;
-    }
-    else if (client_to_kick != _state.getClients().end()) {
+    else {
         code = channel->kickClient(_client, *client_to_kick, _msg);
     }
     if (code.code != SUCCESS.code) {
