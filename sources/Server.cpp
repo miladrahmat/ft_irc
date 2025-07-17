@@ -1,3 +1,4 @@
+
 #include "Server.hpp"
 
 bool server_stop = false;
@@ -71,12 +72,12 @@ Server::~Server() {
 	close(_server_socket);
 }
 
-void	Server::stop(int signum) {
+void Server::stop(int signum) {
 	if (signum == SIGINT || signum == SIGTSTP)
 		server_stop = true;
 }
 
-void	Server::closeServer() {
+void Server::closeServer() {
 	close(_server_socket);
 	for (auto it = _state->_channels.begin(); it != _state->_channels.end(); ++it) {
 		it->clients.clear();
@@ -106,10 +107,8 @@ int	Server::getServerSocket() const {
 	return (_server_socket);
 }
 
-int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd)
-{
-	for (size_t i = 0; i < clients.size(); i++)
-	{
+int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd) {
+	for (size_t i = 0; i < clients.size(); i++) {
 		if (clients[i]->getClientSocket() == fd)
 		{
 			return (i);
@@ -118,7 +117,7 @@ int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd)
 	return (-1);
 }
 
-void	Server::start() {
+void Server::start() {
 	int epoll_fd = epoll_create(1);
     if (epoll_fd < 0) {
         std::cerr << "Error with epoll" << std::endl;
@@ -167,7 +166,8 @@ void Server::handleNewClient(int epoll_fd) {
 	int client = accept(_server_socket, (struct sockaddr *)&client_addr, &client_len);
     if (client < 0) {
         std::cerr << "Error with accept" << std::endl;
-    } else {
+    }
+	else {
         if (fcntl(client, F_SETFL, O_NONBLOCK) < 0) {
             std::cerr << "Error with fcntl (client)" << std::endl;
             return ;
@@ -183,7 +183,7 @@ void Server::handleNewClient(int epoll_fd) {
     }
 }
 
-void    Server::receiveData(std::shared_ptr<Client>& client) {
+void Server::receiveData(std::shared_ptr<Client>& client) {
 	Parser	parser;
 
 	if (client == nullptr) {
@@ -242,18 +242,19 @@ void    Server::receiveData(std::shared_ptr<Client>& client) {
 		}
 		msg.clearMsg();
 	}
-	return ;
 }
 
-bool	Server::validateClient(std::shared_ptr<Client>& client) {
+bool Server::validateClient(std::shared_ptr<Client>& client) {
 	Message	msg;
 
-	if (client->getPassword() != _password)
+	if (client->getPassword() != _password) {
 		return (false);
+	}
 	msg.welcomeMessage(client, *_state);
 	client->authenticate();
-	if (!client->isAuthenticated())
+	if (!client->isAuthenticated()) {
 		return (false);
-	client->printClient(); // To check that every attribute is valid. Remove later.
+	}
+	client->printClient(); // TODO To check that every attribute is valid. Remove later.
 	return (true);
 }
