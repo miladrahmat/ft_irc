@@ -6,6 +6,7 @@
 #include <cstring>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 class Client {
 	private:
@@ -30,7 +31,6 @@ class Client {
 		bool		operator==(const Client& other) const;
 		int			getClientSocket() const;
 		int			getEpollFd() const;
-		std::string	getName() const;
 		std::string	getNickname() const;
 		std::string	getPassword() const;
 		std::string	getHostname() const;

@@ -1,11 +1,13 @@
 
 #include "NickCommand.hpp"
 
-NickCommand::NickCommand(std::string command, std::shared_ptr<Client>& client, State& state) : ACommand(command, client, state) {}
+NickCommand::NickCommand(std::string command, std::shared_ptr<Client>& client, State& state) :
+	ACommand(command, client, state) {}
 
-std::unique_ptr<ACommand> NickCommand::create(std::string command, std::shared_ptr<Client>& client, State& state,
-	std::string nick) {
-	NickCommand*	cmd = new NickCommand(command, client, state);
+std::unique_ptr<ACommand> NickCommand::create(std::string command, std::shared_ptr<Client>& client,
+	State& state, std::string nick) {
+
+	NickCommand* cmd = new NickCommand(command, client, state);
 	Message msg;
 	std::string invalid_start = "$:#&~@+%";
 	std::string	invalid = " ,*?!@.";
@@ -41,8 +43,9 @@ std::unique_ptr<ACommand> NickCommand::create(std::string command, std::shared_p
 void	NickCommand::execute() const {
 	Message	msg;
 
-	if (_client->getNickname() == _nickname)
+	if (_client->getNickname() == _nickname) {
 		return ;
+	}
 	if (_client->isAuthenticated()) {
 		msg.message(_client, _client, _command, {}, _nickname);
 		for (auto it = _state.getChannels().begin(); it != _state.getChannels().end(); ++it) {

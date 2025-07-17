@@ -1,10 +1,11 @@
 
 #include "JoinCommand.hpp"
 
-JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
+JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) :
+    ACommand(command, client, state) {}
 
-std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client, State & state,
-        std::vector<std::string> args) {
+std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client,
+    State & state, std::vector<std::string> args) {
 
     JoinCommand* cmd = new JoinCommand(command, client, state);
     std::vector<std::string>::iterator it = args.begin();
@@ -17,7 +18,6 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
     it++;
     if (it != args.end()) {
         std::stringstream ss(*it);
-
         while (ss.good()) {
             std::string substr;
             std::getline(ss, substr, ',');
@@ -39,7 +39,6 @@ bool JoinCommand::validChannelName(std::string channel_name) const {
     std::string name = channel_name.substr(1);
     for (char c : name) {
         if ( c == ' ' || c == ',' || c == 0x07) {
-
             return (false);
         }
     }
@@ -50,6 +49,7 @@ void JoinCommand::execute() const {
     std::vector<std::string>::const_iterator chan_it = _channels.begin();
     std::vector<std::string>::const_iterator key_it = _keys.begin();
     reply reply;
+
     for ( ; chan_it != _channels.end(); chan_it++) {
         if (!validChannelName(*chan_it)) {
             continue ;
