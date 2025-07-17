@@ -9,10 +9,11 @@ Server::Server(char** argv) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
+	_server_socket = -1;
+	_state = new State;
+	_error = false;
 
 	try {
-		_server_socket = -1;
-		_state = new State;
 		int	port = std::stoi(static_cast<std::string>(argv[1]));
 		if (port < 1024 || port > 65535) {
 			std::cerr << "Error: Port not within range (1024 - 65535)" << std::endl;
@@ -28,6 +29,7 @@ Server::Server(char** argv) {
 		int error = getaddrinfo(NULL, _port.c_str(), &hints, &res);
 		if (error) {
 			std::cerr << "Error: getaddrinfo failed: " << gai_strerror(error) << std::endl;
+			freeaddrinfo(res);
 			closeServer(1);
 		}
 		_server_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -42,7 +44,7 @@ Server::Server(char** argv) {
 			freeaddrinfo(res);
         	closeServer(1);
     	}
-    	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) >= 0) {
+    	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) < 0) {
         	std::cerr << "Error with fcntl (F_SETFL)" << std::endl;
 			freeaddrinfo(res);
         	closeServer(1);
@@ -66,12 +68,15 @@ Server::Server(char** argv) {
 	} catch (std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
 		closeServer(1);
+		return ;
 	}
 }
 
-Server::~Server() {
-	close(_server_socket);
+bool Server::getError() const {
+	return (_error);
 }
+
+Server::~Server() {}
 
 void	Server::stop(int signum) {
 	if (signum == SIGINT || signum == SIGTSTP)
@@ -95,6 +100,10 @@ void	Server::closeServer(int ret) {
 	_port.clear();
 	signal(SIGINT, SIG_DFL);
 	signal(SIGTSTP, SIG_DFL);
+	if (ret > 0) {
+		_error = true;
+		return ;
+	}
 	exit(ret);
 }
 
@@ -125,6 +134,7 @@ void	Server::start() {
 	int epoll_fd = epoll_create(1);
     if (epoll_fd < 0) {
         std::cerr << "Error with epoll" << std::endl;
+		closeServer(1);
         return ;
     }
     struct epoll_event ev_server;
@@ -132,34 +142,43 @@ void	Server::start() {
     ev_server.data.fd = _server_socket;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
         std::cerr << "Error with epoll_ctl" << std::endl;
+		closeServer(1);
         return ;
     }
-	struct epoll_event ev[64];
-    while (true) {
-        int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
-		if (server_stop) {
-			close(epoll_fd);
-			closeServer(0);
-		}
-        if (eventsCount < 0) {
-            std::cerr << "Error with epoll_wait" << std::endl;
-            break ;
-        }
-        if (eventsCount > 0) {
-            for (int i = 0; i < eventsCount; ++i) {
-				int index = findIndex(_state->_clients, ev[i].data.fd);
-                if (ev[i].data.fd == _server_socket) {
-                    handleNewClient(epoll_fd);
-                }
-				else if (ev[i].events & EPOLLIN) {
-					receiveData(_state->_clients[index]);
+	try {
+		struct epoll_event ev[64];
+		while (true) {
+			int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000);
+			if (server_stop) {
+				close(epoll_fd);
+				closeServer(0);
+			}
+			if (eventsCount < 0) {
+				std::cerr << "Error with epoll_wait" << std::endl;
+				break ;
+			}
+			if (eventsCount > 0) {
+				for (int i = 0; i < eventsCount; ++i) {
+					int index = findIndex(_state->_clients, ev[i].data.fd);
+					if (ev[i].data.fd == _server_socket) {
+						handleNewClient(epoll_fd);
+					}
+					else if (ev[i].events & EPOLLIN) {
+						receiveData(_state->_clients[index]);
+					}
+					else if (ev[i].events & EPOLLOUT) { 
+						_state->_clients[index]->sendData();
+					}
 				}
-				else if (ev[i].events & EPOLLOUT) { 
-					_state->_clients[index]->sendData();
-                }
-            }
-        }
+			}
+		}
     }
+	catch (std::exception &e) {
+		std::cerr << "Error: " << e.what() << std::endl;
+		close(epoll_fd);
+		closeServer(1);
+		return ;
+	}
     close(epoll_fd);
 }
 
@@ -173,6 +192,7 @@ void Server::handleNewClient(int epoll_fd) {
     } else {
         if (fcntl(client, F_SETFL, O_NONBLOCK) < 0) {
             std::cerr << "Error with fcntl (client)" << std::endl;
+			close(client);
             return ;
         }
 		std::string ip = inet_ntoa(client_addr.sin_addr);
@@ -181,6 +201,8 @@ void Server::handleNewClient(int epoll_fd) {
         ev2.data.fd = client;
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
+			close(client);
+			return ;
         }
 		_state->_clients.push_back(std::make_shared<Client>(client, epoll_fd, ip));
     }

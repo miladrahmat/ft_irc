@@ -152,7 +152,6 @@ reply Channel::join(const std::shared_ptr<Client> & client, std::string password
         return (ERR_INVITEONLYCHAN);
     }
     if (channelFull(client)) {
-        //TODO but not when invited????
         return (ERR_CHANNELISFULL);
     }
     if (_password != "" && password != _password) {

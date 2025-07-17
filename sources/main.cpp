@@ -12,7 +12,14 @@ int main(int argc, char **argv) {
         return (1);
     }
     Server  ircserv(argv);
+    if (ircserv.getError()) {
+        std::cout << "Error in constructor" << std::endl;
+        return (1);
+    }
     ircserv.start();
+    if (ircserv.getError()) {
+        return (1);
+    }
     /*struct sockaddr_in addr; //this or addrinfo?? (addrinfo version in constructor)
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;

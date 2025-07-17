@@ -110,7 +110,10 @@ void	Client::changePut(uint32_t put) {
 	struct epoll_event ev;
 	ev.events = put;
 	ev.data.fd = this->getClientSocket();
-	epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, this->getClientSocket(), &ev);
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, this->getClientSocket(), &ev) < 0) {
+		_send_buffer.clear();
+		throw std::runtime_error("epoll_ctl failed: " + std::string(strerror(errno)));
+	}
 }
 
 bool	Client::receiveData() {
@@ -127,12 +130,17 @@ bool	Client::receiveData() {
 }
 
 bool	Client::sendData() {
-	if (this->_send_buffer.empty()) { return (true); }
+	if (this->_send_buffer.empty()) { 
+		return (true);
+	}
 	int	sent_bytes = send(this->_client_socket, this->_send_buffer.c_str(), this->_send_buffer.size(), MSG_DONTWAIT);
-	if (sent_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN) { return (false); }
+	if (sent_bytes < 0 && errno != EWOULDBLOCK && errno != EAGAIN) { 
+		return (false);
+	}
 	this->_send_buffer.erase(0, sent_bytes);
-	if (_send_buffer.empty())
+	if (_send_buffer.empty()) {
 		changePut(EPOLLIN);
+	}
 	return (true);
 }
 
