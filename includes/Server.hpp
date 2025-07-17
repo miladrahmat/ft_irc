@@ -36,6 +36,7 @@ class Server {
 		std::string	getPassword() const;
 		int	getServerSocket() const;
 		void handleNewClient(int epoll_fd);
+		void clientRegisteration(std::shared_ptr<Client>& client, Message& msg);
 		void receiveData(std::shared_ptr<Client>& client);
 		bool validateClient(std::shared_ptr<Client>& client);
 };

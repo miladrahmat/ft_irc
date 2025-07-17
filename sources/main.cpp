@@ -13,15 +13,5 @@ int main(int argc, char **argv) {
     }
     Server  ircserv(argv);
     ircserv.start();
-    /*struct sockaddr_in addr; //this or addrinfo?? (addrinfo version in constructor)
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = htons(stoi(ircserv.getPort())); //port here*/
-
-            // struct sockaddr {
-            //        sa_family_t     sa_family;      /* Address family */
-            //        char            sa_data[];      /* Socket address */
-            //    };
-    //socklen_t addrlen = 125;    //no idea what this should be
     return (0);
 }
