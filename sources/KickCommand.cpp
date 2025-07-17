@@ -23,7 +23,10 @@ void    KickCommand::execute() const {
     std::vector<Channel>::iterator channel = _state.getChannel(_channel);
     std::vector<std::shared_ptr<Client>>::iterator client_to_kick = _state.getClient(_client_to_kick);
     reply code;
-    if (client_to_kick != _state.getClients().end()) {
+    if (!channel->isClient(_client)) {
+        code = ERR_NOTONCHANNEL;
+    }
+    else if (client_to_kick != _state.getClients().end()) {
         code = channel->kickClient(_client, *client_to_kick, _msg);
     }
     else {
