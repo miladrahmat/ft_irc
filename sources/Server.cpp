@@ -215,7 +215,6 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 		return ;
 	}
 	if (!client->receiveData()) {
-		std::cout << "Client receiveData() ret = false" << std::endl;
 		std::string input = "QUIT :Read error: Connection reset by peer";
 		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, input, *_state);
 		if (cmd != nullptr) {
@@ -288,6 +287,6 @@ bool Server::validateClient(std::shared_ptr<Client>& client) {
 	if (!client->isAuthenticated()) {
 		return (false);
 	}
-	client->printClient(); // TODO To check that every attribute is valid. Remove later.
+	client->printClient();
 	return (true);
 }
