@@ -153,8 +153,7 @@ void Server::start() {
 				closeServer(0);
 			}
 			if (eventsCount < 0) {
-				std::cerr << "Error with epoll_wait" << std::endl;
-				break ;
+				throw std::runtime_error("epoll_wait failed: " + std::string(strerror(errno)));
 			}
 			if (eventsCount > 0) {
 				for (int i = 0; i < eventsCount; ++i) {
