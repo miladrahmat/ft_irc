@@ -14,7 +14,7 @@ Client::~Client() {
 	close(_client_socket);
 }
 
-bool		Client::operator==(const Client& other) const {
+bool Client::operator==(const Client& other) const {
 	return (this->_client_socket == other._client_socket);
 }
 
@@ -42,39 +42,39 @@ std::string	Client::getUsername() const {
 	return(_username);
 }
 
-bool	Client::getNickValidated() const {
+bool Client::getNickValidated() const {
 	return (_nick_validated);
 }
 
-void	Client::validateNick() {
+void Client::validateNick() {
 	_nick_validated = true;
 }
 
-bool	Client::isAuthenticated() const {
+bool Client::isAuthenticated() const {
 	return (_authenticated);
 }
 
-void	Client::setNickname(std::string nickname) {
+void Client::setNickname(std::string nickname) {
 	_nickname = nickname;
 }
 
-void	Client::setUsername(std::string username) {
+void Client::setUsername(std::string username) {
 	_username = username;
 }
 
-void	Client::setHostname(std::string hostname) {
+void Client::setHostname(std::string hostname) {
 	_hostname = hostname;
 }
 
-void	Client::setName(std::string name) {
+void Client::setName(std::string name) {
 	_name = name;
 }
 
-void	Client::setPassword(std::string password) {
+void Client::setPassword(std::string password) {
 	_password = password;
 }
 
-void	Client::authenticate() {
+void Client::authenticate() {
 	if (_name.empty() || _nickname.empty() || _hostname.empty() ||
 		_username.empty() || _password.empty()) {
 		return ;
@@ -82,27 +82,30 @@ void	Client::authenticate() {
 	_authenticated = true;
 }
 
-void	Client::setClientSocket(int socket) {
+void Client::setClientSocket(int socket) {
 	_client_socket = socket;
 }
 
-void	Client::appendBuffer(std::string const& msg) {
+void Client::appendBuffer(std::string const& msg) {
 	_buffer.append(msg);
 }
 
-void	Client::appendSendBuffer(std::string const& msg) {
+void Client::appendSendBuffer(std::string const& msg) {
 	_send_buffer.append(msg);
 	changePut(EPOLLOUT);
 }
 
-void	Client::changePut(uint32_t put) {
+void Client::changePut(uint32_t put) {
 	struct epoll_event ev;
 	ev.events = put;
 	ev.data.fd = this->getClientSocket();
-	epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, this->getClientSocket(), &ev);
+	if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, this->getClientSocket(), &ev) < 0) {
+		_send_buffer.clear();
+		throw std::runtime_error("epoll_ctl failed: " + std::string(strerror(errno)));
+	}
 }
 
-bool	Client::receiveData() {
+bool Client::receiveData() {
 	char buf[1024];
 	int received_bytes = recv(this->_client_socket, buf, sizeof(buf), MSG_DONTWAIT);
 	if (received_bytes > 0) {
@@ -116,7 +119,7 @@ bool	Client::receiveData() {
 	return (true);
 }
 
-bool	Client::sendData() {
+bool Client::sendData() {
 	if (this->_send_buffer.empty()) {
 		return (true);
 	}
@@ -139,11 +142,11 @@ std::string	Client::getBuffer() {
 	return (_buffer);
 }
 
-void	Client::emptyBuffer(int begin, int end) {
+void Client::emptyBuffer(int begin, int end) {
 	_buffer.erase(begin, end);
 }
 
-void	Client::printClient() const {
+void Client::printClient() const {
 	std::cout << "NAME: " << _name << std::endl;
 	std::cout << "NICKNAME: " << _nickname << std::endl;
 	std::cout << "HOSTNAME: " << _hostname << std::endl;

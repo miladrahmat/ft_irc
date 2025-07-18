@@ -12,6 +12,13 @@ int main(int argc, char **argv) {
         return (1);
     }
     Server  ircserv(argv);
+    if (ircserv.getError()) {
+        std::cout << "Error in constructor" << std::endl;
+        return (1);
+    }
     ircserv.start();
+    if (ircserv.getError()) {
+        return (1);
+    }
     return (0);
 }

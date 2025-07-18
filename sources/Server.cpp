@@ -10,75 +10,83 @@ Server::Server(char** argv) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
+	_server_socket = -1;
+	_state = new State;
+	_error = false;
 
 	try {
 		int	port = std::stoi(static_cast<std::string>(argv[1]));
 		if (port < 1024 || port > 65535) {
 			std::cerr << "Error: Port not within range (1024 - 65535)" << std::endl;
-			exit(1);
+			closeServer(1);
 		}
 		std::string	password = static_cast<std::string>(argv[2]);
 		if (password.length() < 4) {
 			std::cerr << "Error: Password should be at least 4 characters long" << std::endl;
-			exit(1);
+			closeServer(1);
 		}
 		_port = std::to_string(port);
 		_password = password;
 		int error = getaddrinfo(NULL, _port.c_str(), &hints, &res);
 		if (error) {
 			std::cerr << "Error: getaddrinfo failed: " << gai_strerror(error) << std::endl;
-			exit(1);
+			freeaddrinfo(res);
+			closeServer(1);
 		}
 		_server_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (_server_socket < 0) {
 			std::cerr << "Socker error" << std::endl;
 			freeaddrinfo(res);
-			exit(1);
+			closeServer(1);
 		}
 		int flags = fcntl(_server_socket, F_GETFL, 0);
     	if (flags < 0) {
         	std::cerr << "Error with fnctl (F_GETFL)" << std::endl;
-        	exit (1);
+			freeaddrinfo(res);
+        	closeServer(1);
     	}
     	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) < 0) {
         	std::cerr << "Error with fcntl (F_SETFL)" << std::endl;
-        	exit (1);
+			freeaddrinfo(res);
+        	closeServer(1);
     	}
 		int	opt = 1;
 		setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 		if (bind(_server_socket, res->ai_addr, res->ai_addrlen) < 0) {
 			std::cerr << "Error: Cannot bind socket" << std::endl;
 			freeaddrinfo(res);
-			close(_server_socket);
-			exit(1);
+			closeServer(1);
 		}
 		freeaddrinfo(res);
 		if (listen(_server_socket, SOMAXCONN) < 0) {
 			std::cerr << "Error: listen failed" << std::endl;
-			exit(1);
+			closeServer(1);
 		}
 		std::cout << "Server started on port " << _port << std::endl;
 		std::cout << "Server started with password " << _password << std::endl;
-		_state = new State;
 		signal(SIGINT, &stop);
 		signal(SIGTSTP, &stop);
 	} catch (std::exception& e) {
 		std::cerr << "Error: " << e.what() << std::endl;
-		//TODO this needs to be handeled somehow
+		closeServer(1);
+		return ;
 	}
 }
 
-Server::~Server() {
-	close(_server_socket);
+bool Server::getError() const {
+	return (_error);
 }
+
+Server::~Server() {}
 
 void Server::stop(int signum) {
 	if (signum == SIGINT || signum == SIGTSTP)
 		server_stop = true;
 }
 
-void Server::closeServer() {
-	close(_server_socket);
+void Server::closeServer(int ret) {
+	if (_server_socket >= 0)
+		close(_server_socket);
 	for (auto it = _state->_channels.begin(); it != _state->_channels.end(); ++it) {
 		it->clients.clear();
 		it->operators.clear();
@@ -93,7 +101,11 @@ void Server::closeServer() {
 	_port.clear();
 	signal(SIGINT, SIG_DFL);
 	signal(SIGTSTP, SIG_DFL);
-	exit(0);
+	if (ret > 0) {
+		_error = true;
+		return ;
+	}
+	exit(ret);
 }
 
 std::string	Server::getPort() const {
@@ -121,6 +133,7 @@ void Server::start() {
 	int epoll_fd = epoll_create(1);
     if (epoll_fd < 0) {
         std::cerr << "Error with epoll" << std::endl;
+		closeServer(1);
         return ;
     }
     struct epoll_event ev_server;
@@ -128,34 +141,43 @@ void Server::start() {
     ev_server.data.fd = _server_socket;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
         std::cerr << "Error with epoll_ctl" << std::endl;
+		closeServer(1);
         return ;
     }
-	struct epoll_event ev[64];
-    while (true) {
-        int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000); //timeout in milliseconds, not sure what it should be
-		if (server_stop) {
-			close(epoll_fd);
-			closeServer();
-		}
-        if (eventsCount < 0) {
-            std::cerr << "Error with epoll_wait" << std::endl;
-            break ;
-        }
-        if (eventsCount > 0) {
-            for (int i = 0; i < eventsCount; ++i) {
-				int index = findIndex(_state->_clients, ev[i].data.fd);
-                if (ev[i].data.fd == _server_socket) {
-                    handleNewClient(epoll_fd);
-                }
-				else if (ev[i].events & EPOLLIN) {
-					receiveData(_state->_clients[index]);
+	try {
+		struct epoll_event ev[64];
+		while (true) {
+			int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000);
+			if (server_stop) {
+				close(epoll_fd);
+				closeServer(0);
+			}
+			if (eventsCount < 0) {
+				std::cerr << "Error with epoll_wait" << std::endl;
+				break ;
+			}
+			if (eventsCount > 0) {
+				for (int i = 0; i < eventsCount; ++i) {
+					int index = findIndex(_state->_clients, ev[i].data.fd);
+					if (ev[i].data.fd == _server_socket) {
+						handleNewClient(epoll_fd);
+					}
+					else if (ev[i].events & EPOLLIN) {
+						receiveData(_state->_clients[index]);
+					}
+					else if (ev[i].events & EPOLLOUT) { 
+						_state->_clients[index]->sendData();
+					}
 				}
-				else if (ev[i].events & EPOLLOUT) { 
-					_state->_clients[index]->sendData();
-                }
-            }
-        }
+			}
+		}
     }
+	catch (std::exception &e) {
+		std::cerr << "Error: " << e.what() << std::endl;
+		close(epoll_fd);
+		closeServer(1);
+		return ;
+	}
     close(epoll_fd);
 }
 
@@ -170,6 +192,7 @@ void Server::handleNewClient(int epoll_fd) {
 	else {
         if (fcntl(client, F_SETFL, O_NONBLOCK) < 0) {
             std::cerr << "Error with fcntl (client)" << std::endl;
+			close(client);
             return ;
         }
 		std::string ip = inet_ntoa(client_addr.sin_addr);
@@ -178,6 +201,8 @@ void Server::handleNewClient(int epoll_fd) {
         ev2.data.fd = client;
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
             std::cerr << "Error with epoll_ctl (client)" << std::endl;
+			close(client);
+			return ;
         }
 		_state->_clients.push_back(std::make_shared<Client>(client, epoll_fd, ip));
     }
@@ -190,7 +215,6 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 		return ;
 	}
 	if (!client->receiveData()) {
-		std::cout << "Client receiveData() ret = false" << std::endl;
 		std::string input = "QUIT :Read error: Connection reset by peer";
 		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, input, *_state);
 		if (cmd != nullptr) {
@@ -263,6 +287,6 @@ bool Server::validateClient(std::shared_ptr<Client>& client) {
 	if (!client->isAuthenticated()) {
 		return (false);
 	}
-	client->printClient(); // TODO To check that every attribute is valid. Remove later.
+	client->printClient();
 	return (true);
 }

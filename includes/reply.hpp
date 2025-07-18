@@ -29,6 +29,7 @@ static const reply ERR_TOOMANYCHANNELS = {"405", "You have joined too many chann
 static const reply ERR_NONICKNAMEGIVEN = {"431", "No nickname given"};
 static const reply ERR_ERRONEUSNICKNAME = {"432", "Erroneus nickname"};
 static const reply ERR_NICKNAMEINUSE = {"433", "Nickname is already in use."};
+static const reply ERR_USERNOTINCHANNEL = {"441", "They aren't on that channel"};
 static const reply ERR_NOTONCHANNEL = {"442", "You're not on that channel"};
 static const reply ERR_USERONCHANNEL = {"443", "is already on channel"};
 static const reply ERR_NEEDMOREPARAMS = {"461", "Not enough parameters"};

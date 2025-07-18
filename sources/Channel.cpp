@@ -124,7 +124,7 @@ reply Channel::kickClient(const std::shared_ptr<Client> & client, const std::sha
             clients.erase(std::find(clients.begin(), clients.end(), client_to_kick));
             return (SUCCESS);
         }
-        return (ERR_NOSUCHNICK);
+        return (ERR_USERNOTINCHANNEL);
     }
     else {
         return (ERR_CHANOPRIVSNEEDED);
