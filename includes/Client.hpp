@@ -22,6 +22,8 @@ class Client {
 		std::string _send_buffer;
 		std::vector<std::string> _invited_to;
 		bool		_nick_validated;
+		bool		_pass_validated;
+
 	public:
 		Client(int socket, int epoll_fd, std::string ip);
 		Client (const Client & old_client) = delete;
@@ -37,12 +39,14 @@ class Client {
 		std::string	getUsername() const;
 		bool		getNickValidated() const;
 		bool		isAuthenticated() const;
+		bool		isValidPass() const;
 		bool		isInvited(const std::string& channel_name) const;
 		void 		setNickname(std::string nickname);
 		void		setUsername(std::string username);
 		void		setHostname(std::string hostname);
 		void		setName(std::string name);
 		void		setPassword(std::string password);
+		void		setValidPass(bool set);
 		void		setClientSocket(int socket);
 		void		validateNick();
 		void		authenticate();

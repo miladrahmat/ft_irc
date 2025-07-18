@@ -99,12 +99,12 @@ void Message::welcomeMessage(std::shared_ptr<Client>& client, State& state) {
 
 void Message::codedMessage(std::shared_ptr<Client>& client, State& state, reply code,
 	const std::optional<std::string>& target) {
-	_send_msg = ":" + state.getServerName() + " " + code.code + " ";
-	if (client->getNickname().empty()) {
-		_send_msg += "*";
+	_send_msg = ":" + state.getServerName() + " " + code.code;
+	if (client->getNickname().empty() && code.code != "ERROR") {
+		_send_msg += " *";
 	}
-	else {
-		_send_msg += client->getNickname();
+	else if (code.code != "ERROR") {
+		_send_msg += " " + client->getNickname();
 	}
 	if (target) {
 		_send_msg += " " + *target;
