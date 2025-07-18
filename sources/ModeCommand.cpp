@@ -250,17 +250,21 @@ void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) 
 void ModeCommand::executeOperator(Channel & channel, const mode_struct & mode_obj) const {
     Message msg;
     reply reply;
-    if (mode_obj.action == ADD) {
-        std::vector<std::shared_ptr<Client>>::iterator new_operator_it = channel.getClient(mode_obj.param);
-        if (new_operator_it != channel.clients.end()) {
-            reply = channel.addOperator(_client, *(new_operator_it));
+    std::vector<std::shared_ptr<Client>>::iterator new_operator_it = channel.getClient(mode_obj.param);
+    if (new_operator_it == channel.clients.end()) {
+        if (_state.getClient(mode_obj.param) == _state.getClients().end()) {
+            msg.codedMessage(_client, _state, ERR_NOSUCHNICK, mode_obj.param);
         }
+        else {
+            msg.codedMessage(_client, _state, ERR_USERNOTINCHANNEL, mode_obj.param + " " + channel.getName());
+        }
+        return ;
+    }
+    if (mode_obj.action == ADD) {
+        reply = channel.addOperator(_client, *(new_operator_it));
     }
     else {
-        std::vector<std::shared_ptr<Client>>::iterator new_operator_it = channel.getClient(mode_obj.param);
-        if (new_operator_it != channel.clients.end()) {
-            reply = channel.removeOperator(_client, *(new_operator_it));
-        }
+        reply = channel.removeOperator(_client, *(new_operator_it));
     }
     if (reply.code == SUCCESS.code) {
         char action_char = static_cast<char>(mode_obj.action);
@@ -270,6 +274,6 @@ void ModeCommand::executeOperator(Channel & channel, const mode_struct & mode_ob
         channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, mode_obj.param);
     }
     else {
-        msg.codedMessage(_client, _state, ERR_NOSUCHNICK, mode_obj.param);
+        msg.codedMessage(_client, _state, reply, mode_obj.param);
     }
 }
