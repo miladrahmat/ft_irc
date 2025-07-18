@@ -28,7 +28,7 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
 }
 
 bool JoinCommand::validChannelName(std::string channel_name) const {
-    if (channel_name[0] != '#' && channel_name[0] != '&' ) {
+    if (channel_name[0] != '#') {
         return (false);
     }
     if (channel_name.length() >= 50) {
