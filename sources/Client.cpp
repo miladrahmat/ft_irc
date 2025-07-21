@@ -1,12 +1,12 @@
 #include "Client.hpp"
 
-Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), _authenticated(false), _nick_validated(false) {
+Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), _authenticated(false), _nick_validated(false), _pass_validated(true) {
 
 }
 
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _epoll_fd(old_client._epoll_fd), _name(old_client._name), _nickname(old_client._nickname), \
 											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), \
-											_send_buffer(old_client._send_buffer), _nick_validated(old_client._nick_validated) {
+											_send_buffer(old_client._send_buffer), _nick_validated(old_client._nick_validated), _pass_validated(old_client._pass_validated) {
 
 }
 
@@ -54,6 +54,10 @@ bool Client::isAuthenticated() const {
 	return (_authenticated);
 }
 
+bool Client::isValidPass() const {
+	return (_pass_validated);
+}
+
 void Client::setNickname(std::string nickname) {
 	_nickname = nickname;
 }
@@ -72,6 +76,10 @@ void Client::setName(std::string name) {
 
 void Client::setPassword(std::string password) {
 	_password = password;
+}
+
+void Client::setValidPass(bool set) {
+	_pass_validated = set;
 }
 
 void Client::authenticate() {

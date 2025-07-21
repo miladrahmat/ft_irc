@@ -40,4 +40,5 @@ class Server {
 		void clientRegisteration(std::shared_ptr<Client>& client, Message& msg);
 		void receiveData(std::shared_ptr<Client>& client);
 		bool validateClient(std::shared_ptr<Client>& client);
+		bool validatePassword(std::shared_ptr<Client>& client);
 };

@@ -210,7 +210,11 @@ void Server::handleNewClient(int epoll_fd) {
 void Server::receiveData(std::shared_ptr<Client>& client) {
 	Parser	parser;
 
-	if (client == nullptr) {
+	if (client.get() == nullptr) {
+		return ;
+	}
+	if (!client->isValidPass()) {
+		_state->removeClient(client);
 		return ;
 	}
 	if (!client->receiveData()) {
@@ -227,6 +231,10 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 		int	type = msg.getType();
 		if (type == CAP_LS || type == CAP_REQ || type == CAP_REQ_AGAIN || type == CAP_END) {
 			clientRegisteration(client, msg);
+			validatePassword(client);
+			if (!client->isValidPass()) {
+				return ;
+			}
 		}
 		else if (type == CMD) {
 			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
@@ -245,6 +253,10 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 
 void Server::clientRegisteration(std::shared_ptr<Client>& client, Message& msg) {
 	Parser parser;
+
+	if (!client->isValidPass()) {
+		return ;
+	}
 	int	type = msg.getType();
 	if (type == CAP_LS) {
 		parser.parseCap(client, msg.getMsg(), *_state);
@@ -273,6 +285,22 @@ void Server::clientRegisteration(std::shared_ptr<Client>& client, Message& msg) 
 			return ;
 		}
 	}
+}
+
+bool Server::validatePassword(std::shared_ptr<Client>& client) {
+	if (client->getPassword().empty()) {
+		return (true);
+	}
+	else if (client->getPassword() != _password && client->isValidPass()) {
+		struct reply rpl = ERROR;
+		rpl.msg = "Connection refused";
+		Message msg;
+		msg.codedMessage(client, *_state, ERR_PASSWDMISMATCH, {});
+		msg.codedMessage(client, *_state, rpl, {});
+		client->setValidPass(false);
+		return (false);
+	}
+	return (true);
 }
 
 bool Server::validateClient(std::shared_ptr<Client>& client) {
