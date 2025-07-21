@@ -11,13 +11,11 @@ int main(int argc, char **argv) {
         std::cerr << "Expected: ./ircserv <port> <password>" << std::endl;
         return (1);
     }
-    Server  ircserv(argv);
-    if (ircserv.getError()) {
-        std::cout << "Error in constructor" << std::endl;
-        return (1);
-    }
-    ircserv.start();
-    if (ircserv.getError()) {
+    try {    
+        Server  ircserv(argv);
+        ircserv.start();
+    } catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
         return (1);
     }
     return (0);

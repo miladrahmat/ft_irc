@@ -3,109 +3,97 @@
 
 bool server_stop = false;
 
-Server::Server(char** argv) {
+Server::Server(char** argv) : _server_socket(-1), _state(nullptr) {
 	struct addrinfo	hints, *res;
 	std::memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 	hints.ai_flags = AI_PASSIVE;
-	_server_socket = -1;
-	_state = new State;
-	_error = false;
 
 	try {
 		int	port = std::stoi(static_cast<std::string>(argv[1]));
 		if (port < 1024 || port > 65535) {
-			std::cerr << "Error: Port not within range (1024 - 65535)" << std::endl;
-			closeServer(1);
+			throw std::runtime_error("Error: Port not within range (1024 - 65535)");
 		}
 		std::string	password = static_cast<std::string>(argv[2]);
 		if (password.length() < 4) {
-			std::cerr << "Error: Password should be at least 4 characters long" << std::endl;
-			closeServer(1);
+			throw std::runtime_error("Error: Password should be at least 4 characters long");
 		}
 		_port = std::to_string(port);
 		_password = password;
 		int error = getaddrinfo(NULL, _port.c_str(), &hints, &res);
 		if (error) {
-			std::cerr << "Error: getaddrinfo failed: " << gai_strerror(error) << std::endl;
 			freeaddrinfo(res);
-			closeServer(1);
+			throw std::runtime_error("Error: getaddrinfo failed: " + std::string(gai_strerror(error)));
 		}
 		_server_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (_server_socket < 0) {
-			std::cerr << "Socker error" << std::endl;
 			freeaddrinfo(res);
-			closeServer(1);
+			throw std::runtime_error("Socker error");
 		}
 		int flags = fcntl(_server_socket, F_GETFL, 0);
     	if (flags < 0) {
-        	std::cerr << "Error with fnctl (F_GETFL)" << std::endl;
+			close(_server_socket);
 			freeaddrinfo(res);
-        	closeServer(1);
+        	throw std::runtime_error("Error with fnctl (F_GETFL)");
     	}
     	if (fcntl(_server_socket, F_SETFL, flags | O_NONBLOCK) < 0) {
-        	std::cerr << "Error with fcntl (F_SETFL)" << std::endl;
+			close(_server_socket);
 			freeaddrinfo(res);
-        	closeServer(1);
+        	throw std::runtime_error("Error with fcntl (F_SETFL)");
     	}
 		int	opt = 1;
 		setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 		if (bind(_server_socket, res->ai_addr, res->ai_addrlen) < 0) {
-			std::cerr << "Error: Cannot bind socket" << std::endl;
+			close(_server_socket);
 			freeaddrinfo(res);
-			closeServer(1);
+			throw std::runtime_error("Error: Cannot bind socket");
 		}
 		freeaddrinfo(res);
 		if (listen(_server_socket, SOMAXCONN) < 0) {
-			std::cerr << "Error: listen failed" << std::endl;
-			closeServer(1);
+			close(_server_socket);
+			throw std::runtime_error("Error: listen failed");
 		}
 		std::cout << "Server started on port " << _port << std::endl;
 		std::cout << "Server started with password " << _password << std::endl;
 		signal(SIGINT, &stop);
 		signal(SIGTSTP, &stop);
+		_state = new State;
 	} catch (std::exception& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-		closeServer(1);
-		return ;
+		if (_server_socket >= 0) {
+			close(_server_socket);
+		}
+		throw std::runtime_error("Error: " + std::string(e.what()));
 	}
 }
 
-bool Server::getError() const {
-	return (_error);
+Server::~Server() {
+	if (_server_socket >= 0) {
+		close(_server_socket);
+	}
+	if (_state != nullptr) {
+		delete _state;
+	}
+	signal(SIGINT, SIG_DFL);
+	signal(SIGTSTP, SIG_DFL);
 }
-
-Server::~Server() {}
 
 void Server::stop(int signum) {
 	if (signum == SIGINT || signum == SIGTSTP)
 		server_stop = true;
 }
 
-void Server::closeServer(int ret) {
-	if (_server_socket >= 0)
+void Server::closeServer() {
+	if (_server_socket >= 0) {
 		close(_server_socket);
-	for (auto it = _state->_channels.begin(); it != _state->_channels.end(); ++it) {
-		it->clients.clear();
-		it->operators.clear();
 	}
-	_state->_channels.clear();
-	for (auto it = _state->_clients.begin(); it != _state->_clients.end(); ++it) {
-		it->reset();
-	}
-	_state->_clients.clear();
 	delete _state;
 	_password.clear();
 	_port.clear();
 	signal(SIGINT, SIG_DFL);
 	signal(SIGTSTP, SIG_DFL);
-	if (ret > 0) {
-		_error = true;
-		return ;
-	}
-	exit(ret);
+	exit(0);
 }
 
 std::string	Server::getPort() const {
@@ -132,17 +120,14 @@ int	findIndex(std::vector<std::shared_ptr<Client>>& clients, int fd) {
 void Server::start() {
 	int epoll_fd = epoll_create(1);
     if (epoll_fd < 0) {
-        std::cerr << "Error with epoll" << std::endl;
-		closeServer(1);
-        return ;
+		throw std::runtime_error("Error with epoll");
     }
     struct epoll_event ev_server;
     ev_server.events = EPOLLIN;
     ev_server.data.fd = _server_socket;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
-        std::cerr << "Error with epoll_ctl" << std::endl;
-		closeServer(1);
-        return ;
+		close (epoll_fd);
+		throw std::runtime_error("Error with epoll_ctl");
     }
 	try {
 		struct epoll_event ev[64];
@@ -150,7 +135,7 @@ void Server::start() {
 			int eventsCount = epoll_wait(epoll_fd, ev, 64, 6000);
 			if (server_stop) {
 				close(epoll_fd);
-				closeServer(0);
+				closeServer();
 			}
 			if (eventsCount < 0) {
 				throw std::runtime_error("epoll_wait failed: " + std::string(strerror(errno)));
@@ -172,10 +157,8 @@ void Server::start() {
 		}
     }
 	catch (std::exception &e) {
-		std::cerr << "Error: " << e.what() << std::endl;
 		close(epoll_fd);
-		closeServer(1);
-		return ;
+		throw std::runtime_error("Error: " + std::string(e.what()));
 	}
     close(epoll_fd);
 }
