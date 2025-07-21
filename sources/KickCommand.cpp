@@ -7,6 +7,12 @@ std::unique_ptr<ACommand> KickCommand::create(std::string command, std::shared_p
 	KickCommand*	cmd = new KickCommand(command, client, state);
     cmd->_channel = channel;
     cmd->_client_to_kick = nick;
+    if  (cmd->_client_to_kick == ":") {
+        Message msg;
+        msg.codedMessage(cmd->_client, state, ERR_NEEDMOREPARAMS, command);
+        delete cmd;
+        return (nullptr);
+    }
     cmd->_msg = message;
     return (std::unique_ptr<KickCommand>(cmd));
 }
