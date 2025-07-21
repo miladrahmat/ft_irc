@@ -139,7 +139,7 @@ std::unique_ptr<ACommand> Parser::parseNickCommand(std::shared_ptr<Client>& clie
 	if (input[0] == ':') {
 		input.erase(0, 1);
 	}
-	size_t pos = input.find_first_not_of(" 	");
+	size_t pos = input.find_first_not_of(" \t");
 	input.erase(0, pos);
 	std::string nickname = input.substr(0, input.find_first_of(' '));
 	return (NickCommand::create(command, client, state, nickname));
