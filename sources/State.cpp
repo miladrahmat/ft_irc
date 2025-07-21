@@ -1,6 +1,20 @@
 
 #include "State.hpp"
 
+State::State() {}
+
+State::~State() {
+	for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+		it->clients.clear();
+		it->operators.clear();
+	}
+	_channels.clear();
+	for (auto it = _clients.begin(); it != _clients.end(); ++it) {
+		it->reset();
+	}
+	_clients.clear();
+}
+
 std::string	State::getServerName() const {
 	return (_server_name);
 }
