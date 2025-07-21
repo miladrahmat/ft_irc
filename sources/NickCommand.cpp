@@ -10,7 +10,7 @@ std::unique_ptr<ACommand> NickCommand::create(std::string command, std::shared_p
 	NickCommand* cmd = new NickCommand(command, client, state);
 	Message msg;
 	std::string invalid_start = "$:#&~@+%";
-	std::string	invalid = " ,*?!@.";
+	std::string	invalid = " ,*?!@.:";
 
 	cmd->_nickname = nick;
 	if (cmd->_nickname.empty()) {
