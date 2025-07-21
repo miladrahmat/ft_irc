@@ -10,6 +10,6 @@ class KickCommand : public ACommand {
         KickCommand(std::string command, std::shared_ptr<Client>& client, State& state);
     public:
         static std::unique_ptr<ACommand> create(std::string command, std::shared_ptr<Client>& client,
-            State& state, std::vector<std::string> args);
+            State& state, std::string channel, std::string nick, std::string message);
         void execute() const override;
 };

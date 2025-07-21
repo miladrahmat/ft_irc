@@ -3,16 +3,11 @@
 KickCommand::KickCommand(std::string command, std::shared_ptr<Client>& client, State& state) : ACommand(command, client, state) {}
 
 std::unique_ptr<ACommand> KickCommand::create(std::string command, std::shared_ptr<Client>& client, State& state,
-	std::vector<std::string> args) {
+	std::string channel, std::string nick, std::string message) {
 	KickCommand*	cmd = new KickCommand(command, client, state);
-    cmd->_channel = args[0];
-    cmd->_client_to_kick = args[1];
-    for (size_t i = 2; i < args.size(); i++) {
-        if (i >= 3) {
-            cmd->_msg += " ";
-        }
-        cmd->_msg += args[i];
-    }
+    cmd->_channel = channel;
+    cmd->_client_to_kick = nick;
+    cmd->_msg = message;
     return (std::unique_ptr<KickCommand>(cmd));
 }
 
@@ -49,6 +44,6 @@ void KickCommand::execute() const {
     }
     else {
         std::string target = _channel + " " + _client_to_kick;
-        msg.message(_client, _client, "KICK", target, _msg);
+        msg.message(_client, _client, _command, target, _msg);
     }
 }

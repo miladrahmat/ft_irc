@@ -39,6 +39,6 @@ void InviteCommand::execute() const {
 	}
 	msg.codedMessage(_client, _state, code, target);
 	if (code.code == RPL_INVITING.code) {
-		msg.message(_client, *invited_client, "INVITE", _invited_client, _channel);
+		msg.message(_client, *invited_client, _command, _invited_client, _channel);
 	}
 }
