@@ -16,6 +16,12 @@ std::unique_ptr<ACommand> PrivmsgCommand::create(std::string command, std::share
 			delete cmd;
 			return (nullptr);
 		}
+		else if (!channel->isClient(cmd->_client)) {
+			Message msg;
+			msg.codedMessage(cmd->_client, cmd->_state, ERR_CANNOTSENDTOCHAN, cmd->_msg_to);
+			delete cmd;
+			return (nullptr);
+		}
 		cmd->_channel = true;
 	}
 	else {
