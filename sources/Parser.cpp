@@ -138,9 +138,10 @@ std::unique_ptr<ACommand> Parser::parseNickCommand(std::shared_ptr<Client>& clie
 
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
-	if (input[0] == ':') {
+	// Do we want to do this to match other commands parsing?
+	/* if (input[0] == ':') { 
 		input.erase(0, 1);
-	}
+	} */
 	size_t pos = input.find_first_not_of(" \t");
 	input.erase(0, pos);
 	std::string nickname = input.substr(0, input.find_first_of(' '));
