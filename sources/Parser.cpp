@@ -103,8 +103,11 @@ std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& cli
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string channel = input.substr(0, input.find_first_of(' '));
-	input.erase(0, command.length() + 1);
+	input.erase(0, channel.length() + 1);
 	input.erase(0, input.find_first_not_of(" \t"));
+	if (!input.empty() && input[0] == ':') {
+		input.erase(0, 1);
+	}
 	std::string nick = input.substr(0, input.find_first_of(' '));
 	input.erase(0, nick.length() + 1);
 	if (!input.empty() && input[0] == ':') {
@@ -121,15 +124,15 @@ std::unique_ptr<ACommand> Parser::parseInviteCommand(std::shared_ptr<Client>& cl
 	std::vector<std::string> arg_vec;
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
-	while (!input.empty()) {
-		std::string	arg = input.substr(0, input.find_first_of(' '));
-		input.erase(0, arg.length() + 1);
-		if (!input.empty() && input[0] == ':') {
-			input.erase(0, 1);
-		}
-		arg_vec.push_back(arg);
+	input.erase(0, input.find_first_not_of(" \t"));
+	if (!input.empty() && input[0] == ':') {
+		input.erase(0, 1);
 	}
-	return (InviteCommand::create(command, client, state, arg_vec));
+	std::string nick = input.substr(0, input.find_first_of(' '));
+	input.erase(0, nick.length() + 1);
+	input.erase(0, input.find_first_not_of(" \t"));
+	std::string channel = input;
+	return (InviteCommand::create(command, client, state, nick, channel));
 	
 }
 
@@ -138,10 +141,9 @@ std::unique_ptr<ACommand> Parser::parseNickCommand(std::shared_ptr<Client>& clie
 
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
-	// Do we want to do this to match other commands parsing?
-	/* if (input[0] == ':') { 
+	if (input[0] == ':') { 
 		input.erase(0, 1);
-	} */
+	}
 	size_t pos = input.find_first_not_of(" \t");
 	input.erase(0, pos);
 	std::string nickname = input.substr(0, input.find_first_of(' '));
