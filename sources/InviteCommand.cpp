@@ -11,8 +11,6 @@ std::unique_ptr<ACommand> InviteCommand::create(std::string command, std::shared
 		delete cmd;
 		return (nullptr);
 	}
-	std::cout << "nick: " << nick << std::endl;
-	std::cout << "channel: " << channel << std::endl;
 	cmd->_invited_client = nick;
 	cmd->_channel = channel;
     
