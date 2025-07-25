@@ -1,10 +1,11 @@
 
 #include "JoinCommand.hpp"
 
-JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) : ACommand(command, client, state) {}
+JoinCommand::JoinCommand(std::string command, std::shared_ptr<Client> & client, State & state) :
+    ACommand(command, client, state) {}
 
-std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client, State & state,
-        std::vector<std::string> args) {
+std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_ptr<Client>& client,
+    State & state, std::vector<std::string> args) {
 
     JoinCommand* cmd = new JoinCommand(command, client, state);
     std::vector<std::string>::iterator it = args.begin();
@@ -12,14 +13,11 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
     while (ss.good()) {
         std::string substr;
         std::getline(ss, substr, ',');
-        if (validChannelName(substr)) {
-            cmd->_channels.push_back(substr);
-        }
+        cmd->_channels.push_back(substr);
     }
     it++;
     if (it != args.end()) {
         std::stringstream ss(*it);
-
         while (ss.good()) {
             std::string substr;
             std::getline(ss, substr, ',');
@@ -29,18 +27,18 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
     return (std::unique_ptr<JoinCommand>(cmd));
 }
 
-bool JoinCommand::validChannelName(std::string channel_name) {
-    if (channel_name[0] != '#' && channel_name[0] != '&' ) {
+bool JoinCommand::validChannelName(std::string channel_name) const {
+    if (channel_name[0] != '#') {
         return (false);
     }
     if (channel_name.length() >= 50) {
-        //ERR_INPUTTOOLONG (417)
+        Message msg;
+        msg.codedMessage(_client, _state, ERR_BADCHANNAME, channel_name);
         return (false);
     }
     std::string name = channel_name.substr(1);
     for (char c : name) {
         if ( c == ' ' || c == ',' || c == 0x07) {
-
             return (false);
         }
     }
@@ -51,7 +49,11 @@ void JoinCommand::execute() const {
     std::vector<std::string>::const_iterator chan_it = _channels.begin();
     std::vector<std::string>::const_iterator key_it = _keys.begin();
     reply reply;
+
     for ( ; chan_it != _channels.end(); chan_it++) {
+        if (!validChannelName(*chan_it)) {
+            continue ;
+        }
         std::vector<Channel>::iterator chan = _state.getChannel(*chan_it);
         if (chan != _state.getChannels().end()) {
             if (key_it == _keys.end()) {
@@ -84,9 +86,8 @@ void JoinCommand::execute() const {
 void JoinCommand::joinReply(std::string channel) const {
     Message msg;
     std::vector<Channel>::iterator chan_it = _state.getChannel(channel);
-    for (auto client : (*chan_it).clients) {
-        msg.message(_client, client, "JOIN", channel, {});
-    }
+    chan_it->sendMsgToAll(_client, _command, channel, {});
+    msg.message(_client, _client, _command, channel, {});
     if (chan_it->topic != "") {
         struct reply reply = RPL_TOPIC;
         reply.msg = chan_it->topic;

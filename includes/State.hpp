@@ -15,6 +15,8 @@ class State {
         std::vector<std::shared_ptr<Client>> _clients;
         std::vector<Channel> _channels;
     public:
+        State();
+        ~State();
         std::string getServerName() const;
         std::vector<Channel>::iterator getChannel(std::string channel_name);
         std::vector<Channel> & getChannels();

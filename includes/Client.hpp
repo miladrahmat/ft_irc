@@ -3,7 +3,10 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <cstring>
 #include <vector>
+#include <algorithm>
+#include <iostream>
 
 class Client {
 	private:
@@ -17,8 +20,10 @@ class Client {
 		bool		_authenticated;
 		std::string	_buffer;
 		std::string _send_buffer;
-		std::string _invited_to;
+		std::vector<std::string> _invited_to;
 		bool		_nick_validated;
+		bool		_pass_validated;
+
 	public:
 		Client(int socket, int epoll_fd, std::string ip);
 		Client (const Client & old_client) = delete;
@@ -28,19 +33,20 @@ class Client {
 		bool		operator==(const Client& other) const;
 		int			getClientSocket() const;
 		int			getEpollFd() const;
-		std::string	getName() const;
 		std::string	getNickname() const;
 		std::string	getPassword() const;
 		std::string	getHostname() const;
 		std::string	getUsername() const;
 		bool		getNickValidated() const;
 		bool		isAuthenticated() const;
-		std::string getChannelInvitedTo() const;
+		bool		isValidPass() const;
+		bool		isInvited(const std::string& channel_name) const;
 		void 		setNickname(std::string nickname);
 		void		setUsername(std::string username);
 		void		setHostname(std::string hostname);
 		void		setName(std::string name);
 		void		setPassword(std::string password);
+		void		setValidPass(bool set);
 		void		setClientSocket(int socket);
 		void		validateNick();
 		void		authenticate();

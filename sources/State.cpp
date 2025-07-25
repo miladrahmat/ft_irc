@@ -1,6 +1,20 @@
 
 #include "State.hpp"
 
+State::State() {}
+
+State::~State() {
+	for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+		it->clients.clear();
+		it->operators.clear();
+	}
+	_channels.clear();
+	for (auto it = _clients.begin(); it != _clients.end(); ++it) {
+		it->reset();
+	}
+	_clients.clear();
+}
+
 std::string	State::getServerName() const {
 	return (_server_name);
 }
@@ -22,12 +36,12 @@ std::vector<Channel> & State::getChannels() {
 	return (_channels);
 }
 
-reply	State::addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password) {
+reply State::addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password) {
 	_channels.push_back(Channel(name, client, password));
 	return (SUCCESS);
 }
 
-void	State::removeClient(std::shared_ptr<Client>& client) {
+void State::removeClient(std::shared_ptr<Client>& client) {
 	struct epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = client->getClientSocket();
@@ -36,15 +50,11 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 		if (it->isClient(client)) {
 			it->removeClient(client);
 			if (it->getSize() == 0) {
-				it = _channels.erase(it);
-			}
-			else {
-				it++;
+				it =_channels.erase(it);
+				continue ;
 			}
 		}
-		else {
-			it++;
-		}
+		it++;
 	}
 	for (std::vector<std::shared_ptr<Client>>::size_type i = 0; i < _clients.size(); i++) {
 		if (_clients[i]->getClientSocket() == client->getClientSocket()) {
@@ -56,7 +66,7 @@ void	State::removeClient(std::shared_ptr<Client>& client) {
 	}
 }
 
-std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nickname) {
+std::vector<std::shared_ptr<Client>>::iterator State::getClient(std::string nickname) {
 	std::vector<std::shared_ptr<Client>>::iterator it = _clients.begin();
 	for ( ; it != _clients.end(); it++) {
 		if ((*it)->getNickname() == nickname)
@@ -65,6 +75,6 @@ std::vector<std::shared_ptr<Client>>::iterator	State::getClient(std::string nick
 	return (it);
 }
 
-std::vector<std::shared_ptr<Client>>&	State::getClients() {
+std::vector<std::shared_ptr<Client>> & State::getClients() {
 	return (_clients);
 }
