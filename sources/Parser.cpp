@@ -99,7 +99,6 @@ std::unique_ptr<ACommand> Parser::parseQuitCommand(std::shared_ptr<Client>& clie
 std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& client,
 	std::string& input, State& state) {
 
-	std::vector<std::string> arg_vec;
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	std::string channel = input.substr(0, input.find_first_of(' '));
@@ -121,7 +120,6 @@ std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& cli
 std::unique_ptr<ACommand> Parser::parseInviteCommand(std::shared_ptr<Client>& client,
 	std::string& input, State& state) {
 
-	std::vector<std::string> arg_vec;
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
 	input.erase(0, input.find_first_not_of(" \t"));
