@@ -10,9 +10,15 @@ std::unique_ptr<ACommand> PrivmsgCommand::create(std::string command, std::share
 	PrivmsgCommand*	cmd = new PrivmsgCommand(command, client, state);
 	cmd->_msg_to = target;
 	cmd->_msg = msg.substr(1, msg.length());
-	if (cmd->_msg_to[0] == '#' || cmd->_msg_to[0] == '&') {
+	if (cmd->_msg_to[0] == '#') {
 		std::vector<Channel>::iterator channel = cmd->_state.getChannel(cmd->_msg_to);
 		if (channel == cmd->_state.getChannels().end()) {
+			delete cmd;
+			return (nullptr);
+		}
+		else if (!channel->isClient(cmd->_client)) {
+			Message msg;
+			msg.codedMessage(cmd->_client, cmd->_state, ERR_CANNOTSENDTOCHAN, cmd->_msg_to);
 			delete cmd;
 			return (nullptr);
 		}

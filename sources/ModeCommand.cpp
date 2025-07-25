@@ -168,8 +168,8 @@ void ModeCommand::executeKey(Channel & channel, const mode_struct & mode_obj) co
             key = "*";
         }
         std::string mode = std::string("") + action_char + mode_char;
-        msg.message(_client, _client, "MODE", channel.getName() + " " + mode, key);
-        channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, key);
+        msg.message(_client, _client, _command, channel.getName() + " " + mode, key);
+        channel.sendMsgToAll(_client, _command, channel.getName() + " " + mode, key);
     }
     else {
         msg.codedMessage(_client, _state, reply, _channel_it->getName());
@@ -184,8 +184,8 @@ void ModeCommand::executeInvite(Channel & channel, const mode_struct & mode_obj)
         char action_char = static_cast<char>(mode_obj.action);
         char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
-        msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
-        channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
+        msg.message(_client, _client, _command, channel.getName() + " " + mode, {});
+        channel.sendMsgToAll(_client, _command, channel.getName() + " " + mode, {});
     }
     else {
         msg.codedMessage(_client, _state, reply, channel.getName());
@@ -200,8 +200,8 @@ void ModeCommand::executeTopic(Channel & channel, const mode_struct & mode_obj) 
         char action_char = static_cast<char>(mode_obj.action);
         char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
-        msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
-        channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
+        msg.message(_client, _client, _command, channel.getName() + " " + mode, {});
+        channel.sendMsgToAll(_client, _command, channel.getName() + " " + mode, {});
     }
     else {
         msg.codedMessage(_client, _state, reply, channel.getName());
@@ -234,12 +234,12 @@ void ModeCommand::executeLimit(Channel & channel, const mode_struct & mode_obj) 
         char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
         if (mode_obj.action == REMOVE && limit_before != -1) {
-            msg.message(_client, _client, "MODE", channel.getName() + " " + mode, {});
-            channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, {});
+            msg.message(_client, _client, _command, channel.getName() + " " + mode, {});
+            channel.sendMsgToAll(_client, _command, channel.getName() + " " + mode, {});
         }
         else if (mode_obj.action == ADD) {
-            msg.message(_client, _client, "MODE", channel.getName() + " " + mode, mode_obj.param);
-            channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, mode_obj.param);
+            msg.message(_client, _client, _command, channel.getName() + " " + mode, mode_obj.param);
+            channel.sendMsgToAll(_client, _command, channel.getName() + " " + mode, mode_obj.param);
         }
     }
     else {
@@ -270,8 +270,8 @@ void ModeCommand::executeOperator(Channel & channel, const mode_struct & mode_ob
         char action_char = static_cast<char>(mode_obj.action);
         char mode_char = static_cast<char>(mode_obj.mode);
         std::string mode = std::string("") + action_char + mode_char;
-        msg.message(_client, _client, "MODE", channel.getName() + " " + mode, mode_obj.param);
-        channel.sendMsgToAll(_client, "MODE", channel.getName() + " " + mode, mode_obj.param);
+        msg.message(_client, _client, _command, channel.getName() + " " + mode, mode_obj.param);
+        channel.sendMsgToAll(_client, _command, channel.getName() + " " + mode, mode_obj.param);
     }
     else {
         msg.codedMessage(_client, _state, reply, mode_obj.param);

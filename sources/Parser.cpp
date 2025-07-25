@@ -99,35 +99,38 @@ std::unique_ptr<ACommand> Parser::parseQuitCommand(std::shared_ptr<Client>& clie
 std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& client,
 	std::string& input, State& state) {
 
-	std::vector<std::string> arg_vec;
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
-	while (!input.empty()) {
-		std::string	arg = input.substr(0, input.find_first_of(' '));
-		input.erase(0, arg.length() + 1);
-		if (!input.empty() && input[0] == ':') {
-			input.erase(0, 1);
-		}
-		arg_vec.push_back(arg);
+	std::string channel = input.substr(0, input.find_first_of(' '));
+	input.erase(0, channel.length() + 1);
+	input.erase(0, input.find_first_not_of(" \t"));
+	if (!input.empty() && input[0] == ':') {
+		input.erase(0, 1);
 	}
-	return (KickCommand::create(command, client, state, arg_vec));
+	std::string nick = input.substr(0, input.find_first_of(' '));
+	input.erase(0, nick.length() + 1);
+	if (!input.empty() && input[0] == ':') {
+		input.erase(0, 1);
+	}
+	std::string message = input;
+
+	return (KickCommand::create(command, client, state, channel, nick, message));
 }
 
 std::unique_ptr<ACommand> Parser::parseInviteCommand(std::shared_ptr<Client>& client,
 	std::string& input, State& state) {
 
-	std::vector<std::string> arg_vec;
 	std::string command = input.substr(0, input.find_first_of(' '));
 	input.erase(0, command.length() + 1);
-	while (!input.empty()) {
-		std::string	arg = input.substr(0, input.find_first_of(' '));
-		input.erase(0, arg.length() + 1);
-		if (!input.empty() && input[0] == ':') {
-			input.erase(0, 1);
-		}
-		arg_vec.push_back(arg);
+	input.erase(0, input.find_first_not_of(" \t"));
+	if (!input.empty() && input[0] == ':') {
+		input.erase(0, 1);
 	}
-	return (InviteCommand::create(command, client, state, arg_vec));
+	std::string nick = input.substr(0, input.find_first_of(' '));
+	input.erase(0, nick.length() + 1);
+	input.erase(0, input.find_first_not_of(" \t"));
+	std::string channel = input;
+	return (InviteCommand::create(command, client, state, nick, channel));
 	
 }
 

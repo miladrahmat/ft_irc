@@ -3,10 +3,16 @@
 InviteCommand::InviteCommand(std::string command, std::shared_ptr<Client>& client, State& state) : ACommand(command, client, state) {}
 
 std::unique_ptr<ACommand> InviteCommand::create(std::string command, std::shared_ptr<Client>& client,
-	State& state, std::vector<std::string> args) {
+	State& state, std::string nick, std::string channel) {
 	InviteCommand*	cmd = new InviteCommand(command, client, state);
-	cmd->_invited_client = args[0];
-	cmd->_channel = args[1];
+	if (nick.empty() || channel.empty()) {
+		Message msg;
+		msg.codedMessage(cmd->_client, state, ERR_NEEDMOREPARAMS, command);
+		delete cmd;
+		return (nullptr);
+	}
+	cmd->_invited_client = nick;
+	cmd->_channel = channel;
     
     return (std::unique_ptr<InviteCommand>(cmd));
 }
@@ -39,6 +45,6 @@ void InviteCommand::execute() const {
 	}
 	msg.codedMessage(_client, _state, code, target);
 	if (code.code == RPL_INVITING.code) {
-		msg.message(_client, *invited_client, "INVITE", _invited_client, _channel);
+		msg.message(_client, *invited_client, _command, _invited_client, _channel);
 	}
 }
