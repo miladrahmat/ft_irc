@@ -14,18 +14,18 @@ Server::Server(char** argv) : _server_socket(-1), _state(nullptr) {
 	try {
 		int	port = std::stoi(static_cast<std::string>(argv[1]));
 		if (port < 1024 || port > 65535) {
-			throw std::runtime_error("Error: Port not within range (1024 - 65535)");
+			throw std::runtime_error("Port not within range (1024 - 65535)");
 		}
 		std::string	password = static_cast<std::string>(argv[2]);
 		if (password.length() < 4) {
-			throw std::runtime_error("Error: Password should be at least 4 characters long");
+			throw std::runtime_error("Password should be at least 4 characters long");
 		}
 		_port = std::to_string(port);
 		_password = password;
 		int error = getaddrinfo(NULL, _port.c_str(), &hints, &res);
 		if (error) {
 			freeaddrinfo(res);
-			throw std::runtime_error("Error: getaddrinfo failed: " + std::string(gai_strerror(error)));
+			throw std::runtime_error("getaddrinfo failed: " + std::string(gai_strerror(error)));
 		}
 		_server_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		if (_server_socket < 0) {
@@ -48,12 +48,12 @@ Server::Server(char** argv) : _server_socket(-1), _state(nullptr) {
 		if (bind(_server_socket, res->ai_addr, res->ai_addrlen) < 0) {
 			close(_server_socket);
 			freeaddrinfo(res);
-			throw std::runtime_error("Error: Cannot bind socket");
+			throw std::runtime_error("Cannot bind socket");
 		}
 		freeaddrinfo(res);
 		if (listen(_server_socket, SOMAXCONN) < 0) {
 			close(_server_socket);
-			throw std::runtime_error("Error: listen failed");
+			throw std::runtime_error("listen failed");
 		}
 		std::cout << "Server started on port " << _port << std::endl;
 		std::cout << "Server started with password " << _password << std::endl;
@@ -127,7 +127,7 @@ void Server::start() {
     ev_server.data.fd = _server_socket;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, ev_server.data.fd, &ev_server) < 0) {
 		close (epoll_fd);
-		throw std::runtime_error("Error with epoll_ctl");
+		throw std::runtime_error("epoll_ctl failed: " + std::string(strerror(errno)));
     }
 	try {
 		struct epoll_event ev[64];
@@ -169,22 +169,21 @@ void Server::handleNewClient(int epoll_fd) {
 	
 	int client = accept(_server_socket, (struct sockaddr *)&client_addr, &client_len);
     if (client < 0) {
-        std::cerr << "Error with accept" << std::endl;
+        std::cerr << "accept failed: "  + std::string(strerror(errno)) << std::endl;
+		return ;
     }
 	else {
         if (fcntl(client, F_SETFL, O_NONBLOCK) < 0) {
-            std::cerr << "Error with fcntl (client)" << std::endl;
 			close(client);
-            return ;
+			throw std::runtime_error("fcntl failed: " + std::string(strerror(errno)));
         }
 		std::string ip = inet_ntoa(client_addr.sin_addr);
         struct epoll_event ev2;
         ev2.events = EPOLLIN;
         ev2.data.fd = client;
         if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client, &ev2) < 0) {
-            std::cerr << "Error with epoll_ctl (client)" << std::endl;
 			close(client);
-			return ;
+			throw std::runtime_error("epoll_ctl failed: " + std::string(strerror(errno)));
         }
 		_state->_clients.push_back(std::make_shared<Client>(client, epoll_fd, ip));
     }
