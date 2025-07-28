@@ -26,6 +26,10 @@ int	Client::getEpollFd() const {
 	return (_epoll_fd);
 }
 
+std::string Client::getName() const {
+	return (_name);
+}
+
 std::string	Client::getNickname() const {
 	return (_nickname);
 }
