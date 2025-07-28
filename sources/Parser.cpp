@@ -53,6 +53,9 @@ std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, 
 		else if (input.compare(0, 5, "TOPIC") == 0) {
 			return (parseTopicCommand(client, input, state));
 		}
+		else if (input.compare(0,5, "WHOIS") == 0) {
+			return (parseWhoisCommand(client, input, state));
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
@@ -192,4 +195,26 @@ std::unique_ptr<ACommand> Parser::parseModeCommand(std::shared_ptr<Client>& clie
 		params = input;
 	}
 	return (ModeCommand::create(command, client, state, target, modes, params));
+}
+
+std::unique_ptr<ACommand> Parser::parseWhoisCommand(std::shared_ptr<Client>& client,
+	std::string& input, State& state) {
+
+	std::string command = input.substr(0, input.find_first_of(' '));
+	input.erase(0, command.length() + 1);
+	std::string server;
+	if (!input.empty()) {
+		server = input.substr(0, input.find_first_of(' '));
+		input.erase(0, server.length() + 1);
+	}
+	std::string nick;
+	if (!input.empty()) {
+		nick = input.substr(0, input.find_first_of(' '));
+		input.erase(0, nick.length() + 1);
+	}
+	else {
+		nick = server;
+		server = "";
+	}
+	return (WhoisCommand::create(command, client, state, server, nick));
 }
