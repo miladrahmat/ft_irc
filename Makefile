@@ -18,6 +18,7 @@ CFILES := main.cpp \
 			KickCommand.cpp \
 			InviteCommand.cpp \
 			TopicCommand.cpp \
+			WhoCommand.cpp \
 			WhoisCommand.cpp
 
 INC := includes/

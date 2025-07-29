@@ -53,6 +53,9 @@ std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, 
 		else if (input.compare(0, 5, "TOPIC") == 0) {
 			return (parseTopicCommand(client, input, state));
 		}
+		else if (input.compare(0, 4, "WHO ") == 0) {
+			return (parseWhoCommand(client, input, state));
+		}
 		else if (input.compare(0,5, "WHOIS") == 0) {
 			return (parseWhoisCommand(client, input, state));
 		}
@@ -60,6 +63,13 @@ std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, 
 		std::cerr << e.what() << std::endl;
 	}
 	return (nullptr);
+}
+
+std::unique_ptr<ACommand> Parser::parseWhoCommand(std::shared_ptr<Client>& client, std::string& input, State& state) {
+	std::string command = input.substr(0, input.find_first_of(' '));
+	input.erase(0, command.length() + 1);
+	std::string arg = input;
+	return (WhoCommand::create(command, client, state, arg));
 }
 
 std::unique_ptr<ACommand> Parser::parseTopicCommand(std::shared_ptr<Client>& client,
