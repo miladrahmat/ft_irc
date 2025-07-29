@@ -4,8 +4,7 @@ void Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 	try {
 		if (input.compare(0, 6, "CAP LS") == 0) {
 			return ;
-		}
-		else if (input.compare(0, 4, "PASS") == 0) {
+		} else if (input.compare(0, 4, "PASS") == 0) {
 			std::string	password = input.substr(5, input.length());
 			client->setPassword(password);
 		} else if (input.compare(0, 4, "NICK") == 0) {
@@ -19,7 +18,7 @@ void Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 			std::string	real_name = args.substr(args.find(':') + 1, args.length());
 			client->setUsername(username);
 			client->setName(real_name);
-		} 
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}

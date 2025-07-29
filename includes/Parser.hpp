@@ -12,6 +12,7 @@
 #include "InviteCommand.hpp"
 #include "TopicCommand.hpp"
 #include "WhoCommand.hpp"
+#include "Message.hpp"
 #include <vector>
 #include <memory>
 

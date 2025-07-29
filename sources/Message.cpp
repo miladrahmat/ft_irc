@@ -49,7 +49,7 @@ void Message::determineType(std::shared_ptr<Client>& client) {
 		|| _msg.compare(0, 4, "NICK") == 0 || _msg.compare(0, 4, "QUIT") == 0 \
 		|| _msg.compare(0, 4, "KICK") == 0 || _msg.compare(0, 6, "INVITE") == 0 \
 		|| _msg.compare(0, 4, "MODE") == 0 || _msg.compare(0, 5, "TOPIC") == 0 \
-		|| _msg.compare(0, 3, "WHO") == 0) {
+		|| _msg.compare(0, 3, "WHO") == 0 || _msg.compare(0, 4, "USER")) {
 		_type = CMD;
 	}
 	else if (_msg.compare(0, 4, "PING") == 0) {

@@ -219,6 +219,10 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 			}
 		}
 		else if (type == CMD) {
+			if (!client->isAuthenticated()) {
+				msg.codedMessage(client, *_state, ERR_NOTREGISTERED, client->getNickname());
+				return ;
+			}
 			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
 			std::unique_ptr<ACommand> cmd = parser.parseCommand(client, msg.getMsg(), *_state);
 			if (cmd != nullptr) {
