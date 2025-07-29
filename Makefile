@@ -17,7 +17,8 @@ CFILES := main.cpp \
 			QuitCommand.cpp \
 			KickCommand.cpp \
 			InviteCommand.cpp \
-			TopicCommand.cpp
+			TopicCommand.cpp \
+			WhoisCommand.cpp
 
 INC := includes/
 SRC_PATH := sources/

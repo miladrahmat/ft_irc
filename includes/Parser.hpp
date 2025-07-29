@@ -11,6 +11,7 @@
 #include "KickCommand.hpp"
 #include "InviteCommand.hpp"
 #include "TopicCommand.hpp"
+#include "WhoisCommand.hpp"
 #include <vector>
 #include <memory>
 
@@ -28,4 +29,5 @@ class	Parser {
 	std::unique_ptr<ACommand> parseInviteCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	std::unique_ptr<ACommand> parseTopicCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	std::unique_ptr<ACommand> parseModeCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
+	std::unique_ptr<ACommand> parseWhoisCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 };
