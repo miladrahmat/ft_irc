@@ -53,7 +53,7 @@ std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, 
 		else if (input.compare(0, 5, "TOPIC") == 0) {
 			return (parseTopicCommand(client, input, state));
 		}
-		else if (input.compare(0, 3, "WHO") == 0) {
+		else if (input.compare(0, 4, "WHO ") == 0) {
 			return (parseWhoCommand(client, input, state));
 		}
 		else if (input.compare(0,5, "WHOIS") == 0) {
