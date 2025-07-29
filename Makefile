@@ -19,6 +19,7 @@ CFILES := main.cpp \
 			InviteCommand.cpp \
 			TopicCommand.cpp \
 			WhoCommand.cpp
+			WhoisCommand.cpp
 
 INC := includes/
 SRC_PATH := sources/

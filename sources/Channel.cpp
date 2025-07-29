@@ -199,7 +199,7 @@ reply Channel::setUserLimit(const std::shared_ptr<Client> & client, unsigned int
 }
 
 reply Channel::join(const std::shared_ptr<Client> & client, std::string password) {
-    if (_invite_only && client->isInvited(this->_name)) {
+    if (_invite_only && !client->isInvited(this->_name)) {
         return (ERR_INVITEONLYCHAN);
     }
     if (channelFull(client)) {
