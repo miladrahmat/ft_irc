@@ -14,13 +14,13 @@ std::unique_ptr<ACommand> WhoCommand::create(std::string command, std::shared_pt
     return (std::unique_ptr<ACommand>(cmd));
 }
 
-void WhoCommand::sendReply(const std::shared_ptr<Client>& client, const std::string& channel, const std::string& flags) const {
+void WhoCommand::sendReply(const std::shared_ptr<Client>& who_client, const std::string& channel, const std::string& flags) const {
     struct reply whoReply = RPL_WHOREPLY;
     std::string target;
 
-    whoReply.msg.append(client->getName());
-    target += channel + " " + client->getUsername() + " " + client->getHostname() + " " + _state.getServerName() \
-        + " " + client->getNickname() + " " + flags;
+    whoReply.msg.append(who_client->getName());
+    target += channel + " " + who_client->getUsername() + " " + who_client->getHostname() + " " + _state.getServerName() \
+        + " " + who_client->getNickname() + " " + flags;
     
     Message msg;
     msg.codedMessage(_client, _state, whoReply, target);
@@ -28,7 +28,6 @@ void WhoCommand::sendReply(const std::shared_ptr<Client>& client, const std::str
 
 void WhoCommand::execute() const {
     Message msg;
-    std::string target;
 
     if (!_channel.empty()) {
         std::vector<Channel>::iterator channel = _state.getChannel(_channel);
@@ -44,22 +43,22 @@ void WhoCommand::execute() const {
         msg.codedMessage(_client, _state, RPL_ENDOFWHO, _channel);
     }
     else {
-        std::vector<std::shared_ptr<Client>>::iterator client = _state.getClient(_nick);
-        if (client != _state.getClients().end()) {
+        std::vector<std::shared_ptr<Client>>::iterator who_client = _state.getClient(_nick);
+        if (who_client != _state.getClients().end()) {
             std::string flags = "H";
             std::string shared_channel;
             for (auto it = _state.getChannels().begin(); it != _state.getChannels().end(); ++it) {
-                if (it->isClient(*client) && it->isClient(_client)) {
+                if (it->isClient(*who_client) && it->isClient(_client)) {
                     shared_channel = it->getName();
                 }
             }
             if (shared_channel.empty()) {
                 shared_channel = "*";
             }
-            else if (_state.getChannel(shared_channel)->isOperator(*client)) {
+            else if (_state.getChannel(shared_channel)->isOperator(*who_client)) {
                 flags += "@";
             }
-            sendReply(*client, shared_channel, flags);
+            sendReply(*who_client, shared_channel, flags);
         }
         msg.codedMessage(_client, _state, RPL_ENDOFWHO, _nick);
     }
