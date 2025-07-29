@@ -1,6 +1,7 @@
 #include "Client.hpp"
 
-Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), _authenticated(false), _nick_validated(false), _pass_validated(true) {
+Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), \
+														_authenticated(false), _nick_validated(false), _pass_validated(true), _registeration_attempts(0) {
 
 }
 
@@ -50,6 +51,10 @@ bool Client::getNickValidated() const {
 	return (_nick_validated);
 }
 
+int Client::getRegisterationAttempts() const {
+	return (_registeration_attempts);
+}
+
 void Client::validateNick() {
 	_nick_validated = true;
 }
@@ -96,6 +101,10 @@ void Client::authenticate() {
 
 void Client::setClientSocket(int socket) {
 	_client_socket = socket;
+}
+
+void Client::incrementRegisterationAttempts() {
+	_registeration_attempts++;
 }
 
 void Client::appendBuffer(std::string const& msg) {

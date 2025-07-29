@@ -208,6 +208,16 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 		return ;
 	}
 	Message	msg;
+	if (!client->isAuthenticated()) {
+		if (client->getBuffer().find("\r\n") != std::string::npos) {
+			std::cout << "Incrementing registration attempts" << std::endl;
+			client->incrementRegisterationAttempts();
+		}
+		if (client->getRegisterationAttempts() > 10) {
+			_state->removeClient(client);
+			return ;
+		}
+	}
 	while (msg.getNextMessage(client)) {
 		msg.determineType(client);
 		int	type = msg.getType();
@@ -219,6 +229,11 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 			}
 		}
 		else if (type == CMD) {
+			if (!client->isAuthenticated()) {
+				msg.codedMessage(client, *_state, ERR_NOTREGISTERED, {});
+				std::cout << "Not a registered client, attepts: " << client->getRegisterationAttempts() << std::endl;
+				continue ;
+			}
 			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
 			std::unique_ptr<ACommand> cmd = parser.parseCommand(client, msg.getMsg(), *_state);
 			if (cmd != nullptr) {
