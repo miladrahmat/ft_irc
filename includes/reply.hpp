@@ -15,7 +15,7 @@ static const reply RPL_YOURHOST = {"002", "\e[0;96mYour host is Galleria\e[0m"};
 static const reply RPL_CREATED = {"003", "This server was created today"};
 static const reply RPL_MYINFO = {"004", "ircserv.galleria 1.0   iklot"};
 static const reply RPL_ISUPPORT = {"005", "CHANTYPES=# NICKLEN=15 PREFIX=(o)@ CHANMODES=klit :are supported by this server"};
-static const reply RPL_ENDOFWHO = {"315", "End of WHO list"};
+static const reply RPL_ENDOFWHO = {"315", "End of /WHO list"};
 static const reply RPL_ENDOFWHOIS = {"318", "End of /WHOIS list"};
 static reply RPL_CHANNELMODEIS = {"324", ""};
 static const reply RPL_NOTOPIC = {"331", "No topic is set"};
