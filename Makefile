@@ -52,7 +52,6 @@ all: $(OBJ_PATH) $(NAME)
 $(OBJ_PATH):
 	@$(COMPILING_OBJ)
 	@mkdir -p $(OBJ_PATH)
-#	$(OBJ_PATH)/name_of_folder
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INC)
 	@echo "$(YELLOW)⏳ Compiling $@...$(RESET)"

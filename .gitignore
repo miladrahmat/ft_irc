@@ -3,4 +3,4 @@ ircserv
 *.log
 *.py
 __pycache__/
-objects_and_dependencies
+objects_and_dependencies/
