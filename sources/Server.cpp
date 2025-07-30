@@ -214,12 +214,20 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 			client->incrementRegisterationAttempts();
 		}
 		if (client->getRegisterationAttempts() > 10) {
+			std::cout << "REMOVING:" << std::endl;
+			client->printClient();
 			_state->removeClient(client);
+			for (auto it = _state->_clients.begin(); it != _state->_clients.end(); ++it) {
+				int i = 1;
+				std::cout << "client number " << i << " is:" << std::endl;
+				(*it)->printClient();
+			}
 			return ;
 		}
 	}
 	while (msg.getNextMessage(client)) {
 		msg.determineType(client);
+		std::cout << "Input: " << msg.getMsg() << std::endl;
 		int	type = msg.getType();
 		if (type == CAP_LS || type == CAP_REQ || type == CAP_REQ_AGAIN || type == CAP_END) {
 			clientRegisteration(client, msg);
@@ -251,6 +259,11 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 void Server::clientRegisteration(std::shared_ptr<Client>& client, Message& msg) {
 	Parser parser;
 
+	if (client->isAuthenticated()) {
+		Message msg;
+		msg.codedMessage(client, *_state, ERR_ALREADYREGISTERED, {});
+		return ;
+	}
 	if (!client->isValidPass()) {
 		return ;
 	}

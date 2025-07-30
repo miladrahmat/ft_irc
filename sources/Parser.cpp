@@ -6,20 +6,26 @@ void Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 			return ;
 		}
 		else if (input.compare(0, 5, "PASS ") == 0 || input.compare("PASS") == 0 ) {
-			std::string	password = input.substr(5, input.length());
+			std::string	password = input.substr(input.find_first_of(' ') + 1, input.length());
 			client->setPassword(password);
 		} else if (input.compare(0, 5, "NICK ") == 0 || input.compare("NICK") == 0) {
 			std::unique_ptr<ACommand> cmd = parseNickCommand(client, input, state);
 			if (cmd != nullptr)
 				cmd->execute();
 		} else if (input.compare(0, 5, "USER ") == 0 || input.compare("USER") == 0) {
-			std::string	args = input.substr(5, input.length());
+			std::string	args = input.substr(input.find_first_of(' ') + 1, input.length());
 			std::string	username = args.substr(0, args.find(' '));
 			args = args.substr(username.length() + 1, args.length());
 			std::string	real_name = args.substr(args.find(':') + 1, args.length());
-			client->setUsername(username);
-			client->setName(real_name);
-		} 
+			if (username.empty() || real_name.empty()) {
+				Message msg;
+				msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, "USER");
+			}
+			else {
+				client->setName(real_name);
+				client->setUsername(username);
+			}
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
