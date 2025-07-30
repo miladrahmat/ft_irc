@@ -9,6 +9,10 @@ std::unique_ptr<ACommand> JoinCommand::create(std::string command, std::shared_p
 
     JoinCommand* cmd = new JoinCommand(command, client, state);
     std::vector<std::string>::iterator it = args.begin();
+    if (it == args.end()) {
+        delete cmd;
+        return (nullptr);
+    }
     std::stringstream ss(*it);
     while (ss.good()) {
         std::string substr;
