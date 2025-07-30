@@ -26,7 +26,7 @@ SRC_PATH := sources/
 OBJ_PATH := objects/
 
 CFILES := $(addprefix $(SRC_PATH), $(CFILES))
-OBJS := $(CFILES:$(SRC_PATH)%.c=$(OBJ_PATH)%.o)
+OBJS := $(CFILES:$(SRC_PATH)%.cpp=$(OBJ_PATH)%.o)
 
 all: $(OBJ_PATH) $(NAME)
 
@@ -34,7 +34,7 @@ $(OBJ_PATH):
 	mkdir -p $(OBJ_PATH)
 #	$(OBJ_PATH)/name_of_folder
 
-$(OBJ_PATH)%.o: $(SRC_PATH)%.c $(INC)
+$(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INC)
 	$(CC) $(FLAGS) -I $(INC) -c $< -o $@
 
 $(NAME): $(OBJS)
