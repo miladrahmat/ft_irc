@@ -14,7 +14,6 @@ std::unique_ptr<ACommand> PrivmsgCommand::create(std::string command, std::share
 	}
 	cmd->_msg = msg.substr(0, msg.length());
 	if (cmd->_msg_to[0] == '#') {
-		std::cout << "heiii" << std::endl;
 		std::vector<Channel>::iterator channel = cmd->_state.getChannel(cmd->_msg_to);
 		if (channel == cmd->_state.getChannels().end()) {
 			delete cmd;
@@ -31,7 +30,6 @@ std::unique_ptr<ACommand> PrivmsgCommand::create(std::string command, std::share
 	else {
 		std::vector<std::shared_ptr<Client>>::iterator client = cmd->_state.getClient(cmd->_msg_to);
 		if (client == cmd->_state.getClients().end()) {
-			std::cout << "hellureii" << std::endl;
 			Message msg;
 			msg.codedMessage(cmd->_client, cmd->_state, ERR_NOSUCHNICK, cmd->_msg_to);
 			delete cmd;
