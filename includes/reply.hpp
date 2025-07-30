@@ -31,6 +31,7 @@ static const reply ERR_NOSUCHSERVER = {"402", "No such server"};
 static const reply ERR_CANNOTSENDTOCHAN = {"404", "Cannot send to channel"};
 static const reply ERR_NOSUCHCHANNEL = {"403",  "No such channel"};
 static const reply ERR_TOOMANYCHANNELS = {"405", "You have joined too many channels"};
+static const reply ERR_UNKNOWNCOMMAND = {"421", "Unknown command"};
 static const reply ERR_NONICKNAMEGIVEN = {"431", "No nickname given"};
 static const reply ERR_ERRONEUSNICKNAME = {"432", "Erroneus nickname"};
 static const reply ERR_NICKNAMEINUSE = {"433", "Nickname is already in use."};
