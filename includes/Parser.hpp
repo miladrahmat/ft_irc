@@ -20,7 +20,7 @@ class	Parser {
 	public:
 	Parser() = default;
 	~Parser() = default;
-	void parseCap(std::shared_ptr<Client>& client, std::string& input, State& state);
+	void parseRegisteration(std::shared_ptr<Client>& client, std::string& input, State& state);
 	std::unique_ptr<ACommand> parseCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	std::unique_ptr<ACommand> parseNickCommand(std::shared_ptr<Client>& client, std::string& input, State& state);
 	std::unique_ptr<ACommand> parseJoinCommand(std::shared_ptr<Client>& client, std::string& input, State& state);

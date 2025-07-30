@@ -211,12 +211,13 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 	while (msg.getNextMessage(client)) {
 		msg.determineType(client);
 		int	type = msg.getType();
-		if (type == CAP_LS || type == CAP_REQ || type == CAP_REQ_AGAIN || type == CAP_END) {
-			clientRegisteration(client, msg);
+		if (type == REG) {
+			parser.parseRegisteration(client, msg.getMsg(), *_state);
 			validatePassword(client);
 			if (!client->isValidPass()) {
 				return ;
 			}
+			validateClient(client);
 		}
 		else if (type == CMD) {
 			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
@@ -230,42 +231,6 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 			msg.messagePong(client, _state->_server_name, "PONG", _state->_server_name, _state->_server_name);
 		}
 		msg.clearMsg();
-	}
-}
-
-void Server::clientRegisteration(std::shared_ptr<Client>& client, Message& msg) {
-	Parser parser;
-
-	if (!client->isValidPass()) {
-		return ;
-	}
-	int	type = msg.getType();
-	if (type == CAP_LS) {
-		parser.parseCap(client, msg.getMsg(), *_state);
-		msg.messageCap(client);
-	}
-	else if (type == CAP_REQ || type == CAP_REQ_AGAIN) {
-		if (type == CAP_REQ_AGAIN) {
-			std::unique_ptr<ACommand> cmd = parser.parseNickCommand(client, msg.getMsg(), *_state);
-			if (cmd != nullptr) {
-				std::cout << "Executing " << cmd->getCommand() << std::endl;
-				cmd->execute();
-			}
-			if (!client->getNickValidated()) {
-				msg.clearSendMsg();
-				return ;
-			}
-		}
-		if (client->getNickname().empty()) {
-			msg.clearSendMsg();
-		}
-		msg.messageCap(client);
-	}
-	else if (type == CAP_END) {
-		if (!validateClient(client)) {
-			msg.clearSendMsg();
-			return ;
-		}
 	}
 }
 
@@ -291,11 +256,11 @@ bool Server::validateClient(std::shared_ptr<Client>& client) {
 	if (client->getPassword() != _password) {
 		return (false);
 	}
-	msg.welcomeMessage(client, *_state);
 	client->authenticate();
 	if (!client->isAuthenticated()) {
 		return (false);
 	}
+	msg.welcomeMessage(client, *_state);
 	client->printClient();
 	return (true);
 }

@@ -10,10 +10,7 @@
 class State;
 
 enum MSG_TYPE {
-    CAP_LS,
-    CAP_REQ,
-    CAP_REQ_AGAIN,
-    CAP_END,
+    REG,
     CMD,
     PING
 };
