@@ -2,17 +2,17 @@
 
 void Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
-		if (input.compare(0, 6, "CAP LS") == 0) {
+		if (input.compare(0, 7, "CAP LS ") == 0  || input.compare("CAP LS") == 0 ) {
 			return ;
 		}
-		else if (input.compare(0, 4, "PASS") == 0) {
+		else if (input.compare(0, 5, "PASS ") == 0 || input.compare("PASS") == 0 ) {
 			std::string	password = input.substr(5, input.length());
 			client->setPassword(password);
-		} else if (input.compare(0, 4, "NICK") == 0) {
+		} else if (input.compare(0, 5, "NICK ") == 0 || input.compare("NICK") == 0) {
 			std::unique_ptr<ACommand> cmd = parseNickCommand(client, input, state);
 			if (cmd != nullptr)
 				cmd->execute();
-		} else if (input.compare(0, 4, "USER") == 0) {
+		} else if (input.compare(0, 5, "USER ") == 0 || input.compare("USER") == 0) {
 			std::string	args = input.substr(5, input.length());
 			std::string	username = args.substr(0, args.find(' '));
 			args = args.substr(username.length() + 1, args.length());
@@ -28,40 +28,43 @@ void Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State
 std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input,
 	State& state) {
 
+	std::string command = input.substr(0, input.find_first_of(' '));
 	try {
-		if (input.compare(0, 4, "JOIN") == 0) {
+		if (command.compare("JOIN") == 0) {
 			return (parseJoinCommand(client, input, state));
 		}
-		else if (input.compare(0, 7, "PRIVMSG") == 0) {
+		else if (command.compare("PRIVMSG") == 0) {
 			return (parsePrivmsgCommand(client, input, state));
 		}
-		else if (input.compare(0, 4, "MODE") == 0) {
+		else if (command.compare("MODE") == 0) {
 			return (parseModeCommand(client, input, state));
 		}
-		else if (input.compare(0, 4, "QUIT") == 0) {
+		else if (command.compare("QUIT") == 0) {
 			return (parseQuitCommand(client, input, state));
 		}
-		else if (input.compare(0, 4, "NICK") == 0) {
+		else if (command.compare("NICK") == 0) {
 			return (parseNickCommand(client, input, state));
 		}
-		else if (input.compare(0, 4, "KICK") == 0) {
+		else if (command.compare("KICK") == 0) {
 			return (parseKickCommmand(client, input, state));
 		}
-		else if (input.compare(0, 6, "INVITE") == 0) {
+		else if (command.compare("INVITE") == 0) {
 			return (parseInviteCommand(client, input, state));
 		}
-		else if (input.compare(0, 5, "TOPIC") == 0) {
+		else if (command.compare("TOPIC") == 0) {
 			return (parseTopicCommand(client, input, state));
 		}
-		else if (input.compare(0, 4, "WHO ") == 0) {
+		else if (command.compare("WHO") == 0) {
 			return (parseWhoCommand(client, input, state));
 		}
-		else if (input.compare(0,5, "WHOIS") == 0) {
+		else if (command.compare("WHOIS") == 0) {
 			return (parseWhoisCommand(client, input, state));
 		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
+	Message msg;
+	msg.codedMessage(client, state, ERR_UNKNOWNCOMMAND, command);
 	return (nullptr);
 }
 
