@@ -212,9 +212,9 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 	if (!client->isAuthenticated()) {
 		if (client->getBuffer().find("\r\n") != std::string::npos) {
 			std::cout << "Incrementing registration attempts" << std::endl;
-			client->incrementRegisterationAttempts();
+			client->incrementRegistrationAttempts();
 		}
-		if (client->getRegisterationAttempts() > 10) {
+		if (client->getRegistrationAttempts() > 10) {
 			std::cout << "REMOVING:" << std::endl;
 			client->printClient();
 			_state->removeClient(client);
@@ -244,7 +244,7 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 		else if (type == CMD) {
 			if (!client->isAuthenticated()) {
 				msg.codedMessage(client, *_state, ERR_NOTREGISTERED, {});
-				std::cout << "Not a registered client, attepts: " << client->getRegisterationAttempts() << std::endl;
+				std::cout << "Not a registered client, attepts: " << client->getRegistrationAttempts() << std::endl;
 				continue ;
 			}
 			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
