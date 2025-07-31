@@ -32,6 +32,12 @@ void Parser::parseRegisteration(std::shared_ptr<Client>& client, std::string& in
 				if (username.empty()) {
 					throw std::runtime_error("Not enough parameters");
 				}
+				for (size_t i = 0; i < username.length(); i++) {
+					std::string	invalid = " ,*?!@.:";
+					if (invalid.find(username[i]) != std::string::npos) {
+						throw std::runtime_error("Erroneus username");
+					}
+				}
 				input.erase(0, username.length() + 1);
 				if (input.find(':') == std::string::npos) {
 					throw std::runtime_error("Not enough parameters");
@@ -41,10 +47,23 @@ void Parser::parseRegisteration(std::shared_ptr<Client>& client, std::string& in
 					real_name = input.substr(input.find(':') + 1, input.length());
 				}
 				client->setName(real_name);
-				client->setUsername(username);
-			} catch (...) {
+				if (username[0] != '~') {
+					client->setUsername("~" + username);
+				}
+				else {
+					client->setUsername(username);
+				}
+			} catch (std::exception& e) {
 				Message msg;
-				msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, "USER");
+				std::string err(e.what());
+				if (err == "Not enough parameters") {
+					msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, "USER");
+				}
+				else {
+					struct reply repl = ERROR;
+					repl.msg = err;
+					msg.codedMessage(client, state, repl, "USER");
+				}
 			}
 		}
 	} catch (std::exception& e) {
