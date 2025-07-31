@@ -200,18 +200,40 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 		return ;
 	}
 	if (!client->receiveData()) {
-		std::string input = "QUIT :Read error: Connection reset by peer";
-		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, input, *_state);
+		std::string input = ":Read error: Connection reset by peer";
+		std::string command = "QUIT";
+		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, command, input, *_state);
 		if (cmd != nullptr) {
 			cmd->execute();
 		}
 		return ;
 	}
 	Message	msg;
+	if (!client->isAuthenticated()) {
+		if (client->getBuffer().find("\r\n") != std::string::npos) {
+			std::cout << "Incrementing registration attempts" << std::endl;
+			client->incrementRegistrationAttempts();
+		}
+		if (client->getRegistrationAttempts() > 10) {
+			std::cout << "REMOVING:" << std::endl;
+			client->printClient();
+			_state->removeClient(client);
+			for (auto it = _state->_clients.begin(); it != _state->_clients.end(); ++it) {
+				int i = 1;
+				std::cout << "client number " << i << " is:" << std::endl;
+				(*it)->printClient();
+			}
+			return ;
+		}
+	}
 	while (msg.getNextMessage(client)) {
 		msg.determineType(client);
 		int	type = msg.getType();
 		if (type == REG) {
+			if (client->isAuthenticated()) {
+				msg.codedMessage(client, *_state, ERR_ALREADYREGISTERED, {});
+				continue ;
+			}
 			parser.parseRegisteration(client, msg.getMsg(), *_state);
 			validatePassword(client);
 			if (!client->isValidPass()) {
@@ -220,6 +242,11 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 			validateClient(client);
 		}
 		else if (type == CMD) {
+			if (!client->isAuthenticated()) {
+				msg.codedMessage(client, *_state, ERR_NOTREGISTERED, {});
+				std::cout << "Not a registered client, attepts: " << client->getRegistrationAttempts() << std::endl;
+				continue ;
+			}
 			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
 			std::unique_ptr<ACommand> cmd = parser.parseCommand(client, msg.getMsg(), *_state);
 			if (cmd != nullptr) {

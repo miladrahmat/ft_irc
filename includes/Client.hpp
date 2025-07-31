@@ -23,6 +23,7 @@ class Client {
 		std::vector<std::string> _invited_to;
 		bool		_nick_validated;
 		bool		_pass_validated;
+		int			_registration_attempts;
 
 	public:
 		Client(int socket, int epoll_fd, std::string ip);
@@ -38,6 +39,7 @@ class Client {
 		std::string	getPassword() const;
 		std::string	getHostname() const;
 		std::string	getUsername() const;
+		int			getRegistrationAttempts() const;
 		bool		getNickValidated() const;
 		bool		isAuthenticated() const;
 		bool		isValidPass() const;
@@ -49,6 +51,7 @@ class Client {
 		void		setPassword(std::string password);
 		void		setValidPass(bool set);
 		void		setClientSocket(int socket);
+		void		incrementRegistrationAttempts();
 		void		validateNick();
 		void		authenticate();
 		void		setInvitedTo(std::string channel_name);

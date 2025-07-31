@@ -1,12 +1,14 @@
 #include "Client.hpp"
 
-Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), _authenticated(false), _nick_validated(false), _pass_validated(true) {
+Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), \
+														_authenticated(false), _nick_validated(false), _pass_validated(true), _registration_attempts(0) {
 
 }
 
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _epoll_fd(old_client._epoll_fd), _name(old_client._name), _nickname(old_client._nickname), \
 											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), \
-											_send_buffer(old_client._send_buffer), _nick_validated(old_client._nick_validated), _pass_validated(old_client._pass_validated) {
+											_send_buffer(old_client._send_buffer), _nick_validated(old_client._nick_validated), _pass_validated(old_client._pass_validated), \
+											_registration_attempts(old_client._registration_attempts) {
 
 }
 
@@ -50,6 +52,10 @@ bool Client::getNickValidated() const {
 	return (_nick_validated);
 }
 
+int Client::getRegistrationAttempts() const {
+	return (_registration_attempts);
+}
+
 void Client::validateNick() {
 	_nick_validated = true;
 }
@@ -87,7 +93,7 @@ void Client::setValidPass(bool set) {
 }
 
 void Client::authenticate() {
-	if (_name.empty() || _nickname.empty() || _hostname.empty() ||
+	if (_nickname.empty() || _hostname.empty() ||
 		_username.empty() || _password.empty()) {
 		return ;
 	}
@@ -96,6 +102,10 @@ void Client::authenticate() {
 
 void Client::setClientSocket(int socket) {
 	_client_socket = socket;
+}
+
+void Client::incrementRegistrationAttempts() {
+	_registration_attempts++;
 }
 
 void Client::appendBuffer(std::string const& msg) {
