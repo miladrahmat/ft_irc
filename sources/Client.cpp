@@ -92,7 +92,7 @@ void Client::setValidPass(bool set) {
 }
 
 void Client::authenticate() {
-	if (_name.empty() || _nickname.empty() || _hostname.empty() ||
+	if (_nickname.empty() || _hostname.empty() ||
 		_username.empty() || _password.empty()) {
 		return ;
 	}

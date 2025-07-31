@@ -200,8 +200,9 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 		return ;
 	}
 	if (!client->receiveData()) {
-		std::string input = "QUIT :Read error: Connection reset by peer";
-		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, input, *_state);
+		std::string input = ":Read error: Connection reset by peer";
+		std::string command = "QUIT";
+		std::unique_ptr<ACommand> cmd = parser.parseQuitCommand(client, command, input, *_state);
 		if (cmd != nullptr) {
 			cmd->execute();
 		}
@@ -227,9 +228,12 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 	}
 	while (msg.getNextMessage(client)) {
 		msg.determineType(client);
-		std::cout << "Input: " << msg.getMsg() << std::endl;
 		int	type = msg.getType();
 		if (type == REG) {
+			if (client->isAuthenticated()) {
+				msg.codedMessage(client, *_state, ERR_ALREADYREGISTERED, {});
+				continue ;
+			}
 			parser.parseRegisteration(client, msg.getMsg(), *_state);
 			validatePassword(client);
 			if (!client->isValidPass()) {
