@@ -1,6 +1,6 @@
 #include "Parser.hpp"
 
-void Parser::parseCap(std::shared_ptr<Client>& client, std::string& input, State& state) {
+void Parser::parseRegisteration(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
 		if (input.compare(0, 7, "CAP LS ") == 0  || input.compare("CAP LS") == 0 ) {
 			return ;

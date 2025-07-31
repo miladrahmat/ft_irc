@@ -22,32 +22,16 @@ void Message::clearSendMsg() {
 }
 
 void Message::determineType(std::shared_ptr<Client>& client) {
-	if (_msg.compare(0, 5, "NICK ") == 0 && client->getNickname().empty() && _type != CAP_LS) {
-		_send_msg = "CAP * ACK :multi-prefix\r\n";
-		_type = CAP_REQ_AGAIN;
+	std::string cmd = _msg.substr(0, _msg.find_first_of(' '));
+
+	if (cmd.compare("CAP") == 0) {
+		_type = REG;
 	}
-	else if (_msg.compare(0, 7, "CAP LS ") == 0  || _msg.compare("CAP LS") == 0 \
-		|| _msg.compare(0, 5, "PASS ") == 0 || _msg.compare("PASS") == 0 \
-		|| _msg.compare(0, 5, "USER ") == 0 || _msg.compare("USER") == 0 \
-		|| (_msg.compare(0, 5, "NICK ") == 0 && _type == CAP_LS)) {
-		if (_msg.compare(0, 7, "CAP LS ") == 0 || _msg.compare("CAP LS") == 0 ) {
-			_send_msg = "CAP * LS :multi-prefix account-notify account-tag invite-notify\r\n";
-		}
-		_type = CAP_LS;
+	else if (cmd.compare("PASS") == 0 || cmd.compare("USER") == 0 \
+		|| (cmd.compare("NICK") == 0 && client->getNickname().empty())) {
+		_type = REG;
 	}
-	else if (_msg.compare(0, 8, "CAP REQ ") == 0 || _msg.compare("CAP REQ") == 0) {
-		if (!client->getNickname().empty()) {
-			_send_msg = "CAP " + client->getNickname() + " ACK :multi-prefix\r\n";
-		}
-		else {
-			_send_msg = "CAP * ACK :multi-prefix\r\n";
-		}
-		_type = CAP_REQ;
-	}
-	else if (_msg.compare(0, 8, "CAP END ") == 0 || _msg.compare("CAP END") == 0) {
-		_type = CAP_END;
-	}
-	else if (_msg.compare(0, 5, "PING ") == 0 || _msg.compare("PING") == 0) {
+	else if (cmd.compare("PING") == 0) {
 		_type = PING;
 	}
 	else {
