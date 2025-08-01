@@ -23,6 +23,7 @@ class Client {
 		std::vector<std::string> _invited_to;
 		bool		_nick_validated;
 		bool		_pass_validated;
+		bool		_pass_set;
 		int			_registration_attempts;
 
 	public:
@@ -44,6 +45,7 @@ class Client {
 		bool		isAuthenticated() const;
 		bool		isValidPass() const;
 		bool		isInvited(const std::string& channel_name) const;
+		bool		isPassSet() const;
 		void 		setNickname(std::string nickname);
 		void		setUsername(std::string username);
 		void		setHostname(std::string hostname);

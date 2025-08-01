@@ -28,7 +28,7 @@ void Message::determineType(std::shared_ptr<Client>& client) {
 		_type = REG;
 	}
 	else if (cmd.compare("PASS") == 0 || cmd.compare("USER") == 0 \
-		|| (cmd.compare("NICK") == 0 && client->getNickname().empty())) {
+		|| (cmd.compare("NICK") == 0 && !client->isAuthenticated())) {
 		_type = REG;
 	}
 	else if (cmd.compare("PING") == 0) {
