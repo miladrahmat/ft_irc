@@ -2,5 +2,6 @@
 ircserv
 *.log
 *.py
+*.sh
 __pycache__/
 objects_and_dependencies/

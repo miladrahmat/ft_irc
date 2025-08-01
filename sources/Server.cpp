@@ -262,7 +262,7 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 }
 
 bool Server::validatePassword(std::shared_ptr<Client>& client) {
-	if (client->getPassword().empty()) {
+	if (!client->isPassSet()) {
 		return (true);
 	}
 	else if (client->getPassword() != _password && client->isValidPass()) {
