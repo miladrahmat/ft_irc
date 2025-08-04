@@ -41,7 +41,7 @@ std::vector<std::shared_ptr<Client>>::iterator Channel::getClient(std::string ni
 	return (it);
 }
 
-std::string Channel::getModes() {
+std::string Channel::getModes(const std::shared_ptr<Client> & client) {
     std::string modes = "+";
     std::string params;
     if (_invite_only) {
@@ -66,7 +66,12 @@ std::string Channel::getModes() {
     if (modes == "+") {
         return ("");
     }
-    return (modes + " " + params);
+    if (isClient(client)) {
+        return (modes + " " + params);
+    }
+    else {
+        return (modes);
+    }
 }
 
 /****************************************************************************************

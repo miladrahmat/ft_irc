@@ -149,7 +149,7 @@ void ModeCommand::executeEmptyMode(Channel & channel) const {
     Message msg;
 
     std::string message_to_send = channel.getName() + " ";
-    message_to_send += channel.getModes();
+    message_to_send += channel.getModes(_client);
     msg.codedMessage(_client, _state, RPL_CHANNELMODEIS, message_to_send);
 }
 
