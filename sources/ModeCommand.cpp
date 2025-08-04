@@ -84,7 +84,7 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
                 msg.codedMessage(client, cmd->_state, ERR_UNKNOWNMODE, mode);
                 continue;
             }
-            if (mode == "+k" || mode[1] == 'o' || mode[1] == 'l') {
+            if (mode == "+k" || mode[1] == 'o' || mode == "+l") {
                 if (params.empty()) {
                     Message msg;
                     msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, command);
