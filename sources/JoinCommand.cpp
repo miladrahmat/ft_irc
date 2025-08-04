@@ -56,6 +56,10 @@ void JoinCommand::execute() const {
 
     for ( ; chan_it != _channels.end(); chan_it++) {
         if (!validChannelName(*chan_it)) {
+            errReply(ERR_BADCHANMASK, *chan_it);
+            if (key_it != _keys.end()) {
+                key_it++;
+            }
             continue ;
         }
         std::vector<Channel>::iterator chan = _state.getChannel(*chan_it);
