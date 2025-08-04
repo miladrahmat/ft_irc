@@ -2,8 +2,10 @@
 
 void Parser::parseRegisteration(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
-		std::string command = input.substr(0, input.find_first_of(' '));
+		std::string whitespace = " \t\r\n\v";
+		std::string command = input.substr(0, input.find_first_of(whitespace));
 		input.erase(0, command.length() + 1);
+		input.erase(0, input.find_first_not_of(whitespace));
 		if (command.compare("CAP") == 0) {
 			return ;
 		}
@@ -16,11 +18,12 @@ void Parser::parseRegisteration(std::shared_ptr<Client>& client, std::string& in
 		} else if (command.compare("USER") == 0) {
 			try {
 				short int args = 1;
-				for (std::string::iterator it = input.begin(); it != input.end(); ++it) {
-					if (*it == ':') {
+				for (size_t i = 0; i < input.length(); ++i) {
+					if (input[i] == ':') {
 						break ;
 					}
-					if (*it == ' ') {
+					if (whitespace.find(input[i]) != std::string::npos) {
+						i = input.find_first_not_of(whitespace, i) - 1;
 						args++;
 					}
 				}
@@ -74,9 +77,26 @@ void Parser::parseRegisteration(std::shared_ptr<Client>& client, std::string& in
 std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, std::string& input,
 	State& state) {
 
-	std::string command = input.substr(0, input.find_first_of(' '));
-	input.erase(0, command.length() + 1);
+	std::string command;
+
 	try {
+		std::string whitespace = " \t\r\n\v";
+		input.erase(0, input.find_first_not_of(whitespace));
+		command = input.substr(0, input.find_first_of(whitespace));
+		input.erase(0, command.length() + 1);
+		for (size_t i = 0; i < input.length(); ++i) {
+			if (input[i] == ':') {
+				break ;
+			}
+			if (whitespace.find(input[i]) != std::string::npos) {
+				input.erase(i, input.find_first_not_of(whitespace, i) - i);
+				input.insert(i, 1, ' ');
+			}
+			if (i > input.length()) {
+				break ;
+			}
+		}
+		input.erase(0, input.find_first_not_of(whitespace));
 		if (command.compare("JOIN") == 0) {
 			return (parseJoinCommand(client, command, input, state));
 		}
@@ -128,16 +148,7 @@ std::unique_ptr<ACommand> Parser::parseTopicCommand(std::shared_ptr<Client>& cli
 		channel = input.substr(0, input.find_first_of(' '));
 		input.erase(0, channel.length() + 1);
 	}
-	std::string topic = "";
-	if (!input.empty()) {
-		if (input == ":") {
-			topic = "";
-		}
-		else {
-			topic = input.substr(1, input.length());
-		}
-	}
-	return (TopicCommand::create(command, client, state, channel, topic));
+	return (TopicCommand::create(command, client, state, channel, input));
 }
 
 std::unique_ptr<ACommand> Parser::parseQuitCommand(std::shared_ptr<Client>& client,
@@ -175,7 +186,7 @@ std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& cli
 std::unique_ptr<ACommand> Parser::parseInviteCommand(std::shared_ptr<Client>& client,
 	std::string& command, std::string& input, State& state) {
 
-	input.erase(0, input.find_first_not_of(" \t"));
+	// input.erase(0, input.find_first_not_of(" \t"));
 	if (!input.empty() && input[0] == ':') {
 		input.erase(0, 1);
 	}

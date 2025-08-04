@@ -1,14 +1,14 @@
 #include "Client.hpp"
 
 Client::Client(int socket, int epoll_fd, std::string ip) : _client_socket(socket), _epoll_fd(epoll_fd), _name(""), _nickname(""), _username(""), _hostname(ip), _password(""), \
-														_authenticated(false), _nick_validated(false), _pass_validated(true), _registration_attempts(0), _channel_count(0) {
+														_authenticated(false), _nick_validated(false), _pass_validated(true), _pass_set(false), _registration_attempts(0), _channel_count(0) {
 
 }
 
 Client::Client(Client&& old_client) noexcept : _client_socket(old_client._client_socket), _epoll_fd(old_client._epoll_fd), _name(old_client._name), _nickname(old_client._nickname), \
 											_username(old_client._username), _hostname(old_client._hostname), _password(old_client._password), _buffer(old_client._buffer), \
 											_send_buffer(old_client._send_buffer), _nick_validated(old_client._nick_validated), _pass_validated(old_client._pass_validated), \
-											_registration_attempts(old_client._registration_attempts), _channel_count(old_client._channel_count) {
+											_pass_set(old_client._pass_set), _registration_attempts(old_client._registration_attempts), _channel_count(old_client._channel_count) {
 
 }
 
@@ -68,6 +68,10 @@ bool Client::isValidPass() const {
 	return (_pass_validated);
 }
 
+bool Client::isPassSet() const {
+	return (_pass_set);
+}
+
 void Client::setNickname(std::string nickname) {
 	_nickname = nickname;
 }
@@ -86,6 +90,7 @@ void Client::setName(std::string name) {
 
 void Client::setPassword(std::string password) {
 	_password = password;
+	_pass_set = true;
 }
 
 void Client::setValidPass(bool set) {

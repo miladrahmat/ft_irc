@@ -37,7 +37,7 @@ class Channel {
         int getSize();
         int getUserLimit();
         std::string getPassword() const;
-        std::string getModes();
+        std::string getModes(const std::shared_ptr<Client> & client);
         std::vector<std::shared_ptr<Client>>::iterator getClient(std::string nickname);
 
         void setTopic(const std::shared_ptr<Client> & client, std::string new_topic);
