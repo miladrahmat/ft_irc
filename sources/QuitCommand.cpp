@@ -9,6 +9,7 @@ std::unique_ptr<ACommand> QuitCommand::create(std::string command, std::shared_p
 	if (args[0] == ':') {
 		args.erase(0, 1);
 	}
+	args.insert(0, "Quit: ");
     cmd->_msg = args;
     return (std::unique_ptr<QuitCommand>(cmd));
 }
