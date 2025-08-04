@@ -211,18 +211,12 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 	Message	msg;
 	if (!client->isAuthenticated()) {
 		if (client->getBuffer().find("\r\n") != std::string::npos) {
-			std::cout << "Incrementing registration attempts" << std::endl;
 			client->incrementRegistrationAttempts();
 		}
 		if (client->getRegistrationAttempts() > 10) {
 			std::cout << "REMOVING:" << std::endl;
 			client->printClient();
 			_state->removeClient(client);
-			for (auto it = _state->_clients.begin(); it != _state->_clients.end(); ++it) {
-				int i = 1;
-				std::cout << "client number " << i << " is:" << std::endl;
-				(*it)->printClient();
-			}
 			return ;
 		}
 	}

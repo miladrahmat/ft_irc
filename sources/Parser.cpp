@@ -89,10 +89,8 @@ std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, 
 				break ;
 			}
 			if (whitespace.find(input[i]) != std::string::npos) {
-				std::cout << "space found at index: " << i << "	up until: " << input.find_first_not_of(' ', i + 1) << "	Characters to remove: " << input.find_first_not_of(' ', i + 1) - (i + 1) << std::endl;
 				input.erase(i, input.find_first_not_of(whitespace, i) - i);
 				input.insert(i, 1, ' ');
-				std::cout << input << std::endl;
 			}
 			if (i > input.length()) {
 				break ;
