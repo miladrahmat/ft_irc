@@ -2,7 +2,7 @@
 
 void Parser::parseRegisteration(std::shared_ptr<Client>& client, std::string& input, State& state) {
 	try {
-		std::string whitespace = " \t\r\n\t\v";
+		std::string whitespace = " \t\r\n\v";
 		std::string command = input.substr(0, input.find_first_of(whitespace));
 		input.erase(0, command.length() + 1);
 		input.erase(0, input.find_first_not_of(whitespace));
@@ -80,7 +80,7 @@ std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, 
 	std::string command;
 
 	try {
-		std::string whitespace = " \t\r\n\t\v";
+		std::string whitespace = " \t\r\n\v";
 		input.erase(0, input.find_first_not_of(whitespace));
 		command = input.substr(0, input.find_first_of(whitespace));
 		input.erase(0, command.length() + 1);
@@ -195,7 +195,7 @@ std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& cli
 std::unique_ptr<ACommand> Parser::parseInviteCommand(std::shared_ptr<Client>& client,
 	std::string& command, std::string& input, State& state) {
 
-	input.erase(0, input.find_first_not_of(" \t"));
+	// input.erase(0, input.find_first_not_of(" \t"));
 	if (!input.empty() && input[0] == ':') {
 		input.erase(0, 1);
 	}
