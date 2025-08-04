@@ -24,6 +24,7 @@ class Client {
 		bool		_nick_validated;
 		bool		_pass_validated;
 		int			_registration_attempts;
+		int			_channel_count;
 
 	public:
 		Client(int socket, int epoll_fd, std::string ip);
@@ -63,5 +64,7 @@ class Client {
 		std::string	getSendBuffer();
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
+		int			getChannelCount() const;
+		void		incrementChannelCount();
 		void		printClient() const;
 };

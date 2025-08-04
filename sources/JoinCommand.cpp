@@ -76,6 +76,7 @@ void JoinCommand::execute() const {
             }
         }
         if (reply.code == SUCCESS.code) {
+            _client->incrementChannelCount();
             joinReply(*chan_it);
         }
         else {

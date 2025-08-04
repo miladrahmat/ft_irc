@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#define CHAN_MAX 50
 
 struct reply {
     std::string code;
