@@ -29,7 +29,6 @@ int ModeCommand::checkTarget(std::string & target) {
             _channel_it = _state.getChannel(target);
         }
         else {
-            Message msg;
             msg.codedMessage(_client, _state, ERR_NOSUCHCHANNEL, target);
             return (0);
         }
@@ -45,7 +44,7 @@ int ModeCommand::checkTarget(std::string & target) {
         return (0);
     }
     else {
-        msg.codedMessage(_client, _state, ERR_UNKNOWNMODE, target);
+        msg.codedMessage(_client, _state, ERR_NOSUCHCHANNEL, target);
         return (0);
     }
     return (1);
