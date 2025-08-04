@@ -107,6 +107,9 @@ std::unique_ptr<ACommand> Parser::parseCommand(std::shared_ptr<Client>& client, 
 		else if (command.compare("WHOIS") == 0) {
 			return (parseWhoisCommand(client, command, input, state));
 		}
+		else if (command.compare("PING") == 0) {
+			return (PingCommand::create("PONG", client, state, input));
+		}
 	} catch (std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
@@ -258,3 +261,4 @@ std::unique_ptr<ACommand> Parser::parseWhoisCommand(std::shared_ptr<Client>& cli
 	}
 	return (WhoisCommand::create(command, client, state, server, nick));
 }
+

@@ -13,6 +13,7 @@
 #include "TopicCommand.hpp"
 #include "WhoCommand.hpp"
 #include "WhoisCommand.hpp"
+#include "PingCommand.hpp"
 #include <vector>
 #include <memory>
 

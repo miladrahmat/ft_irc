@@ -31,9 +31,6 @@ void Message::determineType(std::shared_ptr<Client>& client) {
 		|| (cmd.compare("NICK") == 0 && client->getNickname().empty())) {
 		_type = REG;
 	}
-	else if (cmd.compare("PING") == 0) {
-		_type = PING;
-	}
 	else {
 		_type = CMD;
 	}
