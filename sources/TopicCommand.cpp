@@ -33,8 +33,22 @@ std::unique_ptr<ACommand> TopicCommand::create(std::string command, std::shared_
 		delete cmd;
 		return (nullptr);
 	}
-	cmd->_set_topic = true;
-	cmd->_topic = topic;
+	if (topic == ":") {
+		cmd->_topic = "";
+		cmd->_set_topic = true;
+	}
+	if (!topic.empty()) {
+		cmd->_set_topic = true;
+		if (topic[0] == ':') {
+			cmd->_topic = topic.erase(0, 1);
+		}
+		else {
+			cmd->_topic = topic;
+		}
+		if (topic.length() > 390) {
+			cmd->_topic = topic.substr(0, 390);
+		}
+	}
 	return (std::unique_ptr<ACommand>(cmd));
 }
 

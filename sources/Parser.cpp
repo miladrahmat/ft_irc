@@ -149,16 +149,7 @@ std::unique_ptr<ACommand> Parser::parseTopicCommand(std::shared_ptr<Client>& cli
 		channel = input.substr(0, input.find_first_of(' '));
 		input.erase(0, channel.length() + 1);
 	}
-	std::string topic = "";
-	if (!input.empty()) {
-		if (input == ":") {
-			topic = "";
-		}
-		else {
-			topic = input.substr(1, input.length());
-		}
-	}
-	return (TopicCommand::create(command, client, state, channel, topic));
+	return (TopicCommand::create(command, client, state, channel, input));
 }
 
 std::unique_ptr<ACommand> Parser::parseQuitCommand(std::shared_ptr<Client>& client,
