@@ -28,7 +28,7 @@ std::unique_ptr<ACommand> TopicCommand::create(std::string command, std::shared_
 		delete cmd;
 		return (nullptr);
 	}
-	if (!chan->isOperator(cmd->_client) && chan->getTopicMode()) {
+	if (!chan->isOperator(cmd->_client) && chan->getTopicMode() && !topic.empty()) {
 		msg.codedMessage(cmd->_client, cmd->_state, ERR_CHANOPRIVSNEEDED, cmd->_channel);
 		delete cmd;
 		return (nullptr);
