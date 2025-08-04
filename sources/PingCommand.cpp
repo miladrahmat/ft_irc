@@ -16,9 +16,11 @@ std::unique_ptr<ACommand> PingCommand::create(std::string command, std::shared_p
 		return (nullptr);
 	}
 	if (args.length() > 512) {
-		args = args.substr(0, 512);
+		cmd->_msg = args.substr(0, 512);
 	}
-	cmd->_msg = args;
+	else {
+		cmd->_msg = args;
+	}
 	return (std::unique_ptr<ACommand>(cmd));
 }
 
