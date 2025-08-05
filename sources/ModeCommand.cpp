@@ -29,7 +29,6 @@ int ModeCommand::checkTarget(std::string & target) {
             _channel_it = _state.getChannel(target);
         }
         else {
-            Message msg;
             msg.codedMessage(_client, _state, ERR_NOSUCHCHANNEL, target);
             return (0);
         }
@@ -45,7 +44,7 @@ int ModeCommand::checkTarget(std::string & target) {
         return (0);
     }
     else {
-        msg.codedMessage(_client, _state, ERR_UNKNOWNMODE, target);
+        msg.codedMessage(_client, _state, ERR_NOSUCHCHANNEL, target);
         return (0);
     }
     return (1);
@@ -84,7 +83,7 @@ std::unique_ptr<ACommand> ModeCommand::create(std::string command, std::shared_p
                 msg.codedMessage(client, cmd->_state, ERR_UNKNOWNMODE, mode);
                 continue;
             }
-            if (mode == "+k" || mode[1] == 'o' || mode[1] == 'l') {
+            if (mode == "+k" || mode[1] == 'o' || mode == "+l") {
                 if (params.empty()) {
                     Message msg;
                     msg.codedMessage(client, state, ERR_NEEDMOREPARAMS, command);
@@ -149,7 +148,7 @@ void ModeCommand::executeEmptyMode(Channel & channel) const {
     Message msg;
 
     std::string message_to_send = channel.getName() + " ";
-    message_to_send += channel.getModes();
+    message_to_send += channel.getModes(_client);
     msg.codedMessage(_client, _state, RPL_CHANNELMODEIS, message_to_send);
 }
 

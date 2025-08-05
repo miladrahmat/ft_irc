@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#define CHAN_MAX 50
 
 class Client {
 	private:
@@ -23,7 +24,9 @@ class Client {
 		std::vector<std::string> _invited_to;
 		bool		_nick_validated;
 		bool		_pass_validated;
+		bool		_pass_set;
 		int			_registration_attempts;
+		int			_channel_count;
 
 	public:
 		Client(int socket, int epoll_fd, std::string ip);
@@ -44,6 +47,7 @@ class Client {
 		bool		isAuthenticated() const;
 		bool		isValidPass() const;
 		bool		isInvited(const std::string& channel_name) const;
+		bool		isPassSet() const;
 		void 		setNickname(std::string nickname);
 		void		setUsername(std::string username);
 		void		setHostname(std::string hostname);
@@ -63,5 +67,7 @@ class Client {
 		std::string	getSendBuffer();
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
+		int			getChannelCount() const;
+		void		incrementChannelCount();
 		void		printClient() const;
 };
