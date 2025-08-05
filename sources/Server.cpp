@@ -236,22 +236,26 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 			validateClient(client);
 		}
 		else if (type == CMD) {
-			if (!msg.getMsg().empty() \
-				&& msg.getMsg().compare(msg.getMsg().find_first_not_of(" \t\r\n\v"), 4, "PING") != 0 \
-				&& msg.getMsg().compare(msg.getMsg().find_first_not_of(" \t\r\n\v"), 4, "QUIT") != 0 \
-				&& !client->isAuthenticated()) {
-				msg.codedMessage(client, *_state, ERR_NOTREGISTERED, {});
-				std::cout << "Not a registered client, attepts: " << client->getRegistrationAttempts() << std::endl;
-				continue ;
-			}
-			std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
-			std::unique_ptr<ACommand> cmd = parser.parseCommand(client, msg.getMsg(), *_state);
-			if (cmd != nullptr) {
-				std::cout << "Executing " << cmd->getCommand() << std::endl;
-				cmd->execute();
+			try {
+				if (!msg.getMsg().empty() \
+					&& msg.getMsg().compare(msg.getMsg().find_first_not_of(" \t\r\n\v"), 4, "PING") != 0 \
+					&& msg.getMsg().compare(msg.getMsg().find_first_not_of(" \t\r\n\v"), 4, "QUIT") != 0 \
+					&& !client->isAuthenticated()) {
+					msg.codedMessage(client, *_state, ERR_NOTREGISTERED, {});
+					std::cout << "Not a registered client, attepts: " << client->getRegistrationAttempts() << std::endl;
+					continue ;
+				}
+				std::cout << client->getNickname() << ": " << msg.getMsg() << std::endl; 
+				std::unique_ptr<ACommand> cmd = parser.parseCommand(client, msg.getMsg(), *_state);
+				if (cmd != nullptr) {
+					std::cout << "Executing " << cmd->getCommand() << std::endl;
+					cmd->execute();
+				}
+			} catch (std::exception& e) {
+				std::cerr << e.what() << std::endl;
 			}
 		}
-		msg.clearMsg();
+	msg.clearMsg();
 	}
 }
 
