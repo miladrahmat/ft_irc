@@ -236,7 +236,10 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 			validateClient(client);
 		}
 		else if (type == CMD) {
-			if (!client->isAuthenticated()) {
+			if (!msg.getMsg().empty() \
+				&& msg.getMsg().compare(msg.getMsg().find_first_not_of(" \t\r\n\v"), 4, "PING") != 0 \
+				&& msg.getMsg().compare(msg.getMsg().find_first_not_of(" \t\r\n\v"), 4, "QUIT") != 0 \
+				&& !client->isAuthenticated()) {
 				msg.codedMessage(client, *_state, ERR_NOTREGISTERED, {});
 				std::cout << "Not a registered client, attepts: " << client->getRegistrationAttempts() << std::endl;
 				continue ;
@@ -247,9 +250,6 @@ void Server::receiveData(std::shared_ptr<Client>& client) {
 				std::cout << "Executing " << cmd->getCommand() << std::endl;
 				cmd->execute();
 			}
-		}
-		else if (type == PING) {
-			msg.messagePong(client, _state->_server_name, "PONG", _state->_server_name, _state->_server_name);
 		}
 		msg.clearMsg();
 	}

@@ -33,7 +33,6 @@ class Message {
 	    void welcomeMessage(std::shared_ptr<Client>& client, State& state);
         void messagePong(std::shared_ptr<Client>& client, std::string sender,
             std::string command, std::string target, std::string msg);
-        void messageCap(std::shared_ptr<Client>& client);
         void message(const std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client,
             std::string cmd, const std::optional<std::string>& target,
             const std::optional<std::string>& msg);

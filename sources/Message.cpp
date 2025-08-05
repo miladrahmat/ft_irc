@@ -49,14 +49,6 @@ bool Message::getNextMessage(std::shared_ptr<Client>& client) {
 	return (false);
 }
 
-void Message::messageCap(std::shared_ptr<Client>& client) {
-	if (_send_msg.empty()) {
-		return ;
-	}
-	client->appendSendBuffer(_send_msg);
-	_send_msg.clear();
-}
-
 void Message::messagePong(std::shared_ptr<Client>& client, std::string sender, std::string command,
 	std::string target, std::string msg) {
 	_send_msg = ":" + sender + " " + command + " " + target + " :" + msg + "\r\n";
