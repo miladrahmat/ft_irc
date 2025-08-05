@@ -10,7 +10,12 @@ std::unique_ptr<ACommand> QuitCommand::create(std::string command, std::shared_p
 		args.erase(0, 1);
 	}
 	args.insert(0, "Quit: ");
-    cmd->_msg = args;
+	if (args.length() > MSG_MAXLEN) {
+		cmd->_msg = args.substr(0, MSG_MAXLEN);
+	}
+	else {
+		cmd->_msg = args;
+	}
     return (std::unique_ptr<QuitCommand>(cmd));
 }
 

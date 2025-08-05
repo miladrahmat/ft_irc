@@ -12,7 +12,12 @@ std::unique_ptr<ACommand> PrivmsgCommand::create(std::string command, std::share
 	if (!msg.empty() && msg[0] == ':') {
 		msg.erase(0, 1);
 	}
-	cmd->_msg = msg.substr(0, msg.length());
+	if (msg.length() > MSG_MAXLEN) {
+		cmd->_msg = msg.substr(0, MSG_MAXLEN);
+	}
+	else {
+		cmd->_msg = msg;
+	}
 	if (cmd->_msg_to[0] == '#') {
 		std::vector<Channel>::iterator channel = cmd->_state.getChannel(cmd->_msg_to);
 		if (channel == cmd->_state.getChannels().end()) {
@@ -29,7 +34,7 @@ std::unique_ptr<ACommand> PrivmsgCommand::create(std::string command, std::share
 	}
 	else {
 		std::vector<std::shared_ptr<Client>>::iterator client = cmd->_state.getClient(cmd->_msg_to);
-		if (client == cmd->_state.getClients().end()) {
+		if (client == cmd->_state.getClients().end() || (*client)->isAuthenticated() == false) {
 			Message msg;
 			msg.codedMessage(cmd->_client, cmd->_state, ERR_NOSUCHNICK, cmd->_msg_to);
 			delete cmd;

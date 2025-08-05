@@ -7,6 +7,8 @@
 #include "State.hpp"
 #include "reply.hpp"
 
+#define MSG_MAXLEN 512
+
 class State;
 
 enum MSG_TYPE {

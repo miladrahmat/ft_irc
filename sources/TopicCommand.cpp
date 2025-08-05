@@ -45,8 +45,8 @@ std::unique_ptr<ACommand> TopicCommand::create(std::string command, std::shared_
 		else {
 			cmd->_topic = topic;
 		}
-		if (topic.length() > 390) {
-			cmd->_topic = topic.substr(0, 390);
+		if (topic.length() > TOPIC_MAXLEN) {
+			cmd->_topic = topic.substr(0, TOPIC_MAXLEN);
 		}
 	}
 	return (std::unique_ptr<ACommand>(cmd));

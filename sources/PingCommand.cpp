@@ -15,8 +15,8 @@ std::unique_ptr<ACommand> PingCommand::create(std::string command, std::shared_p
 		delete cmd;
 		return (nullptr);
 	}
-	if (args.length() > 512) {
-		cmd->_msg = args.substr(0, 512);
+	if (args.length() > MSG_MAXLEN) {
+		cmd->_msg = args.substr(0, MSG_MAXLEN);
 	}
 	else {
 		cmd->_msg = args;
