@@ -31,9 +31,6 @@ void Message::determineType(std::shared_ptr<Client>& client) {
 		|| (cmd.compare("NICK") == 0 && !client->isAuthenticated())) {
 		_type = REG;
 	}
-	else if (cmd.compare("PING") == 0) {
-		_type = PING;
-	}
 	else {
 		_type = CMD;
 	}
@@ -50,14 +47,6 @@ bool Message::getNextMessage(std::shared_ptr<Client>& client) {
 		return (true);
 	}
 	return (false);
-}
-
-void Message::messageCap(std::shared_ptr<Client>& client) {
-	if (_send_msg.empty()) {
-		return ;
-	}
-	client->appendSendBuffer(_send_msg);
-	_send_msg.clear();
 }
 
 void Message::messagePong(std::shared_ptr<Client>& client, std::string sender, std::string command,
