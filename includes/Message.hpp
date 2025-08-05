@@ -11,8 +11,7 @@ class State;
 
 enum MSG_TYPE {
     REG,
-    CMD,
-    PING
+    CMD
 };
 
 class Message {
