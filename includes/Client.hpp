@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#define CHAN_MAX 50
 
 class Client {
 	private:
