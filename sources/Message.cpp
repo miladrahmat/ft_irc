@@ -96,7 +96,6 @@ void Message::codedMessage(std::shared_ptr<Client>& client, State& state, reply 
 
 void Message::message(const std::shared_ptr<Client>& s_client, std::shared_ptr<Client> & r_client,
 	std::string cmd, const std::optional<std::string>& target, const std::optional<std::string>& msg) {
-	//:nickname!username@hostname COMMAND #channel : <message or description of event>
 	_send_msg = ":" + s_client->getNickname() + "!" + s_client->getUsername() + "@" + s_client->getHostname() + " " + cmd;
 	if (target) {
 		_send_msg += " " + *target;
