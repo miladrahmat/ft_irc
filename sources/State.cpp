@@ -37,6 +37,9 @@ std::vector<Channel> & State::getChannels() {
 }
 
 reply State::addNewChannel(std::string name, std::shared_ptr<Client> & client, std::string password) {
+	if (client->getChannelCount() == CHAN_MAX) {
+		return (ERR_TOOMANYCHANNELS);
+	}
 	_channels.push_back(Channel(name, client, password));
 	return (SUCCESS);
 }

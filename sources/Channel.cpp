@@ -213,6 +213,9 @@ reply Channel::join(const std::shared_ptr<Client> & client, std::string password
     if (_password != "" && password != _password) {
         return (ERR_BADCHANNELKEY);
     }
+    if (client->getChannelCount() == CHAN_MAX) {
+        return (ERR_TOOMANYCHANNELS);
+    }
     clients.push_back(client);
     return (SUCCESS);
 }

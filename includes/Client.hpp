@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#define CHAN_MAX 50
 
 class Client {
 	private:
@@ -25,6 +26,7 @@ class Client {
 		bool		_pass_validated;
 		bool		_pass_set;
 		int			_registration_attempts;
+		int			_channel_count;
 
 	public:
 		Client(int socket, int epoll_fd, std::string ip);
@@ -65,5 +67,7 @@ class Client {
 		std::string	getSendBuffer();
 		std::string	getBuffer();
 		void		emptyBuffer(int begin, int end);
+		int			getChannelCount() const;
+		void		incrementChannelCount();
 		void		printClient() const;
 };
