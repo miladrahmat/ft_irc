@@ -44,7 +44,7 @@ void WhoCommand::execute() const {
     }
     else {
         std::vector<std::shared_ptr<Client>>::iterator who_client = _state.getClient(_nick);
-        if (who_client != _state.getClients().end()) {
+        if (who_client != _state.getClients().end() && (*who_client)->isAuthenticated() == true) {
             std::string flags = "H";
             std::string shared_channel;
             for (auto it = _state.getChannels().begin(); it != _state.getChannels().end(); ++it) {

@@ -13,7 +13,12 @@ std::unique_ptr<ACommand> KickCommand::create(std::string command, std::shared_p
         delete cmd;
         return (nullptr);
     }
-    cmd->_msg = message;
+    if (message.length() > MSG_MAXLEN) {
+        cmd->_msg = message.substr(0, MSG_MAXLEN);
+    }
+    else {
+        cmd->_msg = message;
+    }
     return (std::unique_ptr<KickCommand>(cmd));
 }
 

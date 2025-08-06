@@ -5,6 +5,8 @@
 #include "reply.hpp"
 #include "Message.hpp"
 
+#define TOPIC_MAXLEN 390
+
 class TopicCommand : public ACommand {
 	private:
 		bool _set_topic;

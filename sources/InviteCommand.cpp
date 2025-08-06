@@ -24,7 +24,7 @@ void InviteCommand::execute() const {
 
     std::vector<Channel>::iterator channel = _state.getChannel(_channel);
 	std::vector<std::shared_ptr<Client>>::iterator invited_client = _state.getClient(_invited_client);
-	if (invited_client == _state.getClients().end()) {
+	if (invited_client == _state.getClients().end() || (*invited_client)->isAuthenticated() == false) {
 		code = ERR_NOSUCHNICK;
 	}
 	else if (channel == _state.getChannels().end()) {

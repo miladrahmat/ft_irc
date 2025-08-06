@@ -64,6 +64,9 @@ void JoinCommand::execute() const {
         }
         std::vector<Channel>::iterator chan = _state.getChannel(*chan_it);
         if (chan != _state.getChannels().end()) {
+            if (chan->isClient(_client)) {
+                continue ;
+            }
             if (key_it == _keys.end()) {
                 reply = chan->join(_client, "");
             }
