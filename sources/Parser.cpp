@@ -189,7 +189,6 @@ std::unique_ptr<ACommand> Parser::parseKickCommmand(std::shared_ptr<Client>& cli
 std::unique_ptr<ACommand> Parser::parseInviteCommand(std::shared_ptr<Client>& client,
 	std::string& command, std::string& input, State& state) {
 
-	// input.erase(0, input.find_first_not_of(" \t"));
 	if (!input.empty() && input[0] == ':') {
 		input.erase(0, 1);
 	}
